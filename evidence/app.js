@@ -7,11 +7,12 @@
 
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
 const DRIVE_API = 'https://www.googleapis.com/drive/v3'
+const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+const SIGN_IN_KEY = 'evidence-viewer:sign-in'
 const MARK = { ok: '○', partial: '△', ng: '×' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない' }
 
 const $ = id => document.getElementById(id)
-const params = new URLSearchParams(location.search)
 
 /** Driveのフォルダから読む。ログインした人がもともと見られるファイルだけが読める。 */
 class DriveSource {
@@ -220,17 +221,61 @@ function step(delta) {
   if (state.playlist[index]) select(index)
 }
 
-async function open(source) {
+async function open(source, index = -1) {
   state.source = source
   showGate('読み込み中...')
   try {
     const manifest = await (await source.file('manifest.json')).json()
     render(manifest)
-    select(state.playlist.findIndex(entry => entry.kind === 'video'))
+    select(state.playlist[index] ? index : state.playlist.findIndex(entry => entry.kind === 'video'))
   }
   catch (error) {
     showGate(error.message)
   }
+}
+
+/** ログインから戻ってくる先。Google Cloudの「承認済みのリダイレクトURI」に同じものを登録する */
+function redirectUri() {
+  return location.origin + location.pathname.replace(/index\.html$/, '')
+}
+
+/**
+ * Googleのログイン画面へ移る。ポップアップの窓は止められる環境があるので、ページごと移って戻ってくる。
+ * 戻ってきた時に続きから見られるよう、フォルダと見ていた項目を覚えておく。
+ */
+function goToSignIn(clientId, folderId, index = -1) {
+  const nonce = crypto.randomUUID()
+  sessionStorage.setItem(SIGN_IN_KEY, JSON.stringify({ nonce, folderId, index }))
+  const query = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri(),
+    response_type: 'token',
+    scope: DRIVE_SCOPE,
+    state: nonce,
+    include_granted_scopes: 'true',
+  })
+  location.assign(`${AUTH_URL}?${query}`)
+}
+
+/** ログインから戻ってきたなら、URLの # からトークンを取り出す。戻ってきたのでなければ null */
+function takeSignInResult() {
+  const result = new URLSearchParams(location.hash.slice(1))
+  if (!result.has('access_token') && !result.has('error')) return null
+
+  let saved = null
+  try {
+    saved = JSON.parse(sessionStorage.getItem(SIGN_IN_KEY))
+  }
+  catch {}
+  sessionStorage.removeItem(SIGN_IN_KEY)
+  // トークンを履歴やブックマークに残さない。
+  const back = saved?.folderId ? `?folder=${encodeURIComponent(saved.folderId)}` : ''
+  history.replaceState(null, '', redirectUri() + back)
+
+  // 自分が始めたログインの戻りでなければ使わない(他人のトークンを付けたURLを開かされても読まない)。
+  if (!saved || result.get('state') !== saved.nonce) return { error: 'state_mismatch' }
+  if (result.has('error')) return { error: result.get('error') }
+  return { token: result.get('access_token'), index: saved.index }
 }
 
 function signInToDrive(folderId) {
@@ -239,41 +284,28 @@ function signInToDrive(folderId) {
     showGate('GoogleのクライアントIDが設定されていません(config.js)。')
     return
   }
-  let waiting = null
-  const settle = (error, token) => {
-    const pending = waiting
-    waiting = null
-    if (error) pending?.reject(new Error(`ログインできませんでした(${error})。`))
-    else pending?.resolve(token)
-  }
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: DRIVE_SCOPE,
-    callback: response => settle(response.error, response.access_token),
-    error_callback: error => settle(error.type ?? 'error'),
-  })
-  // ログインの窓は、押した操作の中でないと開けない。
-  const requestToken = () => new Promise((resolve, reject) => {
-    waiting = { resolve, reject }
-    client.requestAccessToken()
-  })
+  $('sign-in').onclick = () => goToSignIn(clientId, folderId)
 
-  // 見ている途中でトークンが切れたら、押してもらってログインし直す。
-  const renew = () => new Promise((resolve, reject) => {
-    $('reauth').hidden = false
-    $('reauth-button').onclick = () => {
-      $('reauth').hidden = true
-      requestToken().then(resolve, reject)
+  const returned = takeSignInResult()
+  if (!returned) {
+    showGate('Driveのフォルダを読むために、Googleでログインしてください。', { signIn: true })
+    return
+  }
+  if (returned.error) {
+    showGate(`ログインできませんでした(${returned.error})。`, { signIn: true })
+    return
+  }
+
+  // 見ている途中でトークンが切れたら、押してもらってログインし直す。ページを移るので、この約束は果たされない。
+  const renew = () => new Promise(() => {
+    if ($('viewer').hidden) {
+      showGate('ログインの期限が切れました。もう一度ログインしてください。', { signIn: true })
+      return
     }
+    $('reauth').hidden = false
+    $('reauth-button').onclick = () => goToSignIn(clientId, folderId, state.current)
   })
-
-  showGate('Driveのフォルダを読むために、Googleでログインしてください。', { signIn: true })
-  $('sign-in').onclick = () => {
-    requestToken().then(
-      token => open(new DriveSource(folderId, token, renew)),
-      error => showGate(error.message, { signIn: true }),
-    )
-  }
+  open(new DriveSource(folderId, returned.token, renew), returned.index)
 }
 
 function start() {
@@ -283,7 +315,15 @@ function start() {
   $('prev').addEventListener('click', () => step(-1))
   $('next').addEventListener('click', () => step(1))
 
-  const folder = params.get('folder')
+  // ログインから戻った時はURLに ?folder= が無いので、覚えておいたフォルダを使う。
+  const params = new URLSearchParams(location.search)
+  let folder = params.get('folder')
+  if (!folder && location.hash) {
+    try {
+      folder = JSON.parse(sessionStorage.getItem(SIGN_IN_KEY))?.folderId
+    }
+    catch {}
+  }
   const base = params.get('base')
 
   if (folder) {
@@ -291,9 +331,7 @@ function start() {
       showGate('フォルダのIDの形が正しくありません。')
       return
     }
-    // GoogleのログインのスクリプトはasyncなのでDOMより後に届くことがある。
-    const wait = () => (window.google?.accounts?.oauth2 ? signInToDrive(folder) : setTimeout(wait, 100))
-    wait()
+    signInToDrive(folder)
     return
   }
 

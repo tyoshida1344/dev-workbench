@@ -17,11 +17,12 @@
 https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<DriveのフォルダID>
 ```
 
-1. 開くと、Googleでログインを求められる。エビデンスのフォルダを見られるアカウントでログインする
+1. 開くと、Googleでログインを求められる。押すとGoogleのログイン画面へ移り、ログインするとビューアに戻ってくる。エビデンスのフォルダを見られるアカウントでログインする
 2. フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
 
 - 読めるのは、ログインした人がもともとDriveで見られるファイルだけ。見られる人はフォルダの共有設定で決まる
-- ログインの情報は見ている人のブラウザの中にだけあり、どこにも送らない
+- ログインの情報は見ている人のブラウザの中にだけあり、どこにも送らない。ページを読み直すと、もう一度ログインする
+- ログインは1時間で切れる。切れたら「ログインし直す」が出て、押すと見ていた項目に戻ってくる
 - `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)
 
 手元で確かめる時は、`manifest.json` と動画を置いたフォルダを簡易サーバーで配り、`?base=<そのURL>` で開く。
@@ -37,7 +38,9 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
    - Google Workspace の組織の中だけで使う: User Type は **内部**(審査なしで、組織の人だけが使える)
    - スコープに `https://www.googleapis.com/auth/drive.readonly` を足す
 4. 「認証情報」→「認証情報を作成」→「OAuth クライアント ID」。種類は **ウェブ アプリケーション**
-   - 「承認済みの JavaScript 生成元」に `https://tyoshida1344.github.io` を登録する(手元で確かめるなら `http://localhost:<ポート>` も)
+   - 「承認済みの JavaScript 生成元」に `https://tyoshida1344.github.io` を登録する
+   - 「承認済みのリダイレクト URI」に `https://tyoshida1344.github.io/dev-workbench/evidence/` を登録する(ログインのあと戻ってくる先。末尾の `/` まで同じにする)
+   - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:<ポート>/<パス>/evidence/` も足す
 5. 発行されたクライアントIDを [`config.js`](./config.js) の `googleClientId` に書く
 
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
