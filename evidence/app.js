@@ -9,6 +9,10 @@ const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
 const DRIVE_API = 'https://www.googleapis.com/drive/v3'
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 const SIGN_IN_KEY = 'evidence-viewer:sign-in'
+/** 受け取ったトークン。タブの中(sessionStorage)にだけ、期限まで置く */
+const TOKEN_KEY = 'evidence-viewer:token'
+/** 一度ログインできたしるし(localStorage)。あれば、開いた時に画面を出さずにログインを試す */
+const SIGNED_IN_KEY = 'evidence-viewer:signed-in'
 // 結果の印。ほとんどが期待どおりなので、期待どおりは控えめにし、そうでないものを目立たせる(style.css)。
 const MARK = { ok: '✓', partial: '!', ng: '✕' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない' }
@@ -259,13 +263,39 @@ function redirectUri() {
   return location.origin + location.pathname.replace(/index\.html$/, '')
 }
 
+/** ブラウザの保存先('sessionStorage' か 'localStorage')。使えない設定もあるので、失敗しても止まらないようにする */
+const store = {
+  get(storage, key) {
+    try {
+      return JSON.parse(window[storage].getItem(key))
+    }
+    catch {
+      return null
+    }
+  },
+  set(storage, key, value) {
+    try {
+      if (value === null) window[storage].removeItem(key)
+      else window[storage].setItem(key, JSON.stringify(value))
+    }
+    catch {}
+  },
+}
+
+/** 期限まで1分以上あるトークン。無ければ null */
+function savedToken() {
+  const saved = store.get('sessionStorage', TOKEN_KEY)
+  return saved?.token && saved.expiresAt - Date.now() > 60_000 ? saved.token : null
+}
+
 /**
  * Googleのログイン画面へ移る。ポップアップの窓は止められる環境があるので、ページごと移って戻ってくる。
  * 戻ってきた時に続きから見られるよう、フォルダと見ていた項目を覚えておく。
+ * silent なら画面を出さずに試し、Googleのログインや同意が要る時はエラーで戻ってくる。
  */
-function goToSignIn(clientId, folderId, index = -1) {
+function goToSignIn(clientId, folderId, { index = -1, silent = false } = {}) {
   const nonce = crypto.randomUUID()
-  sessionStorage.setItem(SIGN_IN_KEY, JSON.stringify({ nonce, folderId, index }))
+  store.set('sessionStorage', SIGN_IN_KEY, { nonce, folderId, index, silent })
   const query = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri(),
@@ -274,6 +304,7 @@ function goToSignIn(clientId, folderId, index = -1) {
     state: nonce,
     include_granted_scopes: 'true',
   })
+  if (silent) query.set('prompt', 'none')
   location.assign(`${AUTH_URL}?${query}`)
 }
 
@@ -282,21 +313,21 @@ function takeSignInResult() {
   const result = new URLSearchParams(location.hash.slice(1))
   if (!result.has('access_token') && !result.has('error')) return null
 
-  let saved = null
-  try {
-    saved = JSON.parse(sessionStorage.getItem(SIGN_IN_KEY))
-  }
-  catch {}
-  sessionStorage.removeItem(SIGN_IN_KEY)
+  const saved = store.get('sessionStorage', SIGN_IN_KEY)
+  store.set('sessionStorage', SIGN_IN_KEY, null)
   // トークンを履歴やブックマークに残さない。
   const back = saved?.folderId ? `?folder=${encodeURIComponent(saved.folderId)}` : ''
   history.replaceState(null, '', redirectUri() + back)
 
   // 自分が始めたログインの戻りでなければ使わない(他人のトークンを付けたURLを開かされても読まない)。
   if (!saved || result.get('state') !== saved.nonce) return { error: 'state_mismatch' }
-  if (result.has('error')) return { error: result.get('error') }
+  if (result.has('error')) return { error: result.get('error'), silent: saved.silent }
   // 同意の画面でDriveを見る許可のチェックを外すと、トークンはもらえても読めない。
   if (!result.get('scope')?.split(' ').includes(DRIVE_SCOPE)) return { error: 'Driveのファイルを見る許可にチェックを付けてください' }
+
+  const expiresIn = Number(result.get('expires_in')) || 3600
+  store.set('sessionStorage', TOKEN_KEY, { token: result.get('access_token'), expiresAt: Date.now() + expiresIn * 1000 })
+  store.set('localStorage', SIGNED_IN_KEY, true)
   return { token: result.get('access_token'), index: saved.index }
 }
 
@@ -307,27 +338,42 @@ function signInToDrive(folderId) {
     return
   }
   $('sign-in').onclick = () => goToSignIn(clientId, folderId)
+  const askToSignIn = () => showGate('Driveのフォルダを読むために、Googleでログインしてください。', { signIn: true })
 
   const returned = takeSignInResult()
-  if (!returned) {
-    showGate('Driveのフォルダを読むために、Googleでログインしてください。', { signIn: true })
+  if (returned?.error) {
+    if (returned.silent) {
+      // 画面を出さずにはログインできなかった(Googleからログアウトしている、など)。次からは試さずにボタンを出す。
+      store.set('localStorage', SIGNED_IN_KEY, null)
+      askToSignIn()
+      return
+    }
+    showGate(`ログインできませんでした(${returned.error})。`, { signIn: true })
     return
   }
-  if (returned.error) {
-    showGate(`ログインできませんでした(${returned.error})。`, { signIn: true })
+
+  const token = returned?.token ?? savedToken()
+  if (!token) {
+    if (store.get('localStorage', SIGNED_IN_KEY)) {
+      showGate('ログイン中...')
+      goToSignIn(clientId, folderId, { silent: true })
+      return
+    }
+    askToSignIn()
     return
   }
 
   // 見ている途中でトークンが切れたら、押してもらってログインし直す。ページを移るので、この約束は果たされない。
   const renew = () => new Promise(() => {
+    store.set('sessionStorage', TOKEN_KEY, null)
     if ($('viewer').hidden) {
       showGate('ログインの期限が切れました。もう一度ログインしてください。', { signIn: true })
       return
     }
     $('reauth').hidden = false
-    $('reauth-button').onclick = () => goToSignIn(clientId, folderId, state.current)
+    $('reauth-button').onclick = () => goToSignIn(clientId, folderId, { index: state.current })
   })
-  open(new DriveSource(folderId, returned.token, renew), returned.index)
+  open(new DriveSource(folderId, token, renew), returned?.index)
 }
 
 function start() {
@@ -340,12 +386,7 @@ function start() {
   // ログインから戻った時はURLに ?folder= が無いので、覚えておいたフォルダを使う。
   const params = new URLSearchParams(location.search)
   let folder = params.get('folder')
-  if (!folder && location.hash) {
-    try {
-      folder = JSON.parse(sessionStorage.getItem(SIGN_IN_KEY))?.folderId
-    }
-    catch {}
-  }
+  if (!folder && location.hash) folder = store.get('sessionStorage', SIGN_IN_KEY)?.folderId
   const base = params.get('base')
 
   if (folder) {
