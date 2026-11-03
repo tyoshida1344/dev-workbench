@@ -15,26 +15,48 @@ const params = new URLSearchParams(location.search)
 
 /** Driveのフォルダから読む。ログインした人がもともと見られるファイルだけが読める。 */
 class DriveSource {
-  constructor(folderId, token) {
+  /** renew は、トークンが切れた時に新しいトークンを返す(ログインし直してもらう) */
+  constructor(folderId, token, renew) {
     this.folderId = folderId
     this.token = token
+    this.renew = renew
+    this.renewing = null
     this.ids = null
   }
 
   async request(url) {
-    const response = await fetch(url, { headers: { Authorization: `Bearer ${this.token}` } })
+    const send = () => fetch(url, { headers: { Authorization: `Bearer ${this.token}` } })
+    let response = await send()
+    if (response.status === 401) {
+      // アクセストークンは1時間で切れる。同時に切れたことに気づいた読み込みは、同じログインを待つ。
+      this.renewing ??= this.renew().then(token => { this.token = token }).finally(() => { this.renewing = null })
+      await this.renewing
+      response = await send()
+    }
     if (!response.ok) throw new Error(`Driveから読めませんでした(${response.status})`)
     return response
   }
 
+  async list() {
+    const q = encodeURIComponent(`'${this.folderId}' in parents and trashed = false`)
+    const ids = new Map()
+    let pageToken = ''
+    do {
+      const url = `${DRIVE_API}/files?q=${q}&fields=nextPageToken,files(id,name)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true`
+        + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '')
+      const page = await (await this.request(url)).json()
+      for (const file of page.files) ids.set(file.name, file.id)
+      pageToken = page.nextPageToken
+    } while (pageToken)
+    return ids
+  }
+
   async idOf(name) {
-    if (!this.ids) {
-      const q = encodeURIComponent(`'${this.folderId}' in parents and trashed = false`)
-      const url = `${DRIVE_API}/files?q=${q}&fields=files(id,name)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true`
-      const { files } = await (await this.request(url)).json()
-      this.ids = new Map(files.map(file => [file.name, file.id]))
-    }
-    const id = this.ids.get(name)
+    this.ids ??= this.list().catch((error) => {
+      this.ids = null
+      throw error
+    })
+    const id = (await this.ids).get(name)
     if (!id) throw new Error(`フォルダに ${name} がありません`)
     return id
   }
@@ -83,7 +105,10 @@ function showGate(message, { signIn = false } = {}) {
 
 async function blobUrl(name) {
   if (!state.blobs.has(name)) {
-    state.blobs.set(name, state.source.file(name).then(r => r.blob()).then(blob => URL.createObjectURL(blob)))
+    const url = state.source.file(name).then(r => r.blob()).then(blob => URL.createObjectURL(blob))
+    // 読めなかった時は覚えておかず、もう一度押せば読み直す。
+    url.catch(() => state.blobs.delete(name))
+    state.blobs.set(name, url)
   }
   return state.blobs.get(name)
 }
@@ -214,20 +239,41 @@ function signInToDrive(folderId) {
     showGate('GoogleのクライアントIDが設定されていません(config.js)。')
     return
   }
+  let waiting = null
+  const settle = (error, token) => {
+    const pending = waiting
+    waiting = null
+    if (error) pending?.reject(new Error(`ログインできませんでした(${error})。`))
+    else pending?.resolve(token)
+  }
   const client = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope: DRIVE_SCOPE,
-    callback: (response) => {
-      if (response.error) {
-        showGate(`ログインできませんでした(${response.error})。`, { signIn: true })
-        return
-      }
-      open(new DriveSource(folderId, response.access_token))
-    },
+    callback: response => settle(response.error, response.access_token),
+    error_callback: error => settle(error.type ?? 'error'),
   })
   // ログインの窓は、押した操作の中でないと開けない。
+  const requestToken = () => new Promise((resolve, reject) => {
+    waiting = { resolve, reject }
+    client.requestAccessToken()
+  })
+
+  // 見ている途中でトークンが切れたら、押してもらってログインし直す。
+  const renew = () => new Promise((resolve, reject) => {
+    $('reauth').hidden = false
+    $('reauth-button').onclick = () => {
+      $('reauth').hidden = true
+      requestToken().then(resolve, reject)
+    }
+  })
+
   showGate('Driveのフォルダを読むために、Googleでログインしてください。', { signIn: true })
-  $('sign-in').onclick = () => client.requestAccessToken()
+  $('sign-in').onclick = () => {
+    requestToken().then(
+      token => open(new DriveSource(folderId, token, renew)),
+      error => showGate(error.message, { signIn: true }),
+    )
+  }
 }
 
 function start() {
