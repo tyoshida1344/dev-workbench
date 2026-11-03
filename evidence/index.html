@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>エビデンスビューア</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-main">
+      <h1 id="title">エビデンスビューア</h1>
+      <a id="source" class="muted" hidden target="_blank" rel="noopener"></a>
+    </div>
+    <div id="summary" class="summary" hidden></div>
+  </header>
+
+  <section id="gate" class="gate">
+    <p id="gate-message">読み込み中...</p>
+    <button id="sign-in" type="button" hidden>Googleでログインして開く</button>
+  </section>
+
+  <div id="viewer" class="viewer" hidden>
+    <nav class="list" aria-label="受入確認の項目">
+      <ul id="notes" class="notes"></ul>
+      <div id="sections"></div>
+      <h2 class="section-title">添付</h2>
+      <ul id="attachments" class="items"></ul>
+    </nav>
+
+    <section class="stage" aria-live="polite">
+      <div class="controls">
+        <button id="prev" type="button">前へ</button>
+        <button id="next" type="button">次へ</button>
+        <label class="continuous"><input id="continuous" type="checkbox" checked> 連続再生</label>
+      </div>
+      <video id="player" controls playsinline></video>
+      <pre id="text" class="text" hidden></pre>
+      <div class="detail">
+        <h2 id="item-title"></h2>
+        <ul id="item-checks" class="checks"></ul>
+        <p id="item-note" class="note" hidden></p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
