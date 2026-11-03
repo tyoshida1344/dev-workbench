@@ -16,6 +16,8 @@ const SIGNED_IN_KEY = 'evidence-viewer:signed-in'
 // 結果の印。ほとんどが期待どおりなので、期待どおりは控えめにし、そうでないものを目立たせる(style.css)。
 const MARK = { ok: '✓', partial: '!', ng: '✕' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない' }
+/** 確認の行(checks)の頭に書かれた結果の記号 */
+const CHECK_RESULT = { '○': 'ok', '✓': 'ok', '△': 'partial', '!': 'partial', '×': 'ng', '✕': 'ng' }
 
 const $ = id => document.getElementById(id)
 
@@ -120,6 +122,18 @@ function mark(result) {
   return el('span', { text: MARK[result], className: `mark ${result}`, attrs: { role: 'img', 'aria-label': LABEL[result], title: LABEL[result] } })
 }
 
+/** `…` で囲んだところを、画面の文言やコードとして等幅で出す(textContent で入れるので、HTMLとしては解釈しない) */
+function inline(text) {
+  return String(text).split('`').map((part, i) => (i % 2 ? el('code', { text: part }) : part)).filter(part => part !== '')
+}
+
+/** 確認の行。頭の ○ / △ / × は、一覧と同じ印にして本文から外す */
+function check(text) {
+  const head = /^([○✓△!×✕])\s*/.exec(text)
+  const result = head && CHECK_RESULT[head[1]]
+  return el('li', {}, [mark(result), el('span', {}, inline(result ? text.slice(head[0].length) : text))])
+}
+
 function showGate(message, { signIn = false } = {}) {
   $('gate').hidden = false
   $('viewer').hidden = true
@@ -170,7 +184,7 @@ function render(manifest) {
       }, [
         el('span', { text: item.id ?? '', className: 'item-id' }),
         mark(item.result),
-        el('span', { text: item.title, className: 'item-title' }),
+        el('span', { className: 'item-title' }, inline(item.title)),
       ])
       if (index === -1) button.disabled = true
       button.addEventListener('click', () => select(index))
@@ -186,6 +200,7 @@ function render(manifest) {
     const entry = { kind: isVideo ? 'video' : 'text', file: attachment.file, item: { title: attachment.title } }
     const index = state.playlist.push(entry) - 1
     const button = el('button', { className: 'item', attrs: { type: 'button', 'data-index': String(index) } }, [
+      el('span', { className: 'item-id' }),
       el('span', { text: isVideo ? '▶' : '≡', className: 'mark' }),
       el('span', { text: attachment.title, className: 'item-title' }),
     ])
@@ -209,8 +224,10 @@ async function select(index) {
 
   const { item } = entry
   const heading = [item.id && `#${item.id}`, item.title].filter(Boolean).join(' ')
-  $('item-title').replaceChildren(...(item.result ? [mark(item.result)] : []), heading)
-  $('item-checks').replaceChildren(...(item.checks ?? []).map(check => el('li', { text: check })))
+  $('item-title').replaceChildren(...(item.result ? [mark(item.result)] : []), el('span', {}, inline(heading)))
+  $('item-title').classList.toggle('with-mark', Boolean(item.result))
+  $('item-checks').replaceChildren(...(item.checks ?? []).map(check))
+  $('checks-title').hidden = !item.checks?.length
   $('item-note').textContent = item.note ? `※ ${item.note}` : ''
   $('item-note').hidden = !item.note
 
