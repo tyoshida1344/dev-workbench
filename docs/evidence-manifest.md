@@ -48,7 +48,7 @@
 | `sections[].title` | ○ | 受入確認の節 |
 | `sections[].items[].id` | | 番号。一覧と見出しに出す |
 | `sections[].items[].title` | ○ | 受入確認の文言 |
-| `sections[].items[].result` | | `ok` / `partial` / `ng`。一覧に ○ / △ / × で出す |
+| `sections[].items[].result` | | `ok` / `partial` / `ng`。一覧に ✓ / ! / ✕ で出す(`partial` と `ng` は行に色を敷いて目立たせる) |
 | `sections[].items[].checks` | | 確かめたこと(1行ずつ) |
 | `sections[].items[].note` | | 補足 |
 | `sections[].items[].video` | | 動画のファイル名。無い項目は押せない |

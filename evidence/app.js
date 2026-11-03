@@ -9,7 +9,8 @@ const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
 const DRIVE_API = 'https://www.googleapis.com/drive/v3'
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 const SIGN_IN_KEY = 'evidence-viewer:sign-in'
-const MARK = { ok: '○', partial: '△', ng: '×' }
+// 結果の印。ほとんどが期待どおりなので、期待どおりは控えめにし、そうでないものを目立たせる(style.css)。
+const MARK = { ok: '✓', partial: '!', ng: '✕' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない' }
 
 const $ = id => document.getElementById(id)
@@ -34,7 +35,7 @@ class DriveSource {
       await this.renewing
       response = await send()
     }
-    if (!response.ok) throw new Error(`Driveから読めませんでした(${response.status})`)
+    if (!response.ok) throw new Error(`Driveから読めませんでした(${response.status}${await reasonOf(response)})`)
     return response
   }
 
@@ -64,6 +65,18 @@ class DriveSource {
 
   async file(name) {
     return this.request(`${DRIVE_API}/files/${await this.idOf(name)}?alt=media&supportsAllDrives=true`)
+  }
+}
+
+/** Driveが返したエラーの理由(APIが有効でない、許可が足りない、など)。読めなければ空 */
+async function reasonOf(response) {
+  try {
+    const { error } = await response.json()
+    const reason = error.details?.find(detail => detail.reason)?.reason ?? error.errors?.[0]?.reason
+    return [reason, error.message].filter(Boolean).map(text => `: ${text}`).join('')
+  }
+  catch {
+    return ''
   }
 }
 
@@ -97,6 +110,12 @@ function el(tag, { text, className, attrs } = {}, children = []) {
   return node
 }
 
+/** 結果の印。色だけでなく記号の形でも見分けられるようにし、読み上げには言葉を渡す */
+function mark(result) {
+  if (!MARK[result]) return el('span', { text: '・', className: 'mark' })
+  return el('span', { text: MARK[result], className: `mark ${result}`, attrs: { role: 'img', 'aria-label': LABEL[result], title: LABEL[result] } })
+}
+
 function showGate(message, { signIn = false } = {}) {
   $('gate').hidden = false
   $('viewer').hidden = true
@@ -127,8 +146,8 @@ function render(manifest) {
   }
 
   if (manifest.summary) {
-    const { ok = 0, partial = 0, ng = 0 } = manifest.summary
-    $('summary').textContent = `○ ${ok} / △ ${partial} / × ${ng}`
+    $('summary').replaceChildren(...Object.keys(MARK).map(result =>
+      el('span', { className: 'count' }, [mark(result), String(manifest.summary[result] ?? 0)])))
     $('summary').hidden = false
   }
 
@@ -146,7 +165,7 @@ function render(manifest) {
         attrs: { type: 'button', 'data-index': String(index), title: LABEL[item.result] ?? '' },
       }, [
         el('span', { text: item.id ?? '', className: 'item-id' }),
-        el('span', { text: MARK[item.result] ?? '・', className: 'item-mark' }),
+        mark(item.result),
         el('span', { text: item.title, className: 'item-title' }),
       ])
       if (index === -1) button.disabled = true
@@ -163,7 +182,7 @@ function render(manifest) {
     const entry = { kind: isVideo ? 'video' : 'text', file: attachment.file, item: { title: attachment.title } }
     const index = state.playlist.push(entry) - 1
     const button = el('button', { className: 'item', attrs: { type: 'button', 'data-index': String(index) } }, [
-      el('span', { text: isVideo ? '▶' : '≡', className: 'item-mark' }),
+      el('span', { text: isVideo ? '▶' : '≡', className: 'mark' }),
       el('span', { text: attachment.title, className: 'item-title' }),
     ])
     button.addEventListener('click', () => select(index))
@@ -185,7 +204,8 @@ async function select(index) {
   document.querySelector(`.item[data-index="${index}"]`)?.scrollIntoView({ block: 'nearest' })
 
   const { item } = entry
-  $('item-title').textContent = [item.id && `#${item.id}`, item.title].filter(Boolean).join(' ')
+  const heading = [item.id && `#${item.id}`, item.title].filter(Boolean).join(' ')
+  $('item-title').replaceChildren(...(item.result ? [mark(item.result)] : []), heading)
   $('item-checks').replaceChildren(...(item.checks ?? []).map(check => el('li', { text: check })))
   $('item-note').textContent = item.note ? `※ ${item.note}` : ''
   $('item-note').hidden = !item.note
@@ -275,6 +295,8 @@ function takeSignInResult() {
   // 自分が始めたログインの戻りでなければ使わない(他人のトークンを付けたURLを開かされても読まない)。
   if (!saved || result.get('state') !== saved.nonce) return { error: 'state_mismatch' }
   if (result.has('error')) return { error: result.get('error') }
+  // 同意の画面でDriveを見る許可のチェックを外すと、トークンはもらえても読めない。
+  if (!result.get('scope')?.split(' ').includes(DRIVE_SCOPE)) return { error: 'Driveのファイルを見る許可にチェックを付けてください' }
   return { token: result.get('access_token'), index: saved.index }
 }
 
