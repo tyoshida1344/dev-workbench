@@ -18,6 +18,10 @@ const warn = (where, message) => warnings.push(`${where}: ${message}`)
 
 const dir = process.argv[2] ?? '.'
 
+// 最後に出すURLは config.json の viewer から作る(URLを書くのはあそこだけ)
+let viewer = ''
+try { viewer = JSON.parse(readFileSync(new URL('../config.json', import.meta.url), 'utf8')).viewer ?? '' } catch {}
+
 let names
 try {
   names = readdirSync(dir)
@@ -119,4 +123,5 @@ for (const line of warnings) console.log(`注意  ${line}`)
 for (const line of errors) console.log(`エラー ${line}`)
 console.log(`\n${dir}: 項目 ${total} 件(✓${counts.ok} / !${counts.partial} / ✕${counts.ng})、添付 ${attachments.length} 件`)
 console.log(errors.length ? `エラー ${errors.length} 件。直してからDriveに上げます。` : 'エラーはありません。')
+if (!errors.length && viewer) console.log(`Driveに上げたら: ${viewer}?folder=<フォルダID>`)
 process.exit(errors.length ? 1 : 0)

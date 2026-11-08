@@ -3,7 +3,7 @@
 他のプロジェクトで行った開発のエビデンスを、[エビデンスビューア](../../evidence/)で見られる形にまとめるためのスキル。
 **このリポジトリでは使わない。** 開発をしているプロジェクトに写して使う。
 
-見本: <https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/>(書き上がりがどう出るか)
+見本は `<ビューア>?base=sample/` で開ける(書き上がりがどう出るか)。
 
 ## 置く
 
@@ -27,11 +27,13 @@ Copy-Item -Recurse <dev-workbenchの場所>\skills\evidence-pack <使うプロ�
 | [reference/manifest.md](./reference/manifest.md) | `manifest.json` の形。項目の一覧と例 |
 | [templates/manifest.json](./templates/manifest.json) | 写して埋めるひな形 |
 | [scripts/check-manifest.mjs](./scripts/check-manifest.mjs) | フォルダを確かめる(Nodeだけで動く。`node check-manifest.mjs <フォルダ>`) |
+| [config.json](./config.json) | ビューアのURL(`viewer`)。**写したら最初にここを書き換える。**スキルの中でURLを書くのはここだけ |
 
 ## 直して使う
 
 写した先で、そのプロジェクトに合わせて書き換えてよい。よく直すところ:
 
+- **ビューアのURL**(`config.json` の `viewer`)。ここだけは、写したら必ず見る
 - **撮り方**(SKILL.md の手順3)。Playwright の `video` / `screenshot` を使うなら、そのコマンドを書いておくと毎回同じ形になる
 - **フォルダの置き場**(手順1)。プロジェクトで決まった場所があれば、そこに書き換える
 - **渡し方**(手順7)。PRのコメントに貼る形が決まっていれば、その文面を書いておく

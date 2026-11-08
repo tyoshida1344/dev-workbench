@@ -2,6 +2,8 @@
 
 開発で使う道具の置き場。GitHub Pagesで公開している: <https://tyoshida1344.github.io/dev-workbench/>
 
+以下ではこの公開先を `<サイト>` と書く(公開先を書くのはこの1行だけにして、ほかは相対で指す)。
+
 **このリポジトリにはデータを置かない。** 公開リポジトリで、Pagesのサイトも誰でも見られるため。
 道具はプログラムだけを持ち、動画や仕様などのデータはDriveなどに置いたものをURLで指して開く。
 
@@ -14,11 +16,11 @@
 ### エビデンスビューア
 
 ```
-https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<DriveのフォルダID>
+<サイト>/evidence/?folder=<DriveのフォルダID>
 ```
 
-どう見えるかは見本で確かめられる(Driveもログインも要らない)。
-<https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/>
+どう見えるかは [`evidence/sample/`](./evidence/sample/) の見本で確かめられる(Driveもログインも要らない)。
+ビューアを `?base=sample/` を付けて開く。
 
 1. 開くと、Googleでログインを求められる。押すとGoogleのログイン画面へ移り、ログインするとビューアに戻ってくる。エビデンスのフォルダを見られるアカウントでログインする
 2. フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
@@ -43,8 +45,8 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
    - Google Workspace の組織の中だけで使う: User Type は **内部**(審査なしで、組織の人だけが使える)
    - スコープに `https://www.googleapis.com/auth/drive.readonly` を足す
 4. 「認証情報」→「認証情報を作成」→「OAuth クライアント ID」。種類は **ウェブ アプリケーション**
-   - 「承認済みの JavaScript 生成元」に `https://tyoshida1344.github.io` を登録する
-   - 「承認済みのリダイレクト URI」に `https://tyoshida1344.github.io/dev-workbench/evidence/` を登録する(ログインのあと戻ってくる先。末尾の `/` まで同じにする)
+   - 「承認済みの JavaScript 生成元」に、公開先の生成元(`<サイト>` のうち `https://ホスト名` まで)を登録する
+   - 「承認済みのリダイレクト URI」に `<サイト>/evidence/` を登録する(ログインのあと戻ってくる先。末尾の `/` まで同じにする)
    - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:<ポート>/<パス>/evidence/` も足す
 5. 発行されたクライアントIDを [`config.js`](./config.js) の `googleClientId` に書く
 

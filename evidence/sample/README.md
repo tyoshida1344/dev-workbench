@@ -2,7 +2,7 @@
 
 エビデンスビューアを、Driveもログインも無しで見てもらうための見本。
 
-<https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/>
+同じサイトのビューアを `evidence/?base=sample/` で開く。
 
 - **実際の開発のエビデンスではない。** 「アイデア帳」という架空のアプリの画面を、その場で描いて作ったもの
 - 動画・画像・テキスト・`manifest.json` が一通り入っていて、`manifest.json` の書き方の見本にもなる

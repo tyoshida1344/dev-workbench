@@ -8,7 +8,8 @@ description: 受入確認のエビデンス(動画・画像・確かめたこと
 受入確認の動画・画像と、確かめたことを書いた `manifest.json` を1つのフォルダにまとめ、Driveに置いて、
 エビデンスビューアのURLを渡すまでを行う。
 
-ビューア: <https://tyoshida1344.github.io/dev-workbench/evidence/?folder=DriveのフォルダID>
+ビューアの場所は [config.json](config.json) の `viewer`。**このスキルを写したら、まず使っているサイトのURLに書き換える。**
+以下ではその値を `<ビューア>` と書く(例: `https://example.github.io/dev-workbench/evidence/`)。
 
 ## 守ること
 
@@ -47,7 +48,7 @@ description: 受入確認のエビデンス(動画・画像・確かめたこと
 ### 4. manifest.json を書く
 
 [templates/manifest.json](templates/manifest.json) を同じフォルダに写して埋める。形は [reference/manifest.md](reference/manifest.md)。
-書いたものがどう出るかは、見本 <https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/> で見られる。
+書いたものがどう出るかは、見本 `<ビューア>?base=sample/` で見られる。
 
 - `summary` の件数は `result` の数と合わせる
 - `checks` の行頭には `○`(期待どおり)/ `△`(一部)/ `×`(期待どおりでない)を付ける
@@ -96,14 +97,14 @@ http://127.0.0.1:8125/dev-workbench/evidence/?base=http://127.0.0.1:8125/2026-11
 3. DriveのURL `https://drive.google.com/drive/folders/<ID>` の `<ID>` を使って、渡すURLを作る
 
 ```
-https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<ID>
+<ビューア>?folder=<ID>
 ```
 
 4. PRのコメントや報告に、そのURLと1行の要約(件数)を貼る
 
 ```
 受入確認: 全24項目(✓22 / !2 / ✕0)
-https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<ID>
+<ビューア>?folder=<ID>
 ```
 
 ## つまずいた時

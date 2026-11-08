@@ -3,8 +3,8 @@
 エビデンスビューアが読むファイル。動画・画像・テキストと同じフォルダに `manifest.json` という名前で置く。
 ビューアはフォルダの中をファイル名で探すので、`video` / `image` / `file` には**ファイル名だけ**を書く(パスは書かない)。
 
-おおもとの説明: <https://github.com/tyoshida1344/dev-workbench/blob/main/docs/evidence-manifest.md>
-見本(そのまま開ける): <https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/>
+おおもとの説明はビューアのリポジトリの `docs/evidence-manifest.md`、
+見本は `<ビューア>?base=sample/`(`<ビューア>` は [../config.json](../config.json) の `viewer`)。
 
 | 項目 | 必須 | 中身 |
 |---|---|---|
