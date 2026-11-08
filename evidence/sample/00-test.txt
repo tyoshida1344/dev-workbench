@@ -1,0 +1,14 @@
+$ npm test
+
+ PASS  test/ideas.test.js
+  アイデア一覧
+    ✓ 新しい順に並ぶ (12 ms)
+    ✓ 行を押すと詳細が出る (8 ms)
+    ✓ 1件も無い時は案内が出る (5 ms)
+  追加する
+    ✓ Enter で行が足される (9 ms)
+    ✓ 空のままでは足されない (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Time:        1.284 s
