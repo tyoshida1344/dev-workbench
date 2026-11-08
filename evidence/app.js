@@ -1,4 +1,4 @@
-// エビデンスビューア。Driveのフォルダ(またはURL)から manifest.json と動画を読んで、項目の一覧から見て回る。
+// エビデンスビューア。Driveのフォルダ(またはURL)から manifest.json と動画・画像・テキストを読んで、項目の一覧から見て回る。
 // manifest.json の形は docs/evidence-manifest.md。
 //
 // 読み込んだ文字は textContent でだけ出す(HTMLとして解釈しない)。他人が作ったフォルダを
@@ -18,6 +18,10 @@ const MARK = { ok: '✓', partial: '!', ng: '✕' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない' }
 /** 確認の行(checks)の頭に書かれた結果の記号 */
 const CHECK_RESULT = { '○': 'ok', '✓': 'ok', '△': 'partial', '!': 'partial', '×': 'ng', '✕': 'ng' }
+/** 画面で見るもの。次へ/前への送りはこれで止まり、テキストは飛ばす */
+const MEDIA = new Set(['video', 'image'])
+/** 添付の一覧に出す、何として開くかの印 */
+const KIND_MARK = { video: '▶', image: '▣', text: '≡' }
 
 const $ = id => document.getElementById(id)
 
@@ -101,7 +105,7 @@ class UrlSource {
 
 const state = {
   source: null,
-  /** 一覧に並ぶ順の、動画を持つもの(項目と添付の動画) */
+  /** 一覧に並ぶ順の、開けるもの(動画か画像を持つ項目と、添付のすべて) */
   playlist: [],
   current: -1,
   blobs: new Map(),
@@ -132,6 +136,13 @@ function check(text) {
   const head = /^([○✓△!×✕])\s*/.exec(text)
   const result = head && CHECK_RESULT[head[1]]
   return el('li', {}, [mark(result), el('span', {}, inline(result ? text.slice(head[0].length) : text))])
+}
+
+/** ファイル名の拡張子から、何として開くかを決める */
+function kindOf(file) {
+  if (/\.(webm|mp4|mov)$/i.test(file)) return 'video'
+  if (/\.(png|jpe?g|webp)$/i.test(file)) return 'image'
+  return 'text'
 }
 
 function showGate(message, { signIn = false } = {}) {
@@ -177,7 +188,9 @@ function render(manifest) {
     sections.append(el('h2', { text: section.title, className: 'section-title' }))
     const list = el('ul', { className: 'items' })
     for (const item of section.items ?? []) {
-      const index = item.video ? state.playlist.push({ kind: 'video', file: item.video, item }) - 1 : -1
+      // 1つの項目が持つのは動画か画像のどちらか(両方あれば動画を見せる)。どちらも無ければ押せない。
+      const file = item.video ?? item.image
+      const index = file ? state.playlist.push({ kind: item.video ? 'video' : 'image', file, item }) - 1 : -1
       const button = el('button', {
         className: `item ${item.result ?? ''}`,
         attrs: { type: 'button', 'data-index': String(index), title: LABEL[item.result] ?? '' },
@@ -196,12 +209,12 @@ function render(manifest) {
   const attachments = $('attachments')
   attachments.replaceChildren()
   for (const attachment of manifest.attachments ?? []) {
-    const isVideo = /\.(webm|mp4|mov)$/i.test(attachment.file)
-    const entry = { kind: isVideo ? 'video' : 'text', file: attachment.file, item: { title: attachment.title } }
+    const kind = kindOf(attachment.file)
+    const entry = { kind, file: attachment.file, item: { title: attachment.title } }
     const index = state.playlist.push(entry) - 1
     const button = el('button', { className: 'item', attrs: { type: 'button', 'data-index': String(index) } }, [
       el('span', { className: 'item-id' }),
-      el('span', { text: isVideo ? '▶' : '≡', className: 'mark' }),
+      el('span', { text: KIND_MARK[kind], className: 'mark' }),
       el('span', { text: attachment.title, className: 'item-title' }),
     ])
     button.addEventListener('click', () => select(index))
@@ -232,33 +245,43 @@ async function select(index) {
   $('item-note').hidden = !item.note
 
   const player = $('player')
+  const image = $('image')
   const text = $('text')
+  // 動画・画像・テキストは同じ場所に出す。ひとつだけ出し、動画は映っていない間は止めておく。
+  const show = (shown) => {
+    if (shown !== player) player.pause()
+    for (const node of [player, image, text]) node.hidden = node !== shown
+  }
   try {
     if (entry.kind === 'text') {
-      player.pause()
-      player.hidden = true
-      text.hidden = false
+      show(text)
       text.textContent = await (await state.source.file(entry.file)).text()
       return
     }
-    text.hidden = true
-    player.hidden = false
-    player.src = await blobUrl(entry.file)
-    await player.play().catch(() => {})
-    // 連続再生で間が空かないよう、次の動画を先に読んでおく。
+    const url = await blobUrl(entry.file)
+    if (entry.kind === 'image') {
+      image.alt = item.title ?? ''
+      image.src = url
+      show(image)
+    }
+    else {
+      show(player)
+      player.src = url
+      await player.play().catch(() => {})
+    }
+    // 連続再生で間が空かないよう、次に見るものを先に読んでおく。
     const next = state.playlist[index + 1]
-    if (next?.kind === 'video') blobUrl(next.file).catch(() => {})
+    if (next && MEDIA.has(next.kind)) blobUrl(next.file).catch(() => {})
   }
   catch (error) {
-    text.hidden = false
-    player.hidden = true
+    show(text)
     text.textContent = error.message
   }
 }
 
 function step(delta) {
   let index = state.current + delta
-  while (state.playlist[index] && state.playlist[index].kind !== 'video') index += delta
+  while (state.playlist[index] && !MEDIA.has(state.playlist[index].kind)) index += delta
   if (state.playlist[index]) select(index)
 }
 
@@ -268,7 +291,7 @@ async function open(source, index = -1) {
   try {
     const manifest = await (await source.file('manifest.json')).json()
     render(manifest)
-    select(state.playlist[index] ? index : state.playlist.findIndex(entry => entry.kind === 'video'))
+    select(state.playlist[index] ? index : state.playlist.findIndex(entry => MEDIA.has(entry.kind)))
   }
   catch (error) {
     showGate(error.message)

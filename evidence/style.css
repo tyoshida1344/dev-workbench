@@ -111,7 +111,9 @@ button { font: inherit; color: inherit; }
 .reauth button { padding: 4px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); cursor: pointer; }
 .continuous { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
 
-video { width: 100%; max-height: 70vh; background: #000; border-radius: 4px; }
+video, #image { width: 100%; max-height: 70vh; background: #000; border-radius: 4px; }
+/* 画像も動画と同じ枠に収める(縦横の比は変えず、余った所は背景のまま) */
+#image { display: block; object-fit: contain; }
 .text { max-height: 70vh; overflow: auto; margin: 0; padding: 12px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; font-size: 12px; white-space: pre-wrap; }
 
 .detail { padding: 12px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; }
