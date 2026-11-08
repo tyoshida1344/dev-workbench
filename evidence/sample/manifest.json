@@ -1,0 +1,59 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "サンプル アイデア帳の受入確認",
+  "source": {
+    "repository": "tyoshida1344/dev-workbench",
+    "url": "https://github.com/tyoshida1344/dev-workbench/tree/main/evidence/sample"
+  },
+  "recordedAt": "2026-11-08",
+  "summary": { "ok": 3, "partial": 1, "ng": 0 },
+  "notes": [
+    "ビューアの見本。実際の開発のエビデンスではなく、画面も動画も作り物",
+    "Driveに上げず、?base=sample/ で開いている(ログインは要らない)"
+  ],
+  "sections": [
+    {
+      "title": "一覧を見る",
+      "items": [
+        {
+          "id": "1",
+          "title": "開くと、登録済みのアイデアが並ぶ",
+          "result": "ok",
+          "checks": ["○ 一覧: [\"ひとつめ\", \"ふたつめ\"]", "○ 見出し: `アイデア (2)`"],
+          "image": "01-list-shows-items.png"
+        },
+        {
+          "id": "2",
+          "title": "行を押すと、その詳細が右に出る",
+          "result": "ok",
+          "checks": ["○ 詳細の見出し: `ふたつめ`", "○ 押した行に色が付く"],
+          "image": "02-detail-opens.png"
+        },
+        {
+          "id": "3",
+          "title": "1件も無い時は、作り方の案内が出る",
+          "result": "partial",
+          "checks": ["○ 案内: `まだアイデアがありません`", "△ 「追加」を押した先は未確認"],
+          "note": "押した先の画面は次の確認で見る",
+          "image": "03-empty-state.png"
+        }
+      ]
+    },
+    {
+      "title": "追加する",
+      "items": [
+        {
+          "id": "4",
+          "title": "入力して Enter を押すと、行が足される",
+          "result": "ok",
+          "checks": ["○ 入力中: `ふたつめ`", "○ 押したあとの一覧: [\"ひとつめ\", \"ふたつめ\"]", "○ 知らせ: `追加しました`"],
+          "note": "前後の変化を見せるので、この項目だけ動画にしている",
+          "video": "04-add-row.webm"
+        }
+      ]
+    }
+  ],
+  "attachments": [
+    { "title": "テストの結果", "file": "00-test.txt" }
+  ]
+}

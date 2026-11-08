@@ -17,6 +17,9 @@
 https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<DriveのフォルダID>
 ```
 
+どう見えるかは見本で確かめられる(Driveもログインも要らない)。
+<https://tyoshida1344.github.io/dev-workbench/evidence/?base=sample/>
+
 1. 開くと、Googleでログインを求められる。押すとGoogleのログイン画面へ移り、ログインするとビューアに戻ってくる。エビデンスのフォルダを見られるアカウントでログインする
 2. フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
 
@@ -25,7 +28,7 @@ https://tyoshida1344.github.io/dev-workbench/evidence/?folder=<Driveのフォル
 - 受け取ったトークンは、期限(1時間)までタブの中(`sessionStorage`)に置く。その間は読み直してもログインは要らない
 - 一度ログインできたら、次からは開いた時に画面を出さずにログインし直す(一瞬Googleへ移って戻る)。Googleからログアウトしている時などは、ボタンが出る
 - 見ている途中で1時間が過ぎたら「ログインし直す」が出て、押すと見ていた項目に戻ってくる
-- `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)
+- `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)。書いたものの見本は [`evidence/sample/`](./evidence/sample/)
 
 手元で確かめる時は、`manifest.json` と動画を置いたフォルダを簡易サーバーで配り、`?base=<そのURL>` で開く。
 
@@ -47,6 +50,16 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
 テストのまま(または内部)で使う。
+
+## 他のプロジェクトから使う
+
+開発をしているプロジェクトのClaude Codeにスキルを置くと、受入確認のエビデンスをビューアで見られる形(動画・画像と `manifest.json`)にまとめるところまでを任せられる。
+
+| スキル | 場所 | 何をする |
+|---|---|---|
+| evidence-pack | [`skills/evidence-pack/`](./skills/evidence-pack/) | エビデンスのフォルダを作り、`manifest.json` を書き、形を確かめて、Driveに上げたURLを渡すまで |
+
+使うプロジェクトの `.claude/skills/` にフォルダごと写す。詳しくは [skills/evidence-pack/README.md](./skills/evidence-pack/README.md)。
 
 ## 道具を足す時
 
