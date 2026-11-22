@@ -1,0 +1,4 @@
+{
+  "_": "~/.claude にリンクして使うスキルが共通で読む設定。公開先を移したら site を書き換える(末尾の / まで書く)。スキルの中でサイトのURLを書くのはここだけ",
+  "site": "https://tyoshida1344.github.io/dev-workbench/"
+}

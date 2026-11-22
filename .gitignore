@@ -1,0 +1,2 @@
+# 手元だけの Claude Code の設定(個人の権限など)はコミットしない
+.claude/settings.local.json

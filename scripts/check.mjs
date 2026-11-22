@@ -1,0 +1,239 @@
+#!/usr/bin/env node
+// このリポジトリの検査。コミットやPRの前に走らせる(ビルドの手順は持たないので、これが検証の代わり)。
+//   node scripts/check.mjs
+// 外のものは何も読み込まない(Node だけで動く)。最後に scripts/test/ のテスト(node --test)も走らせる。
+
+import { execFileSync, spawn } from 'node:child_process'
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, posix, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { Script } from 'node:vm'
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const failures = []
+const fail = (where, message) => failures.push(`${where}: ${message}`)
+const rel = path => relative(root, path).replaceAll('\\', '/')
+
+/**
+ * 追跡しているファイル(.gitignore されたものや、手元だけのものを見ない)。リポジトリの直下からの / 区切りのパス。
+ * -z で取る(ASCII 以外の文字を含む名前も、引用符で囲まれずにそのまま返る)
+ */
+const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' })
+  .split('\0').filter(file => file && existsSync(join(root, file))).sort()
+const tracked = new Set(files)
+/** 追跡しているファイルを含むフォルダ(リンクがフォルダを指す時に使う) */
+const folders = new Set(files.flatMap(file => file.split('/').slice(0, -1).map((_, i, parts) => parts.slice(0, i + 1).join('/'))))
+
+/** ファイルの中身。同じファイルを何度も読まない */
+const texts = new Map()
+function text(file) {
+  if (!texts.has(file)) texts.set(file, readFileSync(join(root, file), 'utf8'))
+  return texts.get(file)
+}
+
+/** 文字の位置から、行の番号(1から) */
+const lineAt = (body, index) => body.slice(0, index).split('\n').length
+
+/** node を子のプロセスで走らせる。終わるのを待ち、{ ok, out } を返す(並べて走らせられるように) */
+function node(args, input) {
+  return new Promise((done) => {
+    const child = spawn(process.execPath, args, { cwd: root, stdio: ['pipe', 'pipe', 'pipe'] })
+    let out = ''
+    child.stdout.on('data', (chunk) => { out += chunk })
+    child.stderr.on('data', (chunk) => { out += chunk })
+    child.on('error', error => done({ ok: false, out: error.message }))
+    child.on('close', code => done({ ok: code === 0, out }))
+    child.stdin.end(input ?? '')
+  })
+}
+
+/** 子のプロセスの結果を、ok か エラーとして出す */
+function report(label, { ok, out }) {
+  if (ok) console.log(`ok    ${label}`)
+  else fail(label, `\n${out}`.trimEnd())
+}
+
+// テストは時間がかかるので、最初に始めて、ほかの検査と並べて走らせる。
+// Node 22 の --test はフォルダを渡しても中を探さないので、ファイルの名前の形(*.test.mjs)で渡す
+const testRun = node(['--test', '--test-reporter=spec', 'scripts/test/*.test.mjs'])
+
+const scripts = files.filter(file => /\.m?js$/.test(file))
+const htmls = files.filter(file => file.endsWith('.html'))
+
+// 1. JavaScript の構文
+//    ページが <script src> で(type="module" を付けずに)読むものは、ふつうのスクリプトとして調べる(この中で調べる)。
+//    それ以外の .js と .mjs は、ES モジュールとして調べる。Node の自動の見分けに頼らないよう、
+//    中身を標準入力から --input-type=module で渡す。子のプロセスは並べて走らせる。
+const classic = new Set()
+for (const file of htmls) {
+  for (const [tag] of text(file).matchAll(/<script\b[^>]*>/gi)) {
+    const src = attributes(tag).get('src')
+    if (src && !/\btype\s*=\s*["']?module\b/i.test(tag)) classic.add(posix.join(posix.dirname(file), src.split(/[?#]/)[0]))
+  }
+}
+const syntax = Promise.all(scripts.map(async (file) => {
+  if (classic.has(file) && !file.endsWith('.mjs')) {
+    try {
+      new Script(text(file), { filename: file })
+      return [file, { ok: true }]
+    }
+    catch (error) {
+      return [file, { ok: false, out: `${error.name}: ${error.message}\n${error.stack.split('\n').find(line => line.includes(file)) ?? ''}` }]
+    }
+  }
+  const result = await node(['--input-type=module', '--check'], text(file))
+  // 標準入力から渡したので、場所は [stdin] になる。ファイルの名前に置き換え、Node の中の呼び出し履歴は省く
+  return [file, { ok: result.ok, out: result.out.replaceAll('[stdin]', file).split('\n').filter(line => !/^\s+at |^Node\.js v/.test(line)).join('\n') }]
+}))
+
+// 2. JSON が読めるか
+for (const file of files.filter(file => file.endsWith('.json'))) {
+  try {
+    JSON.parse(text(file))
+  }
+  catch (error) {
+    fail(file, `JSON として読めません: ${error.message}`)
+  }
+}
+
+// 3. 読み込んだ文字を HTML として入れていないか(CLAUDE.md の「読み込んだ文字は textContent で出す」)
+//    代入の形に限らず、語として探す(n['innerHTML']・Object.assign(n, { innerHTML }) なども拾う)
+for (const file of scripts.filter(file => file.startsWith('app/'))) {
+  const body = text(file)
+  for (const m of body.matchAll(/\b(?:innerHTML|outerHTML|insertAdjacentHTML)\b|\bdocument\s*\.\s*write(?:ln)?\b/g)) {
+    fail(`${file}:${lineAt(body, m.index)}`, `HTML として入れています(textContent と要素の組み立てで出す): ${m[0]}`)
+  }
+}
+
+// 4. 外のものを読み込んでいないか(CLAUDE.md の「外部のスクリプトを読み込まない」)
+//    外 = http: / https: / // で始まるもの
+const OUTSIDE = /^\s*(?:https?:|\/\/)/i
+
+/** タグの属性。名前(小文字) → 値。引用符の無い値も読む */
+function attributes(tag) {
+  const out = new Map()
+  for (const m of tag.replace(/^<[\w-]+/, '').matchAll(/([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
+    out.set(m[1].toLowerCase(), m[2] ?? m[3] ?? m[4] ?? '')
+  }
+  return out
+}
+
+/** CSS の @import と url(…) が外を指していないか。コメントは改行を残して消す(行の番号をずらさない) */
+function checkCss(file, body, offset = 0, all = body) {
+  const css = body.replace(/\/\*[\s\S]*?\*\//g, comment => comment.replace(/[^\n]/g, ' '))
+  for (const m of css.matchAll(/@import\s+(?:url\(\s*)?["']?\s*((?:https?:|\/\/)[^"')\s;]*)|\burl\(\s*["']?\s*((?:https?:|\/\/)[^"')\s]*)/gi)) {
+    fail(`${file}:${lineAt(all, offset + m.index)}`, `CSS で外のものを読み込んでいます: ${m[1] ?? m[2]}`)
+  }
+}
+
+for (const file of scripts) {
+  const body = text(file)
+  // import … from '…' / import '…' / export … from '…' / import('…')
+  for (const m of body.matchAll(/\b(?:import|export)\s*(?:[\w$*{},\s]*?\bfrom\s*)?["'`]((?:https?:|\/\/)[^"'`]*)|\bimport\s*\(\s*["'`]((?:https?:|\/\/)[^"'`]*)/gi)) {
+    fail(`${file}:${lineAt(body, m.index)}`, `外のスクリプトを読み込んでいます: ${m[1] ?? m[2]}`)
+  }
+}
+
+for (const file of htmls) {
+  const body = text(file)
+  // タグは改行をまたいでもよい。<a href> はページを移るだけなので見ない
+  for (const m of body.matchAll(/<([a-z][\w-]*)\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)) {
+    const name = m[1].toLowerCase()
+    if (name === 'a') continue
+    const attrs = attributes(m[0])
+    for (const key of ['src', 'href', 'srcset', 'data', 'poster', 'action', 'formaction']) {
+      const value = attrs.get(key)
+      if (value === undefined) continue
+      const urls = key === 'srcset' ? value.split(',').map(part => part.trim().split(/\s+/)[0]) : [value]
+      if (urls.some(url => OUTSIDE.test(url))) fail(`${file}:${lineAt(body, m.index)}`, `外のものを読み込んでいます: <${name} ${key}="${value}">`)
+    }
+    const style = attrs.get('style')
+    if (style) checkCss(file, style, m.index, body)
+  }
+  for (const m of body.matchAll(/(<style\b[^>]*>)([\s\S]*?)<\/style>/gi)) checkCss(file, m[2], m.index + m[1].length, body)
+}
+for (const file of files.filter(file => file.endsWith('.css'))) checkCss(file, text(file))
+
+// 5. エビデンスの見本
+const sampleRun = node(['scripts/check-manifest.mjs', 'sample/evidence'])
+
+// 6. 相対リンクと画像が、ファイルを指しているか(見本の Markdown と、スキル・サブエージェントの手順)
+//    コードブロックと `…` の中は、書き方の例なので見ない(ビューアもリンクにしない)
+function checkLinks(file) {
+  const body = text(file).replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
+  for (const m of body.matchAll(/\]\(([^)\s]+)\)/g)) {
+    const href = m[1]
+    if (/^(?:[a-z][a-z\d+.-]*:|#|\/|<)/i.test(href)) continue
+    let target
+    try {
+      target = posix.normalize(posix.join(posix.dirname(file), decodeURIComponent(href.split(/[?#]/)[0]))).replace(/\/$/, '')
+    }
+    catch {
+      fail(file, `リンクの % の書き方が壊れています: ${href}`)
+      continue
+    }
+    if (!tracked.has(target) && !folders.has(target)) fail(file, `リンク先がありません: ${href}`)
+  }
+}
+for (const file of files.filter(file => file.endsWith('.md') && (file.startsWith('sample/') || /^\.claude\/(?:skills|agents)\//.test(file)))) {
+  checkLinks(file)
+}
+
+// 7. スキルとサブエージェントの frontmatter
+//    ユーザーが呼ぶスキルは .claude/skills/<スキル>/SKILL.md だけ(name はフォルダ名)。その中の入れ子の SKILL.md は、親が振り分けて読む手順なので frontmatter を持たない
+//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントは .claude/agents/<スキル>/ に置き、name はファイル名と同じにする
+const names = new Map()
+for (const where of files.filter(file => /^\.claude\/(skills\/.*\/SKILL\.md|agents\/.+\.md)$/.test(file))) {
+  const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text(where))
+  const name = head && /^name:\s*(\S+)/m.exec(head[1])?.[1]
+  const isAgent = !where.endsWith('SKILL.md')
+  const isEntry = /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(where)
+  if (!isAgent && !isEntry) {
+    if (head) fail(where, '入れ子の手順に frontmatter があります(スキルとして一覧に出ないよう、外す)')
+    continue
+  }
+  const expected = isAgent ? where.split('/').pop().replace(/\.md$/, '') : where.split('/')[2]
+  if (!head) fail(where, 'frontmatter がありません')
+  else if (name !== expected) fail(where, `name を ${expected} にします(今は ${name})`)
+  else if (!/^description:/m.test(head[1])) fail(where, 'description がありません')
+  else if (names.has(name)) fail(where, `name が ${names.get(name)} と重なっています: ${name}`)
+  else names.set(name, where)
+}
+
+// 8. テストケースのひな形から、正本が作れて検査を通るか(順に走らせる)
+async function checkTemplates() {
+  const work = mkdtempSync(join(tmpdir(), 'dev-workbench-check-'))
+  const out = join(work, 'evidence', 'check')
+  const results = []
+  try {
+    cpSync(join(root, '.claude', 'skills', 'test-cases', 'templates', 'cases'), join(work, 'cases'), { recursive: true })
+    results.push(['テストケースのひな形 check-cases', await node(['.claude/skills/test-cases/scripts/check-cases.mjs', work])])
+    results.push(['テストケースのひな形 build-manifest', await node(['.claude/skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])])
+    results.push(['テストケースのひな形から作った正本 check-manifest', await node(['scripts/check-manifest.mjs', out])])
+  }
+  finally {
+    rmSync(work, { recursive: true, force: true })
+  }
+  return results
+}
+const templateRun = checkTemplates()
+
+// 並べて走らせたものの結果を、決まった順に出す
+for (const [file, result] of await syntax) report(`構文 ${file}`, result)
+report('エビデンスの見本 sample/evidence', await sampleRun)
+for (const [label, result] of await templateRun) report(label, result)
+
+// 9. テスト(scripts/test/)
+const tests = await testRun
+if (tests.ok) console.log('ok    テスト scripts/test/')
+else {
+  // 落ちたテストだけを出す(spec の出力は、最後に落ちたものをまとめて出す)
+  const at = tests.out.indexOf('✖ failing tests:')
+  fail('テスト scripts/test/', `\n${at < 0 ? tests.out : tests.out.slice(at)}`.trimEnd())
+}
+
+console.log()
+for (const line of failures) console.log(`エラー ${line}`)
+console.log(failures.length ? `エラー ${failures.length} 件` : 'エラーはありません。')
+process.exit(failures.length ? 1 : 0)

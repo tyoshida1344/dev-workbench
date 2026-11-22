@@ -1,0 +1,7 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "動画はあるのに結果が無い",
+  "sections": [
+    { "title": "節", "items": [{ "id": "1", "title": "項目", "video": "01-run.webm" }] }
+  ]
+}

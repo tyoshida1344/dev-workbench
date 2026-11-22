@@ -1,0 +1,22 @@
+{
+  "title": "#0 ここにイシューの見出し",
+  "source": {
+    "repository": "owner/name",
+    "pullRequest": 0,
+    "commit": "0000000",
+    "url": "https://github.com/owner/name/pull/0"
+  },
+  "notes": [
+    "この変更で何が変わり、どの条件で確かめるのかを1〜2文で書く",
+    "単体: 該当なし(理由を1文で)。項目が無い種別は、ここに理由を残す"
+  ],
+  "requirements": [
+    { "id": "R1", "text": "イシューや仕様に書かれた要件を1行に1つずつ書く" }
+  ],
+  "excluded": [
+    { "title": "差分が触れていないので確かめないこと", "reason": "確かめない理由" }
+  ],
+  "attachments": [
+    { "title": "項目の一覧(どこから拾ったか)", "file": "00-cases.md" }
+  ]
+}

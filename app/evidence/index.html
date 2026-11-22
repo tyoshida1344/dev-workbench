@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>エビデンスビューア</title>
+  <link rel="stylesheet" href="../_lib/style.css">
+  <script src="../config.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body class="app">
+  <header class="bar">
+    <div class="bar-main">
+      <a class="crumb" href="../">← 道具の一覧</a>
+      <h1 id="title">エビデンスビューア</h1>
+      <a id="source" class="muted" hidden target="_blank" rel="noopener"></a>
+    </div>
+    <div id="summary" class="summary" hidden></div>
+  </header>
+
+  <section id="gate" class="gate">
+    <p id="gate-message">読み込み中...</p>
+    <button id="sign-in" type="button" hidden>Googleでログインして開く</button>
+    <p id="gate-links" class="gate-links" hidden>
+      <span><a href="?folder=sample">見本を開く</a>(Driveもログインも要らない)</span>
+      <a href="../">道具の一覧へ</a>
+    </p>
+  </section>
+
+  <div id="viewer" class="viewer" hidden>
+    <nav id="list" class="list" aria-label="受入確認の項目">
+      <!-- 全体にかかる注意書きと要件。狭い幅では畳む(app.js) -->
+      <details id="overview" class="overview" open>
+        <summary>注意書きと要件</summary>
+        <ul id="notes" class="notes"></ul>
+        <h2 id="requirements-title" class="section-title" hidden>要件</h2>
+        <ul id="requirements" class="requirements"></ul>
+      </details>
+      <div id="sections"></div>
+      <h2 id="attachments-title" class="section-title">添付</h2>
+      <ul id="attachments" class="items"></ul>
+    </nav>
+
+    <section class="stage">
+      <p id="status" class="visually-hidden" role="status"></p>
+      <p id="reauth" class="reauth" hidden>
+        ログインの期限が切れました。
+        <button id="reauth-button" type="button">Googleでログインし直す</button>
+      </p>
+      <div class="controls">
+        <button id="prev" type="button" disabled>前へ</button>
+        <button id="next" type="button" disabled>次へ</button>
+        <label class="continuous"><input id="continuous" type="checkbox" checked> 連続再生</label>
+      </div>
+      <video id="player" controls playsinline hidden></video>
+      <img id="image" alt="" hidden>
+      <pre id="text" class="text" hidden></pre>
+      <p id="no-media" class="no-media" hidden></p>
+      <div class="detail">
+        <h2 id="item-title"></h2>
+        <p id="item-tags" class="case-tags" hidden></p>
+        <dl id="case-fields" class="case-fields"></dl>
+        <h3 id="checks-title" class="detail-label" hidden>確かめたこと</h3>
+        <ul id="item-checks" class="checks"></ul>
+        <p id="item-note" class="note" hidden></p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
