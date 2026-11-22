@@ -1,12 +1,13 @@
 # テストケースをやり直す(再テスト)
 
-読む時: 実施済みのテストケース(作業フォルダの evidence/<日付>-<内容>/manifest.json)の一部をやり直す時に、やり直す項目を選び、前の結果を残したまま、やり直す項目だけを未実施に戻した新しい日付のエビデンスのフォルダを作る。「再テストして」「レビューの指摘を直したのでやり直したい」「修正したのでこの項目をもう一度確かめたい」「この項目の結果を消したい」「ケースを直したのでやり直し」と言われた時に使う。ケースを新しく作るのは test-cases、やり直す項目を行うのは test-run。
+読む時: `test-run` の振り分けで、行ったテストの一部をやり直す・結果を消す時
 
 テストの結果は、正本の `manifest.json` の項目に書いた `result`・`checks`・`video` / `image`・`note` そのもの。
-**やり直す項目は、それらを外して未実施に戻す。** 前の結果は消さずに残す(受入確認のまとめ(`test-run/evidence/`) の「修正前を残す」と同じ考え方)。
+**やり直す項目は、それらを外して未実施に戻す。** 前の結果は消さずに残す。
+ケースを新しく作るのは `test-cases`、やり直す項目を行うのは `test-run` の本体。
 
-- 形: `$DEV_WORKBENCH_HOME/docs/evidence-manifest.md`、下書きと正本の作り方: `$DEV_WORKBENCH_HOME/skills/test-cases/reference/format.md`
-- 作業フォルダ: `$DEV_WORKBENCH_DOCS/<リポジトリ名>/<イシュー番号>/`(空なら、止めてユーザーに場所を聞く)
+- 欄の意味: [docs/evidence-manifest.md](../../../docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
 
 ## 決まり
 
@@ -18,9 +19,9 @@
 
 ### 同じ回の中での撮り直し
 
-ユーザーに渡す前の、同じ回の中で撮り損ねた項目を撮り直す時だけは、同じフォルダの中で直してよい(受入確認のまとめ(`test-run/evidence/`) の手順3と同じ)。
+ユーザーに渡す前の、同じ回の中で撮り損ねた項目を撮り直す時と、受入確認のまとめ(`test-run/evidence/`)で直してから撮り直す時だけは、同じフォルダの中で直してよい。前のものは消さずに残す(期待どおりでなかったことも記録になる)。
 
-- 前のファイルを `<元の名前>-修正前.<拡張子>` に名前を変え、`attachments` に `{ "title": "<id> 修正前(<前の結果と、わけ>)", "file": "…-修正前.png" }` で載せる
+- 前のファイルを `<元の名前>-before.<拡張子>` に名前を変え(ファイル名の決まりは `test-run/SKILL.md` の「エビデンスを撮る」)、`attachments` に `{ "title": "<id> 修正前(<前の結果と、わけ>)", "file": "<元の名前>-before.png" }` で載せる
 - その項目の `result`・`checks`・`video` / `image` を外して未実施に戻し、[test-run](../SKILL.md) で行い直す
 - ケースの中身(`title`・`given`・`steps`・`expect`)を直す時は、この形にしない(新しいフォルダを作る)
 
@@ -39,14 +40,10 @@ git diff <前の正本の source.commit>..HEAD
    - 期待する結果・前提・手順を直した項目(直した中身で行い直さないと判定できない)
    - 前の結果が `ng` / `partial` で、直したことで結果が変わりうる項目
    - 迷うものは、**ユーザーに聞く**(外すと見落とし、付けすぎると実施する人の負担になる)
-3. ケースの中身を直す指摘なら、作業フォルダの下書き(`cases/<kind>.json`)の該当の項目を、**同じ id のまま**直す(test-cases の「書く時の3つの約束」と「読みやすく書く」に従う)。足す項目は節の末尾に足し、`order.json` に入れる。直したら確かめる
-
-```bash
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
-```
+3. ケースの中身を直す指摘なら、作業フォルダの下書き(`cases/<kind>.json`)の該当の項目を、**同じ id のまま**直す(`test-cases/reference/writing.md` に従う)。足す項目は節の末尾に足し、`order.json` に入れる。直したら `check-cases.mjs <作業フォルダ>` で確かめる
 
 4. `cases/plan.json` の `source.commit` を、これから確かめるコミットにする
-5. 新しいフォルダを作る。前のフォルダの結果を、やり直さない項目にだけ写す
+5. 新しいフォルダを作る。前のフォルダの結果を、やり直さない項目にだけ写す(この手順に固有の引数は `--results-from` と `--redo`)
 
 ```bash
 node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail \
@@ -60,14 +57,9 @@ node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業�
    - **中身が前と変わった項目を `--redo` に入れ忘れると、止まる**(直した項目の前の結果を、そのまま引き継がないため)。出た id を `--redo` に足す
    - 新しい正本の `notes` に、どのフォルダから何件引き継ぎ、どれをやり直すかが1行で入る。引き継いだ項目を確かめたコミット・環境は、前のフォルダの `notes` にある
    - `<内容>` は前と同じものに `-retest` などを付ける(例: `2026-11-25-pr45-retest`)。同じ日に2回作るなら `-retest2`
-6. 形と中身を確かめる
+6. 新しいフォルダを `check-manifest.mjs` と `check-cases.mjs … --manifest` で確かめる(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)
 
-```bash
-node "$DEV_WORKBENCH_HOME/skills/test-run/scripts/check-manifest.mjs" <新しいフォルダ>
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --manifest <新しいフォルダ>
-```
-
-7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(`$DEV_WORKBENCH_HOME/skills/config.json` の `site` で `<site>evidence/?folder=<新しいフォルダの Drive の ID>`。ID は Drive のコネクタで探すか、ユーザーにフォルダのURLを聞く)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](../SKILL.md))
+7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(作り方は [docs/workspace.md](../../../docs/workspace.md) の「ビューアで開く」)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](../SKILL.md))
 
 ## 気をつけること
 

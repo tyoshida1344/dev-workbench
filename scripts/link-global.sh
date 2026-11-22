@@ -19,13 +19,23 @@ for link in "$dest"/skills/* "$dest"/agents/*; do
   esac
 done
 
+# リンクを置く。同じ名前の、リンクでない本物のフォルダ・ファイルがあれば置き換えずに止める
+# (ln -sfn は、置く先が本物のフォルダだと、その中にリンクを作ってしまうため)
+link() {
+  if [ -e "$2" ] && [ ! -L "$2" ]; then
+    echo "リンクではないものがあるので、置き換えません: $2" >&2
+    exit 1
+  fi
+  ln -sfn "$1" "$2"
+}
+
 for group in "$repo"/skills/*/; do
   group="${group%/}"
   name="$(basename "$group")"
-  ln -sfn "$group" "$dest/skills/$name"
+  link "$group" "$dest/skills/$name"
   echo "skills/$name"
   if [ -d "$group/agents" ]; then
-    ln -sfn "$group/agents" "$dest/agents/$name"
+    link "$group/agents" "$dest/agents/$name"
     echo "agents/$name"
   fi
 done

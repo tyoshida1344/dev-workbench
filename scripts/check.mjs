@@ -60,7 +60,7 @@ for (const file of files.filter(file => file.endsWith('.html'))) {
 }
 
 // 5. エビデンスの見本
-run('エビデンスの見本 evidence/sample', ['skills/test-run/scripts/check-manifest.mjs', 'evidence/sample'])
+run('エビデンスの見本 evidence/sample', ['scripts/check-manifest.mjs', 'evidence/sample'])
 
 // 6. 設計の見本の相対リンクと画像が、ファイルを指しているか
 function markdownFiles(dir) {
@@ -89,7 +89,7 @@ try {
   run('テストケースのひな形 check-cases', ['skills/test-cases/scripts/check-cases.mjs', work])
   const out = join(work, 'evidence', 'check')
   run('テストケースのひな形 build-manifest', ['skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])
-  run('テストケースのひな形から作った正本 check-manifest', ['skills/test-run/scripts/check-manifest.mjs', out])
+  run('テストケースのひな形から作った正本 check-manifest', ['scripts/check-manifest.mjs', out])
 }
 finally {
   rmSync(work, { recursive: true, force: true })

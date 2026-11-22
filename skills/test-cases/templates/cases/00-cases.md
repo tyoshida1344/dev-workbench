@@ -1,6 +1,6 @@
 # 項目の一覧(#0)
 
-どこから拾ったかと、項目の対応。書き方は `$DEV_WORKBENCH_HOME/skills/test-cases/reference/acceptance-items.md` の「対応表」。
+どこから拾ったかと、項目の対応。形は `test-cases/reference/format.md` の「00-cases.md」。
 
 | 種別 | どこから | 項目 |
 |---|---|---|

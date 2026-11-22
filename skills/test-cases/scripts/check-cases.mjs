@@ -6,7 +6,7 @@
 //       その1ファイルだけ(種別ごとに並行して書いている間。ほかの担当の書きかけに巻き込まれないため)
 //   node check-cases.mjs <作業フォルダ> --manifest <evidence の下のフォルダ>
 //       あわせて、そのフォルダの manifest.json が今の下書きから作ったものと合っているか
-// 形は ../reference/format.md。manifest.json の形そのもの(ファイル名・summary の数)は skills/test-run/scripts/ の check-manifest.mjs が見る。
+// 形は ../reference/format.md。manifest.json の形そのもの(ファイル名・summary の数)は $DEV_WORKBENCH_HOME/scripts/check-manifest.mjs が見る。
 
 import { existsSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'

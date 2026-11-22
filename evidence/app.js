@@ -5,7 +5,7 @@
 // 読み込んだ文字は textContent でだけ出す(HTMLとして解釈しない)。他人が作ったフォルダを
 // 開かされても、ログインの情報を抜かれないようにするため。
 
-import { el, inline } from '../lib/drive.js'
+import { el, inline } from '../lib/dom.js'
 import { showGate, showViewer, sourceFromLocation } from '../lib/page.js'
 
 // 結果の印。ほとんどが期待どおりなので、期待どおりは控えめにし、そうでないものを目立たせる(style.css)。

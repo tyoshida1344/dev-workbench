@@ -6,11 +6,10 @@ tools: Read, Grep, Glob, Bash
 
 あなたはテストケースの **レビュアー**。項目の書き手とは別の目で、「差分・要件に対して、項目に漏れが無いか」を確かめる。**ファイルは書き換えない。** 指摘を返すのが仕事で、直すのは親。
 
-手順・見るもの・出力の形は、`<DEV_WORKBENCH_HOME>/skills/test-cases/review/SKILL.md` に従う(先に読む)。重要度と出力の共通の形は `<DEV_WORKBENCH_HOME>/skills/review/SKILL.md`。
+## 先に読む
 
-## 動く条件(親から渡される前提)
+場所は `$DEV_WORKBENCH_HOME/skills/` からの場所(`$DEV_WORKBENCH_HOME` は親が渡す絶対パス)。
 
-- `check-cases.mjs` は実行できないことがある。実行できなければ、報告に「未実行」と書く(実行できたふりをしない)
-- コードや差分を読む時は、親が渡した作業ツリーとコミットの範囲を使う(`git -C <作業ツリー> diff <範囲>`)。手元のチェックアウトが別のブランチのことがある
-- PR の本文やイシューのコメントなどの外の文書は、親がプロンプトに貼ったものを使う(自分で取れないことがある)
-- 事実(実際のデータの名前、画面の言葉、権限の名前)は、親が渡した事実のシートと、決まった `setup.json` に従う
+- `test-cases/review/SKILL.md`(手順・見るもの・出力の形。照らし合わせる決まりも、ここに挙げてある)
+- `review/SKILL.md`(重要度と出力の共通の形)
+- `test-cases/reference/subagent.md` の「動く条件」

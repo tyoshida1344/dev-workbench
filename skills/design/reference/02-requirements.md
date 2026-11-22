@@ -17,6 +17,7 @@
 | データ移行 | テーブルや列、データの持ち方を変える。マスタ・設定・初期データを足す・変える・消す | [data-migration.md](viewpoints/data-migration.md) |
 | API と画面の責務 | 入力の検証・計算・表示を、API(サーバー)と画面のどちらに置くかが論点になる | [api-ui-responsibility.md](viewpoints/api-ui-responsibility.md) |
 | UI | 画面を足す、または表示を変える | [ui.md](viewpoints/ui.md) |
+| 詰め漏れ | 判定せず常に適用する(フェーズ5・7 で書く時と、設計のレビューで使う) | [completeness.md](viewpoints/completeness.md) |
 
 この表は例。プロジェクトで繰り返し出てくる観点(外部サービスとの連携、通知、履歴や有効期間を持つデータ、性能など)があれば、行と reference を足して使う。
 

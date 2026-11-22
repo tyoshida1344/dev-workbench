@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// エビデンスのフォルダを確かめる。Driveに上げる前に走らせて、綴り違いや数の食い違いを見つける。
+// エビデンスのフォルダを確かめる。同期で Drive に上がる前に走らせて、綴り違いや数の食い違いを見つける。
 //   node check-manifest.mjs <フォルダ>
 // 形は dev-workbench の docs/evidence-manifest.md。外のものは何も読み込まない(Node だけで動く)。
 
@@ -24,7 +24,7 @@ const dir = process.argv[2] ?? '.'
 // 最後に出すURLは skills/config.json の site から作る(スキルがサイトのURLを読むのはあそこだけ)
 let viewer = ''
 try {
-  const { site } = JSON.parse(readFileSync(new URL('../../config.json', import.meta.url), 'utf8'))
+  const { site } = JSON.parse(readFileSync(new URL('../skills/config.json', import.meta.url), 'utf8'))
   if (site) viewer = new URL('evidence/', site).href
 }
 catch {}
@@ -163,6 +163,6 @@ const total = counts.ok + counts.partial + counts.ng
 for (const line of warnings) console.log(`注意  ${line}`)
 for (const line of errors) console.log(`エラー ${line}`)
 console.log(`\n${dir}: 項目 ${total + pending} 件(✓${counts.ok} / !${counts.partial} / ✕${counts.ng}${pending ? ` / 未実施 ${pending}` : ''})、添付 ${attachments.length} 件`)
-console.log(errors.length ? `エラー ${errors.length} 件。直してからDriveに上げます。` : 'エラーはありません。')
-if (!errors.length && viewer) console.log(`Driveに上げたら: ${viewer}?folder=<フォルダID>`)
+console.log(errors.length ? `エラー ${errors.length} 件。直してから渡します。` : 'エラーはありません。')
+if (!errors.length && viewer) console.log(`Drive に同期したら: ${viewer}?folder=<フォルダID>`)
 process.exit(errors.length ? 1 : 0)
