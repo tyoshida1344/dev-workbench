@@ -251,7 +251,7 @@ async function start() {
   $('prev').addEventListener('click', () => step(-1))
   $('next').addEventListener('click', () => step(1))
 
-  const source = sourceFromLocation()
+  const source = sourceFromLocation({ sample: 'evidence' })
   if (!source) return
   state.source = source
   showGate('読み込み中...')

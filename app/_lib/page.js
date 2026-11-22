@@ -20,10 +20,11 @@ export function showViewer() {
 }
 
 /**
- * URLの ?folder=<DriveのフォルダID> か ?base=<URL> から、読む先を作る。
+ * URLの ?folder=<DriveのフォルダID> か ?base=sample(見本)から、読む先を作る。
+ * sample は、そのビューアの見本(<サイト>/sample/<sample>/)。読む場所はビューアが決め、URLからは変えられない。
  * 読めない時(ログインが要る、ログインへ移っている、など)は案内を出して null を返す。
  */
-export function sourceFromLocation() {
+export function sourceFromLocation({ sample }) {
   const params = new URLSearchParams(location.search)
   const folder = params.get('folder')
   const base = params.get('base')
@@ -53,21 +54,12 @@ export function sourceFromLocation() {
     return new DriveSource(folder, got.token, renew)
   }
 
-  if (base) {
-    // 読む先は同じサイトの中だけ(見本と、手元で scripts/serve.mjs が配るもの)。
-    // ほかのサイトを読めると、そのサイトの文書をこのサイトの画面として見せられてしまう。
-    let url
-    try {
-      url = new URL(base, location.href)
-    }
-    catch {
-      url = null
-    }
-    if (!url || url.origin !== location.origin) {
-      showGate('?base= には、このサイトの中の場所だけを指定できます。', { links: true })
+  if (base !== null) {
+    if (base !== 'sample') {
+      showGate('?base= に指定できるのは sample(見本)だけです。', { links: true })
       return null
     }
-    return new UrlSource(url.href)
+    return new UrlSource(new URL(`../sample/${sample}/`, location.href).href)
   }
 
   showGate('URLに ?folder=<DriveのフォルダID> を付けて開いてください。', { links: true })

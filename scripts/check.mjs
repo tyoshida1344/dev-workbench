@@ -77,10 +77,6 @@ for (const file of markdownFiles(join(root, 'sample', 'design'))) {
     if (!existsSync(target)) fail(rel(file), `リンク先がありません: ${href}`)
   }
 }
-for (const entry of JSON.parse(readFileSync(join(root, 'sample', 'design', 'evidence.json'), 'utf8'))) {
-  const target = resolve(root, 'sample', 'design', entry.base, 'manifest.json')
-  if (!existsSync(target)) fail('sample/design/evidence.json', `manifest.json がありません: ${entry.base}`)
-}
 
 // 7. テストケースのひな形から、正本が作れて検査を通るか
 const work = mkdtempSync(join(tmpdir(), 'dev-workbench-check-'))

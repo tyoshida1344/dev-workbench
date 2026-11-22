@@ -1,7 +1,7 @@
 # エビデンスの manifest.json
 
 書いたものが実際にどう出るかは、見本([`sample/evidence/`](../sample/evidence/))で見られる。
-ビューアを `?base=../sample/evidence/` を付けて開く。
+ビューアを `?base=sample` を付けて開く。
 
 エビデンスビューアが読むファイル。動画・画像・テキストと同じDriveのフォルダに `manifest.json` という名前で置く。
 ビューアはフォルダの中をファイル名で探すので、`video` / `image` / `file` にはファイル名だけを書く(パスは書かない)。

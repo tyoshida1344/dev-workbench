@@ -127,27 +127,6 @@ async function collectFromDrive() {
   return { paths: [...paths, ...nested.flat()], evidence }
 }
 
-/**
- * URLから読む時の、evidence/ の下のフォルダの代わり。作業フォルダの evidence.json に [{ name, base }] で書く(base は作業フォルダからの相対)。
- * 同じサイトの中のものだけを、エビデンスビューアへのリンクにする。
- */
-async function evidenceFromUrl() {
-  let listed
-  try {
-    listed = await (await state.source.file('evidence.json')).json()
-  }
-  catch {
-    return []
-  }
-  if (!Array.isArray(listed)) return []
-  return listed.flatMap((entry) => {
-    if (typeof entry?.name !== 'string' || typeof entry?.base !== 'string') return []
-    const url = new URL(entry.base, state.source.base)
-    if (url.origin !== location.origin) return []
-    return [{ name: entry.name, href: `../evidence/?base=${encodeURIComponent(url.pathname)}` }]
-  })
-}
-
 /** URLから読む時は、フォルダの中身を一覧できない。決まったファイルから、相対リンクをたどって文書を集める */
 async function collectFromUrl() {
   const found = []
@@ -172,7 +151,8 @@ async function collectFromUrl() {
       }
     }
   }
-  return { paths: found, evidence: await evidenceFromUrl() }
+  // 見本は、エビデンスビューアの見本につなぐ(同じ「アイデアを消す」話)
+  return { paths: found, evidence: [{ name: '見本のテスト・エビデンス', href: '../evidence/?base=sample' }] }
 }
 
 function renderList(evidence) {
@@ -254,7 +234,7 @@ function fromHash() {
 }
 
 async function start() {
-  const source = sourceFromLocation()
+  const source = sourceFromLocation({ sample: 'design' })
   if (!source) return
   state.source = source
   showGate('読み込み中...')

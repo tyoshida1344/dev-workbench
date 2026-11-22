@@ -52,7 +52,7 @@ sample/
 ```
 
 どう見えるかは [`sample/design/`](./sample/design/) の見本で確かめられる(Driveもログインも要らない)。
-ビューアを `?base=../sample/design/` を付けて開く。
+ビューアを `?base=sample` を付けて開く。
 
 - 作業フォルダの `index.md`・`spec.md` などを、設計を進める順に呼び名で並べ、`search/` などの下書きをその下に並べる
 - 文書の中の相対リンク・画像はビューアの中で開く。HTMLは書いても文字のまま出る
@@ -66,7 +66,7 @@ sample/
 ```
 
 どう見えるかは [`sample/evidence/`](./sample/evidence/) の見本で確かめられる(Driveもログインも要らない)。
-ビューアを `?base=../sample/evidence/` を付けて開く。
+ビューアを `?base=sample` を付けて開く。
 
 - フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
 - テストケースも同じ `manifest.json` に、結果の無い(未実施の)項目として書く。押すと前提・手順・期待する結果が出る。テストを行うと、同じ項目に結果と動画・画像が付く
