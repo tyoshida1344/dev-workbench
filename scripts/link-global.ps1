@@ -1,13 +1,15 @@
 ﻿# このリポジトリのスキルとサブエージェントを ~/.claude にリンクし、どのプロジェクトからも使えるようにする。
 # リポジトリと同じ階層でリンクする:
-#   skills/<まとまり>/          → ~/.claude/skills/<まとまり>/      (入れ子のスキルも、その中にそのまま入る)
-#   skills/<まとまり>/agents/   → ~/.claude/agents/<まとまり>/      (Claude Code は agents/ をサブフォルダまで探す)
+#   .claude/skills/<スキル>/    → ~/.claude/skills/<スキル>/    (中の手順も、その中にそのまま入る)
+#   .claude/agents/<スキル>/    → ~/.claude/agents/<スキル>/    (Claude Code は agents/ をサブフォルダまで探す)
+# このリポジトリの中では、リンクしなくてもプロジェクトのスキルとして使える。
 # リンクなので、中身はこのリポジトリのまま(git pull すれば新しくなる)。フォルダのリンクはジャンクションで作るので、管理者の権限は要らない。
 # 前に作ったリンクのうち、このリポジトリを指しているのに先が無くなったものは消す。
 $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$skills = Join-Path $repo 'skills'
+$skills = Join-Path $repo '.claude\skills'
+$agents = Join-Path $repo '.claude\agents'
 $dest = if ($env:CLAUDE_HOME) { $env:CLAUDE_HOME } else { Join-Path $HOME '.claude' }
 $destSkills = Join-Path $dest 'skills'
 $destAgents = Join-Path $dest 'agents'
@@ -40,14 +42,13 @@ function Set-Link($Path, $Target) {
   New-Item -ItemType Junction -Path $Path -Target $Target | Out-Null
 }
 
-foreach ($group in Get-ChildItem $skills -Directory) {
-  Set-Link (Join-Path $destSkills $group.Name) $group.FullName
-  Write-Output "skills/$($group.Name)"
-  $agents = Join-Path $group.FullName 'agents'
-  if (Test-Path $agents) {
-    Set-Link (Join-Path $destAgents $group.Name) $agents
-    Write-Output "agents/$($group.Name)"
-  }
+foreach ($skill in Get-ChildItem $skills -Directory) {
+  Set-Link (Join-Path $destSkills $skill.Name) $skill.FullName
+  Write-Output "skills/$($skill.Name)"
+}
+foreach ($group in Get-ChildItem $agents -Directory -ErrorAction SilentlyContinue) {
+  Set-Link (Join-Path $destAgents $group.Name) $group.FullName
+  Write-Output "agents/$($group.Name)"
 }
 
 Write-Output ''

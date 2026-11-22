@@ -27,7 +27,7 @@ description: >-
 | [reference/perspectives.md](reference/perspectives.md) | 項目を導く観点(3つの見方・観点の出どころ・技法・狭い幅・変更前と比べる・重なり) |
 | [reference/subagent.md](reference/subagent.md) | サブエージェントの動く条件と共通の約束 |
 | [templates/cases/](templates/cases/) | ひな形(フォルダごと写して使う) |
-| [agents/](agents/) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
+| [.claude/agents/test-cases/](../../agents/test-cases/) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
 
 ## 一番大事な決まり
 
@@ -66,9 +66,9 @@ description: >-
 |---|---|
 | **対象のリポジトリ**(cwd) | `git diff`・`gh`、コードの grep・調べもの。**何も書き込まない**(テストケースもコミットしない) |
 | **作業フォルダ** | 設計(spec.md・acceptance.md・test.md)を読む。下書き(`cases/`)と正本(`evidence/<YYYY-MM-DD>-<内容>/manifest.json`)を書く |
-| **dev-workbench**(`$DEV_WORKBENCH_HOME`) | このスキルのスクリプト・ひな形・サブエージェント、`skills/config.json`、`docs/` |
+| **dev-workbench**(`$DEV_WORKBENCH_HOME`) | このスキルのスクリプト・ひな形・サブエージェント、`.claude/skills/config.json`、`docs/` |
 
-- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
 - 以降のパスは、Read / Write / Agent に**絶対パスに展開して**渡す(環境変数は展開されない)。cwd の外に書き込むので、作業フォルダを書き込みの許可に入れておく(`additionalDirectories` か `--add-dir`)
 - サブエージェントを使えるようにする手順は `$DEV_WORKBENCH_HOME/README.md` の「使い始める」。見つからなければ、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す
 
@@ -246,5 +246,5 @@ gh issue view <イシュー番号> --comments
 
 ## 8. 渡す
 
-正本のフォルダ(`evidence/<YYYY-MM-DD>-<内容>/`)のビューアのURLを作る。作り方(Drive への置き方・フォルダ ID の取り方・`<site>evidence/?folder=<ID>`)は [docs/workspace.md](../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」。
+正本のフォルダ(`evidence/<YYYY-MM-DD>-<内容>/`)のビューアのURLを作る。作り方(Drive への置き方・フォルダ ID の取り方・`<site>evidence/?folder=<ID>`)は [docs/workspace.md](../../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」。
 ユーザーに、そのURLと件数(グループ・行う項目・種別ごとの全件/行わない)を渡す。証跡を見たい人には、`cases/` のフォルダ ID で同じ形のURLを作る。

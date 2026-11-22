@@ -6,8 +6,8 @@
 **やり直す項目は、それらを外して未実施に戻す。** 前の結果は消さずに残す。
 ケースを新しく作るのは `test-cases`、やり直す項目を行うのは `test-run` の本体。
 
-- 欄の意味: [docs/evidence-manifest.md](../../../docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 欄の意味: [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
 
 ## 決まり
 
@@ -46,7 +46,7 @@ git diff <前の正本の source.commit>..HEAD
 5. 新しいフォルダを作る。前のフォルダの結果を、やり直さない項目にだけ写す(この手順に固有の引数は `--results-from` と `--redo`)
 
 ```bash
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail \
+node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail \
   --out <作業フォルダ>/evidence/<今日の日付>-<内容> \
   --results-from <作業フォルダ>/evidence/<前のフォルダ> \
   --redo <id>,<id>
@@ -59,7 +59,7 @@ node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業�
    - `<内容>` は前と同じものに `-retest` などを付ける(例: `2026-11-25-pr45-retest`)。同じ日に2回作るなら `-retest2`
 6. 新しいフォルダを `check-manifest.mjs` と `check-cases.mjs … --manifest` で確かめる(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)
 
-7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(作り方は [docs/workspace.md](../../../docs/workspace.md) の「ビューアで開く」)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](../SKILL.md))
+7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(作り方は [docs/workspace.md](../../../../docs/workspace.md) の「ビューアで開く」)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](../SKILL.md))
 
 ## 気をつけること
 

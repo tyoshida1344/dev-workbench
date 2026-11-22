@@ -21,10 +21,10 @@ const warn = (where, message) => warnings.push(`${where}: ${message}`)
 
 const dir = process.argv[2] ?? '.'
 
-// 最後に出すURLは skills/config.json の site から作る(スキルがサイトのURLを読むのはあそこだけ)
+// 最後に出すURLは .claude/skills/config.json の site から作る(スキルがサイトのURLを読むのはあそこだけ)
 let viewer = ''
 try {
-  const { site } = JSON.parse(readFileSync(new URL('../skills/config.json', import.meta.url), 'utf8'))
+  const { site } = JSON.parse(readFileSync(new URL('../.claude/skills/config.json', import.meta.url), 'utf8'))
   if (site) viewer = new URL('evidence/', site).href
 }
 catch {}

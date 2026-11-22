@@ -20,8 +20,8 @@ description: >-
 テストケースは、原則として人が行う(test-cases の一番大事な決まり)。このスキルは、**ユーザーがはっきり「実施して」と頼んだグループ・項目だけ**を、Claude が代わりに行う時の手順。頼まれていない項目は行わない。
 
 - 実施する正本: `<作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>/manifest.json`(項目の id は `tc02-01` など、グループは節の見出しの `G05` など)
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
-- 記録の欄の意味: [docs/evidence-manifest.md](../../docs/evidence-manifest.md)(**書く前に読む**)。結果は、正本の**同じ項目**に足す(下の「記録する」)
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 記録の欄の意味: [docs/evidence-manifest.md](../../../docs/evidence-manifest.md)(**書く前に読む**)。結果は、正本の**同じ項目**に足す(下の「記録する」)
 - 撮り方: [reference/capture.md](reference/capture.md)(**撮る前に読む**)
 - 結果のある正本は、開発しているリポジトリにコミットしない
 
@@ -105,7 +105,7 @@ description: >-
 
 ## 記録する
 
-正本の `manifest.json` に書き足す(欄の意味は [docs/evidence-manifest.md](../../docs/evidence-manifest.md))。項目の中身(`title`・`given`・`steps`・`expect`・`basis` など)は変えない。受入確認のまとめ(`test-run/evidence/`)も、これに従う。
+正本の `manifest.json` に書き足す(欄の意味は [docs/evidence-manifest.md](../../../docs/evidence-manifest.md))。項目の中身(`title`・`given`・`steps`・`expect`・`basis` など)は変えない。受入確認のまとめ(`test-run/evidence/`)も、これに従う。
 
 - 項目ごとに:
 
@@ -134,4 +134,4 @@ description: >-
 
 1. 開いたタブ・ウィンドウを閉じる
 2. ユーザーに報告する: 項目ごとの結果の表(ok・partial・ng・実施できない・飛ばした)、記録した QA(前からあるか)、ユーザーにしてほしいこと(実施できない項目)、確かめた力が弱い項目、ケースの不備、戻した・変えたデータ
-3. 正本のフォルダのビューアのURLを渡す(作り方は [docs/workspace.md](../../docs/workspace.md) の「ビューアで開く」)。件数を1行で添える(`全24項目(✓20 / !2 / ✕0 / 未実施 2)`)
+3. 正本のフォルダのビューアのURLを渡す(作り方は [docs/workspace.md](../../../docs/workspace.md) の「ビューアで開く」)。件数を1行で添える(`全24項目(✓20 / !2 / ✕0 / 未実施 2)`)

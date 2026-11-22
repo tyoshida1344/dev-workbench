@@ -9,10 +9,10 @@
 - **秘密の値を置かない。** GoogleのOAuthクライアントIDは秘密ではないので `config.js` に置いてよい(許可する生成元をこのサイトに限って登録する)。クライアントシークレットやトークンは置かない
 - **読み込んだ文字は `textContent` で出す。** 他人が作ったファイルを開かされても、ログインの情報を抜かれないようにする
 - **サイトのURLを決め打ちしない。** 公開先を書くのは [README.md](./README.md) の先頭の1行だけ。
-  リポジトリの中からは相対で指す(`evidence/?base=sample/` など)。外から指すもの(他のプロジェクトに写すスキルなど)は、URLを1か所にまとめて、写した先で書き換えられるようにする(スキルは `skills/config.json`)。公開先を移しても、forkされても動くように
+  リポジトリの中からは相対で指す(`evidence/?base=sample/` など)。外から指すもの(他のプロジェクトに写すスキルなど)は、URLを1か所にまとめて、写した先で書き換えられるようにする(スキルは `.claude/skills/config.json`)。公開先を移しても、forkされても動くように
 - ビルドの手順を持たない。HTML・CSS・JavaScriptをそのまま置く(外部のスクリプトを読み込まない。Googleのログインも、ページごとGoogleへ移って戻ってくる形で行う)
 - 見た目は道具の間でそろえる。共通の部品は `lib/` に置き、道具ごとに作り直さない(`lib/style.css` の見た目、`lib/dom.js` の要素の組み立て、`lib/drive.js` のログインと読み込み、`lib/page.js` の読む先の決め方、`lib/md.js` の Markdown の描画)
-- スキルは `skills/<スキル>/SKILL.md` に置く。ユーザーが呼ぶのは `issue-handler`・`design`・`test-cases`・`test-run`・`review` だけで、細かい使い分けは各 `SKILL.md` の「振り分け」から、中の手順(入れ子のフォルダの `SKILL.md`。frontmatter を持たない)へ回す。サブエージェントは使うスキルの `agents/` に置く。`scripts/link-global.*` で `~/.claude` に同じ階層でリンクして使う。スキルが書く設計・テストケース・エビデンスは、開発しているリポジトリにもこのリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置く
+- スキルは `.claude/skills/<スキル>/SKILL.md` に置く(このリポジトリではプロジェクトのスキルとしてそのまま使え、ほかのプロジェクトでは `~/.claude` へのリンクで使う)。ユーザーが呼ぶのは `issue-handler`・`design`・`test-cases`・`test-run`・`review` だけで、細かい使い分けは各 `SKILL.md` の「振り分け」から、中の手順(入れ子のフォルダの `SKILL.md`。frontmatter を持たない)へ回す。サブエージェントは `.claude/agents/<スキル>/` に置く。`scripts/link-global.*` で `~/.claude` に同じ階層でリンクして使う。スキルが書く設計・テストケース・エビデンスは、開発しているリポジトリにもこのリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置く
 
 ## スキルの書き方
 
@@ -20,10 +20,10 @@
   - 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](./docs/workspace.md)
   - `manifest.json` の欄の意味: [docs/evidence-manifest.md](./docs/evidence-manifest.md)(検査は `scripts/check-manifest.mjs`)
   - 設計の Markdown の書き方: [docs/design-folder.md](./docs/design-folder.md)
-  - レビューの進め方・重要度・出力の形: `skills/review/SKILL.md`
-  - テストケースの形とコマンドの一覧: `skills/test-cases/reference/format.md`、項目の書き方: `writing.md`、観点: `perspectives.md`、サブエージェントの約束: `subagent.md`
-  - 撮り方(画像か動画か・1項目に1つ): `skills/test-run/reference/capture.md`、エビデンスのファイル名: `skills/test-run/SKILL.md`
-- **場所の書き方**: 文の中で手順やファイルを指す時は、`skills/` からの場所を `` ` `` で囲んで書く(`review/impl/`、`test-cases/reference/format.md`)。実行するコマンドの中は `$DEV_WORKBENCH_HOME/` から書く。Markdown のリンクだけは、そのファイルからの相対にする
+  - レビューの進め方・重要度・出力の形: `.claude/skills/review/SKILL.md`
+  - テストケースの形とコマンドの一覧: `.claude/skills/test-cases/reference/format.md`、項目の書き方: `writing.md`、観点: `perspectives.md`、サブエージェントの約束: `subagent.md`
+  - 撮り方(画像か動画か・1項目に1つ): `.claude/skills/test-run/reference/capture.md`、エビデンスのファイル名: `.claude/skills/test-run/SKILL.md`
+- **場所の書き方**: 文の中で手順やファイルを指す時は、`.claude/skills/` からの場所を `` ` `` で囲んで書く(`review/impl/`、`test-cases/reference/format.md`)。実行するコマンドの中は `$DEV_WORKBENCH_HOME/` から書く。Markdown のリンクだけは、そのファイルからの相対にする
 - 入れ子の手順は、自分を「この手順」と呼ぶ(「このスキル」は入口の `SKILL.md` だけ)。冒頭の「読む時:」は、どの振り分けから来るかを1行で書く
 - サブエージェントは親の会話を見られない。読む決まりは、サブエージェントのファイルに「先に読む」として全部挙げる
 

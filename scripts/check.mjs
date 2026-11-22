@@ -85,10 +85,10 @@ for (const entry of JSON.parse(readFileSync(join(root, 'design', 'sample', 'evid
 // 7. テストケースのひな形から、正本が作れて検査を通るか
 const work = mkdtempSync(join(tmpdir(), 'dev-workbench-check-'))
 try {
-  cpSync(join(root, 'skills', 'test-cases', 'templates', 'cases'), join(work, 'cases'), { recursive: true })
-  run('テストケースのひな形 check-cases', ['skills/test-cases/scripts/check-cases.mjs', work])
+  cpSync(join(root, '.claude', 'skills', 'test-cases', 'templates', 'cases'), join(work, 'cases'), { recursive: true })
+  run('テストケースのひな形 check-cases', ['.claude/skills/test-cases/scripts/check-cases.mjs', work])
   const out = join(work, 'evidence', 'check')
-  run('テストケースのひな形 build-manifest', ['skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])
+  run('テストケースのひな形 build-manifest', ['.claude/skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])
   run('テストケースのひな形から作った正本 check-manifest', ['scripts/check-manifest.mjs', out])
 }
 finally {
@@ -96,20 +96,20 @@ finally {
 }
 
 // 8. スキルとサブエージェントの frontmatter
-//    ユーザーが呼ぶスキルは skills/<スキル>/SKILL.md だけ(name はフォルダ名)。その中の入れ子の SKILL.md は、親が振り分けて読む手順なので frontmatter を持たない
-//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントは agents/ の下に置き、name はファイル名と同じにする
+//    ユーザーが呼ぶスキルは .claude/skills/<スキル>/SKILL.md だけ(name はフォルダ名)。その中の入れ子の SKILL.md は、親が振り分けて読む手順なので frontmatter を持たない
+//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントは .claude/agents/<スキル>/ に置き、name はファイル名と同じにする
 const names = new Map()
-for (const file of files.filter(file => /[\\/]skills[\\/].*[\\/](SKILL\.md|agents[\\/][^\\/]+\.md)$/.test(file))) {
+for (const file of files.filter(file => /[\\/]\.claude[\\/](skills[\\/].*[\\/]SKILL\.md|agents[\\/].+\.md)$/.test(file))) {
   const where = rel(file)
   const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(readFileSync(file, 'utf8'))
   const name = head && /^name:\s*(\S+)/m.exec(head[1])?.[1]
   const isAgent = !file.endsWith('SKILL.md')
-  const isEntry = /^skills\/[^/]+\/SKILL\.md$/.test(where)
+  const isEntry = /^\.claude\/skills\/[^/]+\/SKILL\.md$/.test(where)
   if (!isAgent && !isEntry) {
     if (head) fail(where, '入れ子の手順に frontmatter があります(スキルとして一覧に出ないよう、外す)')
     continue
   }
-  const expected = isAgent ? where.split('/').pop().replace(/\.md$/, '') : where.split('/')[1]
+  const expected = isAgent ? where.split('/').pop().replace(/\.md$/, '') : where.split('/')[2]
   if (!head) fail(where, 'frontmatter がありません')
   else if (name !== expected) fail(where, `name を ${expected} にします(今は ${name})`)
   else if (!/^description:/m.test(head[1])) fail(where, 'description がありません')
@@ -118,7 +118,7 @@ for (const file of files.filter(file => /[\\/]skills[\\/].*[\\/](SKILL\.md|agent
 }
 
 // 9. 手順の中の相対リンクが、ファイルを指しているか
-for (const file of files.filter(file => /[\\/]skills[\\/].*\.md$/.test(file))) {
+for (const file of files.filter(file => /[\\/]\.claude[\\/](skills|agents)[\\/].*\.md$/.test(file))) {
   // コードブロックと `…` の中は、書き方の例なので見ない
   const text = readFileSync(file, 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
   for (const m of text.matchAll(/\]\(([^)\s]+)\)/g)) {

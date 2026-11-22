@@ -82,11 +82,11 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 ユーザーが呼ぶスキルは次の5つ。細かい使い分け(レビュー・やり直し・受入確認のまとめなど)は、各スキルの `SKILL.md` の「振り分け」が、頼まれたことに合わせて中の手順へ回す。
 
-| 呼ぶスキル | 何をする | 中の手順(`skills/` からの場所) |
+| 呼ぶスキル | 何をする | 中の手順(`.claude/skills/` からの場所) |
 |---|---|---|
 | `/issue-handler` | イシュー番号から、不明点の確認 → 確定した仕様のコメント → 実装 → 検証 → セルフレビュー → コミット → 受入確認のエビデンス → PR までを通して行う。大きなイシューは `/design` の流れに切り替える | — |
 | `/design` | イシューの設計を、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画の順に書く。設計ビューアで読む | フェーズごとの手順 `design/reference/`、ひな形 `design/templates/`、設計のレビュー `design/review/` |
-| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ `test-cases/agents/` |
+| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ `.claude/agents/test-cases/` |
 | `/test-run` | ケースを行い、結果と動画・画像を同じ `manifest.json` に足す | やり直し `test-run/retest/`、テストケースを作らない PR の受入確認のまとめ `test-run/evidence/`、撮り方のこつ `test-run/reference/capture.md` |
 | `/review` | 実装を、観点ごとのチェックリストの形で指摘する。単体では報告だけで、頼まれた時は直すところまで | 実装 `review/impl/`・性能とコード量 `review/perf/`・回帰 `review/regression/`・使い勝手 `review/ux/`(設計とテストケースのレビューは、それぞれ `/design`・`/test-cases` の中) |
 
@@ -95,7 +95,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 ### 使い始める(PCごとに1回)
 
 1. このリポジトリを手元に clone する
-2. スキルとサブエージェントを、このリポジトリと同じ階層で `~/.claude` にリンクする(`skills/<スキル>/` → `~/.claude/skills/<スキル>/`、`skills/<スキル>/agents/` → `~/.claude/agents/<スキル>/`。コピーではないので、`git pull` すれば新しくなる)。プロジェクトの `.claude/skills/` に同じ名前のスキル(`issue-handler`・`review` など)がある時は、そのプロジェクトではどちらも見える。プロジェクトの方を消すか、名前を変えて使い分ける
+2. スキルとサブエージェントを、このリポジトリと同じ階層で `~/.claude` にリンクする(`.claude/skills/<スキル>/` → `~/.claude/skills/<スキル>/`、`.claude/agents/<スキル>/` → `~/.claude/agents/<スキル>/`。このリポジトリの中では、リンクしなくてもプロジェクトのスキルとして使える。コピーではないので、`git pull` すれば新しくなる)。プロジェクトの `.claude/skills/` に同じ名前のスキル(`issue-handler`・`review` など)がある時は、そのプロジェクトではどちらも見える。プロジェクトの方を消すか、名前を変えて使い分ける
 
 ```
 powershell -ExecutionPolicy Bypass -File scripts/link-global.ps1  # Windows(フォルダのリンクなので、管理者の権限は要らない)
@@ -117,7 +117,7 @@ bash scripts/link-global.sh      # macOS・Linux
 }
 ```
 
-スキルはビューアのURLを [`skills/config.json`](./skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
+スキルはビューアのURLを [`.claude/skills/config.json`](./skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
 プラグインとして配るかどうかは、イシューで検討している。
 
 ## 道具を足す時

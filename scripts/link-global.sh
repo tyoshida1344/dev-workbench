@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # このリポジトリのスキルとサブエージェントを ~/.claude にリンクし、どのプロジェクトからも使えるようにする。
 # リポジトリと同じ階層でリンクする:
-#   skills/<まとまり>/          → ~/.claude/skills/<まとまり>/      (入れ子のスキルも、その中にそのまま入る)
-#   skills/<まとまり>/agents/   → ~/.claude/agents/<まとまり>/      (Claude Code は agents/ をサブフォルダまで探す)
+#   .claude/skills/<スキル>/    → ~/.claude/skills/<スキル>/    (中の手順も、その中にそのまま入る)
+#   .claude/agents/<スキル>/    → ~/.claude/agents/<スキル>/    (Claude Code は agents/ をサブフォルダまで探す)
+# このリポジトリの中では、リンクしなくてもプロジェクトのスキルとして使える。
 # リンクなので、中身はこのリポジトリのまま(git pull すれば新しくなる)。Windows では link-global.ps1 を使う。
 # 前に作ったリンクのうち、このリポジトリを指しているのに先が無くなったものは消す。
 set -euo pipefail
@@ -29,15 +30,16 @@ link() {
   ln -sfn "$1" "$2"
 }
 
-for group in "$repo"/skills/*/; do
+for skill in "$repo"/.claude/skills/*/; do
+  skill="${skill%/}"
+  link "$skill" "$dest/skills/$(basename "$skill")"
+  echo "skills/$(basename "$skill")"
+done
+for group in "$repo"/.claude/agents/*/; do
+  [ -d "$group" ] || continue
   group="${group%/}"
-  name="$(basename "$group")"
-  link "$group" "$dest/skills/$name"
-  echo "skills/$name"
-  if [ -d "$group/agents" ]; then
-    link "$group/agents" "$dest/agents/$name"
-    echo "agents/$name"
-  fi
+  link "$group" "$dest/agents/$(basename "$group")"
+  echo "agents/$(basename "$group")"
 done
 
 echo

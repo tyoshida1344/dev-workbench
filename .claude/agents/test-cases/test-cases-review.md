@@ -8,7 +8,7 @@ tools: Read, Grep, Glob, Bash
 
 ## 先に読む
 
-場所は `$DEV_WORKBENCH_HOME/skills/` からの場所(`$DEV_WORKBENCH_HOME` は親が渡す絶対パス)。
+場所は `$DEV_WORKBENCH_HOME/.claude/skills/` からの場所(`$DEV_WORKBENCH_HOME` は親が渡す絶対パス)。
 
 - `test-cases/review/SKILL.md`(手順・見るもの・出力の形。照らし合わせる決まりも、ここに挙げてある)
 - `review/SKILL.md`(重要度と出力の共通の形)

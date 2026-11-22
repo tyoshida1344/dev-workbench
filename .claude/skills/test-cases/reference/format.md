@@ -1,12 +1,12 @@
 # テストケースの形(下書きと manifest.json)
 
 テストケースは、エビデンスビューアが読む `manifest.json` に、`result` の無い(未実施の)項目として書く。
-`manifest.json` の欄の意味は [docs/evidence-manifest.md](../../../docs/evidence-manifest.md) が正本。
+`manifest.json` の欄の意味は [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md) が正本。
 ここには、テストケースを作る時の下書きの形(どの欄に何を書けるか)と、正本を作るコマンドを書く。中身の書き方は [writing.md](writing.md)。
 
 ## 置き場
 
-作業フォルダ([docs/workspace.md](../../../docs/workspace.md))の中に置く。開発しているリポジトリにはコミットしない。
+作業フォルダ([docs/workspace.md](../../../../docs/workspace.md))の中に置く。開発しているリポジトリにはコミットしない。
 
 ```
 <作業フォルダ>/
@@ -183,10 +183,10 @@
 テストケースとエビデンスで使うコマンドの一覧。各手順はここを指し、その手順に固有の引数(やり直しの `--results-from` など)だけを手順に書く。
 
 ```
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --file <cases/unit.json のパス>
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --manifest <正本のフォルダ>
-node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
+node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
+node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --file <cases/unit.json のパス>
+node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --manifest <正本のフォルダ>
+node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
 node "$DEV_WORKBENCH_HOME/scripts/check-manifest.mjs" <エビデンスのフォルダ>
 ```
 
