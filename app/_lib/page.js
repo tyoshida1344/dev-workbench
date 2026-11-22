@@ -56,7 +56,7 @@ export function sourceFromLocation({ sample }) {
 
   if (base !== null) {
     if (base !== 'sample') {
-      showGate('?base= に指定できるのは sample(見本)だけです。', { links: true })
+      showGate('?base= に指定できるのは sample(見本)だけです。Driveのフォルダは ?folder=<DriveのフォルダID> で開きます。', { links: true })
       return null
     }
     return new UrlSource(new URL(`../sample/${sample}/`, location.href).href)
