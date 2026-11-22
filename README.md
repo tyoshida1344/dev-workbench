@@ -80,22 +80,25 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 開発をしているプロジェクトの Claude Code から、イシュー対応・設計・テストケース作成・テストの実施・レビューをスキルとして使える。
 書いたものは開発しているリポジトリにも、このリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置いてビューアで見る。
 
-| まとまり | スキル・サブエージェント | 何をする |
+ユーザーが呼ぶスキルは次の5つ。細かい使い分け(レビュー・やり直し・受入確認のまとめなど)は、各スキルの `SKILL.md` の「振り分け」が、頼まれたことに合わせて中の手順へ回す。
+
+| 呼ぶスキル | 何をする | 中の手順(`skills/` からの場所) |
 |---|---|---|
-| イシュー対応 | `issue-handler` | イシュー番号から、不明点の確認 → 確定した仕様のコメント → 実装 → 検証 → セルフレビュー(`review-impl`)→ コミット → 受入確認のエビデンス → PR までを通して行う。大きなイシューは `design` の流れに切り替える |
-| 設計 | `design`(全体の進め方)、`design-01-issue-review` 〜 `design-10-test-plan` | イシューから、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画を順に書く。設計ビューアで読む |
-| テストケース | `test-cases`、サブエージェント `test-cases-unit` / `-integration` / `-regression` / `-acceptance` / `-review` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む |
-| レビュー | `review`(入口と共通の進め方)、`review-design` / `review-impl` / `review-test-cases`(成果物ごと)、`review-perf` / `review-regression` / `review-ux`(観点ごと) | 設計・実装・テストケースを、観点ごとのチェックリストの形で指摘する。実装のレビューでは、回帰・性能・使い勝手も合わせて当てる。単体では報告だけで、頼まれた時は直すところまで |
-| テストの実施 | `test-run`、`test-retest` | ケースを実施して、結果と動画・画像を同じ `manifest.json` に足す。直した後は、やり直す項目だけを新しいフォルダで行う |
-| エビデンス | `evidence-pack` | PRの受入確認のエビデンスをまとめる。リンクして使えるほか、プロジェクトに写して書き換えて使うこともできる([skills/evidence-pack/README.md](./skills/evidence-pack/README.md)) |
+| `/issue-handler` | イシュー番号から、不明点の確認 → 確定した仕様のコメント → 実装 → 検証 → セルフレビュー → コミット → 受入確認のエビデンス → PR までを通して行う。大きなイシューは `/design` の流れに切り替える | — |
+| `/design` | イシューの設計を、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画の順に書く。設計ビューアで読む | フェーズごとの手順 `design/reference/`、ひな形 `design/templates/`、設計のレビュー `design/review/` |
+| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む | テストケースのレビュー `test-cases/review/`、サブエージェント5つ `test-cases/agents/` |
+| `/test-run` | ケースを行い、結果と動画・画像を同じ `manifest.json` に足す | やり直し `test-run/retest/`、テストケースを作らない PR の受入確認のまとめ `test-run/evidence/`、撮り方のこつ `test-run/reference/capture.md` |
+| `/review` | 実装を、観点ごとのチェックリストの形で指摘する。単体では報告だけで、頼まれた時は直すところまで | 実装 `review/impl/`・性能 `review/perf/`・回帰 `review/regression/`・使い勝手 `review/ux/`(設計とテストケースのレビューは、それぞれ `/design`・`/test-cases` の中) |
+
+中の手順も `SKILL.md` という名前だが、スキルとしての名前と説明(frontmatter)を持たないので、スキルの一覧には出ない。
 
 ### 使い始める(PCごとに1回)
 
 1. このリポジトリを手元に clone する
-2. スキルとサブエージェントを `~/.claude` にリンクする(コピーではないので、`git pull` すれば新しくなる)。プロジェクトの `.claude/skills/` に同じ名前のスキル(`issue-handler`・`review` など)がある時は、そのプロジェクトではどちらも見える。プロジェクトの方を消すか、名前を変えて使い分ける
+2. スキルとサブエージェントを、このリポジトリと同じ階層で `~/.claude` にリンクする(`skills/<スキル>/` → `~/.claude/skills/<スキル>/`、`skills/<スキル>/agents/` → `~/.claude/agents/<スキル>/`。コピーではないので、`git pull` すれば新しくなる)。プロジェクトの `.claude/skills/` に同じ名前のスキル(`issue-handler`・`review` など)がある時は、そのプロジェクトではどちらも見える。プロジェクトの方を消すか、名前を変えて使い分ける
 
 ```
-powershell -ExecutionPolicy Bypass -File scripts/link-global.ps1  # Windows(サブエージェントのリンクには開発者モードが要る)
+powershell -ExecutionPolicy Bypass -File scripts/link-global.ps1  # Windows(フォルダのリンクなので、管理者の権限は要らない)
 bash scripts/link-global.sh      # macOS・Linux
 ```
 

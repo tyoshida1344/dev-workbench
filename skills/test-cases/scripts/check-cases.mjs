@@ -6,7 +6,7 @@
 //       その1ファイルだけ(種別ごとに並行して書いている間。ほかの担当の書きかけに巻き込まれないため)
 //   node check-cases.mjs <作業フォルダ> --manifest <evidence の下のフォルダ>
 //       あわせて、そのフォルダの manifest.json が今の下書きから作ったものと合っているか
-// 形は ../reference/format.md。manifest.json の形そのもの(ファイル名・summary の数)は evidence-pack の check-manifest.mjs が見る。
+// 形は ../reference/format.md。manifest.json の形そのもの(ファイル名・summary の数)は skills/test-run/scripts/ の check-manifest.mjs が見る。
 
 import { existsSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
@@ -304,7 +304,7 @@ if (manifestDir && expected) {
       const shape = manifest => (manifest.sections ?? []).map(section => `${section.title}: ${(section.items ?? []).map(item => item.id).join(', ')}`)
       const want = shape(expected)
       const have = shape(current)
-      if (want.join('\n') !== have.join('\n')) fail(path, '節と項目の並びが、今の下書きと違います。結果が無ければ build-manifest.mjs で作り直し、結果があれば test-retest の手順で新しいフォルダに作ります')
+      if (want.join('\n') !== have.join('\n')) fail(path, '節と項目の並びが、今の下書きと違います。結果が無ければ build-manifest.mjs で作り直し、結果があれば やり直し(`test-run/retest/`) の手順で新しいフォルダに作ります')
       const currentItems = new Map((current.sections ?? []).flatMap(section => section.items ?? []).map(item => [item.id, item]))
       for (const item of expected.sections.flatMap(section => section.items)) {
         const found = currentItems.get(item.id)

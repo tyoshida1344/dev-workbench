@@ -194,7 +194,7 @@
 ```
 node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
 node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
-node "$DEV_WORKBENCH_HOME/skills/evidence-pack/scripts/check-manifest.mjs" <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
+node "$DEV_WORKBENCH_HOME/skills/test-run/scripts/check-manifest.mjs" <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
 ```
 
 | 作るもの | 中身 |
@@ -202,7 +202,7 @@ node "$DEV_WORKBENCH_HOME/skills/evidence-pack/scripts/check-manifest.mjs" <作�
 | 正本(`--out <フォルダ>`) | 準備 → `order.json` のグループの順(無ければ 単体 → 結合 → 回帰 → 受け入れ の節の順)→ 後始末 → `afterCleanup` のグループ。`duplicateOf` の付いた項目は入らない。項目の `id` は下書きのまま(統合した項目だけ新しい `id`)。本文の中の、行わない項目・統合した項目の `id` は、行う項目の `id` に書き換わる |
 | 証跡(`--trail`) | 下書きの全件を種別の順に並べ、`duplicateOf` の付いた項目も打ち消し線で残したもの。`cases/manifest.json` に書く。ビューアで `cases/` のフォルダを開くと見られる(重なりの判断をレビューする時に使う) |
 
-- 正本のフォルダに結果のある `manifest.json` があると、上書きしない(テストの結果を消さないため)。やり直しは [test-retest](../../test-retest/SKILL.md) の手順で、新しいフォルダに作る
+- 正本のフォルダに結果のある `manifest.json` があると、上書きしない(テストの結果を消さないため)。やり直しは [やり直し(`test-run/retest/`)](../../test-run/retest/SKILL.md) の手順で、新しいフォルダに作る
 - 下書きを直したら、正本を作り直す(結果がまだ無い時)。`check-cases.mjs <作業フォルダ> --manifest <正本のフォルダ>` が、正本が今の下書きと合っているかを見る
 - 種別ごとに並行して書いている間は、`check-cases.mjs <作業フォルダ> --file <cases/unit.json のパス>` で自分のファイルだけを見る(`--file` にはファイルの**パス**を渡す)
 

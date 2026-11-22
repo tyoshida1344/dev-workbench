@@ -60,7 +60,7 @@ for (const file of files.filter(file => file.endsWith('.html'))) {
 }
 
 // 5. エビデンスの見本
-run('エビデンスの見本 evidence/sample', ['skills/evidence-pack/scripts/check-manifest.mjs', 'evidence/sample'])
+run('エビデンスの見本 evidence/sample', ['skills/test-run/scripts/check-manifest.mjs', 'evidence/sample'])
 
 // 6. 設計の見本の相対リンクと画像が、ファイルを指しているか
 function markdownFiles(dir) {
@@ -89,20 +89,43 @@ try {
   run('テストケースのひな形 check-cases', ['skills/test-cases/scripts/check-cases.mjs', work])
   const out = join(work, 'evidence', 'check')
   run('テストケースのひな形 build-manifest', ['skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])
-  run('テストケースのひな形から作った正本 check-manifest', ['skills/evidence-pack/scripts/check-manifest.mjs', out])
+  run('テストケースのひな形から作った正本 check-manifest', ['skills/test-run/scripts/check-manifest.mjs', out])
 }
 finally {
   rmSync(work, { recursive: true, force: true })
 }
 
 // 8. スキルとサブエージェントの frontmatter
-for (const file of files.filter(file => /[\\/]skills[\\/][^\\/]+[\\/]SKILL\.md$/.test(file) || /[\\/]agents[\\/][^\\/]+\.md$/.test(file))) {
+//    ユーザーが呼ぶスキルは skills/<スキル>/SKILL.md だけ(name はフォルダ名)。その中の入れ子の SKILL.md は、親が振り分けて読む手順なので frontmatter を持たない
+//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントは agents/ の下に置き、name はファイル名と同じにする
+const names = new Map()
+for (const file of files.filter(file => /[\\/]skills[\\/].*[\\/](SKILL\.md|agents[\\/][^\\/]+\.md)$/.test(file))) {
+  const where = rel(file)
   const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(readFileSync(file, 'utf8'))
   const name = head && /^name:\s*(\S+)/m.exec(head[1])?.[1]
-  const expected = file.endsWith('SKILL.md') ? dirname(file).split(/[\\/]/).pop() : file.split(/[\\/]/).pop().replace(/\.md$/, '')
-  if (!head) fail(rel(file), 'frontmatter がありません')
-  else if (name !== expected) fail(rel(file), `name を ${expected} にします(今は ${name})`)
-  else if (!/^description:/m.test(head[1])) fail(rel(file), 'description がありません')
+  const isAgent = !file.endsWith('SKILL.md')
+  const isEntry = /^skills\/[^/]+\/SKILL\.md$/.test(where)
+  if (!isAgent && !isEntry) {
+    if (head) fail(where, '入れ子の手順に frontmatter があります(スキルとして一覧に出ないよう、外す)')
+    continue
+  }
+  const expected = isAgent ? where.split('/').pop().replace(/\.md$/, '') : where.split('/')[1]
+  if (!head) fail(where, 'frontmatter がありません')
+  else if (name !== expected) fail(where, `name を ${expected} にします(今は ${name})`)
+  else if (!/^description:/m.test(head[1])) fail(where, 'description がありません')
+  else if (names.has(name)) fail(where, `name が ${names.get(name)} と重なっています: ${name}`)
+  else names.set(name, where)
+}
+
+// 9. 手順の中の相対リンクが、ファイルを指しているか
+for (const file of files.filter(file => /[\\/]skills[\\/].*\.md$/.test(file))) {
+  // コードブロックと `…` の中は、書き方の例なので見ない
+  const text = readFileSync(file, 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
+  for (const m of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+    const href = m[1]
+    if (/^(?:[a-z]+:|#|\/|<)/i.test(href)) continue
+    if (!existsSync(resolve(dirname(file), href.split('#')[0]))) fail(rel(file), `リンク先がありません: ${href}`)
+  }
 }
 
 console.log()

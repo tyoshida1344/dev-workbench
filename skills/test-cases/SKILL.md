@@ -1,9 +1,22 @@
 ---
 name: test-cases
-description: 変更の差分・イシュー・設計から、人が手で行うテストのケース(単体・結合・回帰・受け入れ)を作り、エビデンスビューアで見られる未実施の項目の manifest.json にまとめる。「テストケースを作って」「手動テストの項目を作って」「テストの観点を洗い出して」「動作確認の手順をまとめて」「QAに渡すテストの資料がほしい」と言われた時に使う。種別ごとにサブエージェント(test-cases-unit / integration / regression / acceptance)で並行に書き、test-cases-review で漏れを見る。作ったケースを実施するのは test-run、やり直すのは test-retest。
+description: >-
+  テストケースを作る時と、作ったテストケースをレビューする時の入口。変更の差分・イシュー・設計から、人が手で行うテストのケース(単体・結合・回帰・受け入れ)を種別ごとのサブエージェントで並行に書き、エビデンスビューアで見られる未実施の項目の manifest.json にまとめる。「テストケースを作って」「手動テストの項目を作って」「テストの観点を洗い出して」「動作確認の手順をまとめて」「QAに渡すテストの資料がほしい」と言われた時に使う。「テストケースをレビューして」「ケースに漏れが無いか見て」と言われた時も、このスキルからテストケースのレビューの手順へ振り分ける。ケースを行う・やり直すのは test-run。
 ---
 
 # テストケースを作る
+
+## 振り分け
+
+頼まれたことで、読む手順を選ぶ。
+
+| 頼まれたこと | 読む手順 |
+|---|---|
+| テストケースを作る・作り直す・観点を洗い出す | このファイル |
+| 作ったテストケースをレビューする・漏れを見る | [review/SKILL.md](review/SKILL.md)(テストケースのレビュー。ケースを作る流れの中では、サブエージェント `test-cases-review` がこの手順で行う) |
+| 作ったケースを行う・やり直す | `test-run` スキル |
+
+手順の場所は、このスキルのフォルダ(`$DEV_WORKBENCH_HOME/skills/<スキル>/`)からの相対。ほかのスキルの手順は `$DEV_WORKBENCH_HOME/skills/` からの相対(`review/impl/` など)で書く。
 
 変更の差分からテストケースを導き、作業フォルダに**下書き**(種別ごとの JSON)を書き、
 エビデンスビューアが読む **`manifest.json`**(`result` の無い、未実施の項目)にまとめて渡すまでを行う。
@@ -21,8 +34,8 @@ description: 変更の差分・イシュー・設計から、人が手で行う�
 
 - 雛形: [templates/cases/](templates/cases/)(フォルダごと写して使う)
 - 形と書き方: [reference/format.md](reference/format.md)
-- サブエージェント: `$DEV_WORKBENCH_HOME/agents/test-cases-{unit,integration,regression,acceptance,review}.md`
-- 受け入れ項目の作り方(3つの見方・観点の出どころ・撮る前の見直し): `$DEV_WORKBENCH_HOME/skills/evidence-pack/reference/cases.md`。このスキルは、その考え方を、人が行うテストの4つの種別に広げたもの
+- サブエージェント: `$DEV_WORKBENCH_HOME/skills/test-cases/agents/test-cases-{unit,integration,regression,acceptance,review}.md`
+- 受け入れ項目の作り方(3つの見方・観点の出どころ・撮る前の見直し): `$DEV_WORKBENCH_HOME/skills/test-cases/reference/acceptance-items.md`。このスキルは、その考え方を、人が行うテストの4つの種別に広げたもの
 
 ## ゴール(ケースが満たすこと)
 
@@ -70,7 +83,7 @@ description: 変更の差分・イシュー・設計から、人が手で行う�
 - `<リポジトリ名>` は `gh repo view --json name -q .name`(使えなければ `git rev-parse --show-toplevel` のフォルダ名)
 - 以降のパスは、Read / Write / Agent に**絶対パスに展開して**渡す(環境変数は展開されない)
 - cwd の外に書き込むので、作業フォルダを書き込みの許可に入れておく(`additionalDirectories` か `--add-dir`)
-- サブエージェントは `~/.claude/agents/` に `$DEV_WORKBENCH_HOME/agents/test-cases-*.md` を置いて(リンクして)使う。見つからなければ、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す
+- サブエージェントは `~/.claude/agents/` に `$DEV_WORKBENCH_HOME/skills/test-cases/agents/test-cases-*.md` を置いて(リンクして)使う。見つからなければ、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す
 
 ## 全体の流れ
 
@@ -104,7 +117,7 @@ gh issue view <イシュー番号> --comments
 
 - 作業フォルダに設計(`spec.md` 最終仕様・`acceptance.md` 受け入れ基準・`test.md` テストの方針)があれば読む。決まった仕様と受け入れ基準は要件の出どころに、テストの方針(範囲・環境・確かめないこと)は2節以降の前提にする
 - **イシュー番号**は、ユーザーの指示・ブランチ名・PR(`gh pr view --json closingIssuesReferences`)・イシューのURLから取る。**分からなければ推測せず、ユーザーに聞く**
-- 作業フォルダは `$DEV_WORKBENCH_DOCS/<リポジトリ名>/<イシュー番号>/`。**同じイシューのケースを作り直す時(再テストに絞る・仕様が変わって作り直す、など)だけ**、元を残したまま `<イシュー番号>_<連番>`(例: `123_2`)を作る(元は書き換えない)。作り直しの範囲(イシュー全体か、特定の変更だけの再テストか)は、推測せずユーザーに確かめ、再テストなら、対象のコミットの範囲と、要件をその変更で動きが変わる点に絞ったものを `plan.json` に書く。結果を残したまま一部の項目だけやり直すなら、作り直さず [test-retest](../test-retest/SKILL.md) を使う
+- 作業フォルダは `$DEV_WORKBENCH_DOCS/<リポジトリ名>/<イシュー番号>/`。**同じイシューのケースを作り直す時(再テストに絞る・仕様が変わって作り直す、など)だけ**、元を残したまま `<イシュー番号>_<連番>`(例: `123_2`)を作る(元は書き換えない)。作り直しの範囲(イシュー全体か、特定の変更だけの再テストか)は、推測せずユーザーに確かめ、再テストなら、対象のコミットの範囲と、要件をその変更で動きが変わる点に絞ったものを `plan.json` に書く。結果を残したまま一部の項目だけやり直すなら、作り直さず [やり直し(`test-run/retest/`)](../test-run/retest/SKILL.md) を使う
 
 [templates/cases/](templates/cases/) を `<作業フォルダ>/cases/` に写す(すでにあれば上書きしない)。`plan.json` には次を仮に置く。
 
@@ -130,7 +143,7 @@ gh issue view <イシュー番号> --comments
 
 - 同じ画面を見ていても、導き方が違えば別の観点。結合は「流れが正しいか」、受け入れは「頼まれたことが実現されたか」。1つの観点を種別をまたいで混ぜない
 - 4つの種別とも考える。観点が1つも出ない種別はファイルを作らず、`plan.json` の `notes` に「単体: 該当なし(理由)」と1文残す。**確かめないこと(`excluded`)にはしない**
-- evidence-pack の cases.md の3つの見方との対応: 「要件」は受け入れ、「既存機能への影響」は回帰、「設計で追加した仕様」は単体・結合で拾う
+- 受け入れ項目の作り方(reference/acceptance-items.md) の3つの見方との対応: 「要件」は受け入れ、「既存機能への影響」は回帰、「設計で追加した仕様」は単体・結合で拾う
 
 ### 観点の出どころ
 
@@ -488,8 +501,8 @@ grep -rn "対象の関数名やキーワード" <テストのフォルダ>
 ### 7-2. 作って確かめる
 1. `node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>`
 2. `node "$DEV_WORKBENCH_HOME/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>`(正本と、証跡の `cases/manifest.json` を作る)
-3. `node "$DEV_WORKBENCH_HOME/skills/evidence-pack/scripts/check-manifest.mjs" <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>`(`manifest.json` の形)
-4. 証跡の項目を直したら、**正本を作り直して**から、`check-cases.mjs <作業フォルダ> --manifest <正本のフォルダ>` で合っているかを確かめる。正本にすでに結果があれば上書きされないので、[test-retest](../test-retest/SKILL.md) の手順で新しいフォルダに作る
+3. `node "$DEV_WORKBENCH_HOME/skills/test-run/scripts/check-manifest.mjs" <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>`(`manifest.json` の形)
+4. 証跡の項目を直したら、**正本を作り直して**から、`check-cases.mjs <作業フォルダ> --manifest <正本のフォルダ>` で合っているかを確かめる。正本にすでに結果があれば上書きされないので、[やり直し(`test-run/retest/`)](../test-run/retest/SKILL.md) の手順で新しいフォルダに作る
 
 ### 7-3. 正本で変わること
 - 節は、準備 → `order.json` のグループ(見出しは `G01 <title>(<who>)`)→ 後始末 → `afterCleanup` のグループ、の順になる。グループの項目の種別が1つなら、節にその `kind` が付く
