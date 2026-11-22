@@ -123,3 +123,4 @@ bash scripts/link-global.sh      # macOS・Linux
 - データは持たない。読む先はURLのパラメータで受け取る
 - 共通の部品は [`lib/`](./lib/) にある。見た目(`style.css`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)
+- コミットの前に `node scripts/check.mjs` を通す。画面は `.claude/launch.json` の設定で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
