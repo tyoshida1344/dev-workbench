@@ -26,7 +26,7 @@ Copy-Item -Recurse <dev-workbenchの場所>\skills\evidence-pack <使うプロ�
 | [SKILL.md](./SKILL.md) | 手順。フォルダを作る → 撮る → `manifest.json` を書く → 確かめる → Driveに上げてURLを渡す |
 | [reference/manifest.md](./reference/manifest.md) | `manifest.json` の形。項目の一覧と例 |
 | [reference/cases.md](./reference/cases.md) | 受け入れ項目の作り方。ゴール、要件・既存機能への影響・設計で追加した仕様の3つの見方、観点の出どころと技法、撮る前の見直し(自分と別の目) |
-| [reference/capture.md](./reference/capture.md) | 撮り方のこつ。画面の大きさ・動画の始め方と止め方・日本語入力・端末の切り替えなど |
+| [reference/capture.md](./reference/capture.md) | 撮り方のこつ。条件を揃える・項目を切り離す・撮る時機・画面に映らないものの残し方・起こしにくい状態の作り方 |
 | [templates/manifest.json](./templates/manifest.json) | 写して埋めるひな形 |
 | [scripts/check-manifest.mjs](./scripts/check-manifest.mjs) | フォルダを確かめる(Nodeだけで動く。`node check-manifest.mjs <フォルダ>`) |
 | [config.json](./config.json) | ビューアのURL(`viewer`)。**写したら最初にここを書き換える。**スキルの中でURLを書くのはここだけ |
