@@ -1,6 +1,6 @@
 {
   "schema": "dev-workbench/evidence@1",
-  "title": "サンプル アイデア帳の受入確認",
+  "title": "サンプル #12 アイデアを消せるようにする の受入確認",
   "source": {
     "repository": "tyoshida1344/dev-workbench",
     "url": "https://github.com/tyoshida1344/dev-workbench/tree/main/evidence/sample"
@@ -9,7 +9,12 @@
   "summary": { "ok": 3, "partial": 1, "ng": 0 },
   "notes": [
     "ビューアの見本。実際の開発のエビデンスではなく、画面も動画も作り物",
-    "Driveに上げず、?base=sample/ で開いている(ログインは要らない)"
+    "Driveに上げず、?base=sample/ で開いている(ログインは要らない)",
+    "設計ビューアの見本(design/sample)と同じ、#12 アイデアを消せるようにする話。一覧と追加は今までどおり動くことの確認で、消すのテストケースはまだ行っていない"
+  ],
+  "requirements": [
+    { "id": "R1", "text": "「消す」を押して確かめの窓で「消す」を押すと、その行が一覧から無くなる" },
+    { "id": "R2", "text": "消したあと、知らせ `消しました` が出て、見出しの件数が減る" }
   ],
   "sections": [
     {
@@ -60,6 +65,7 @@
           "id": "5",
           "title": "消した行が一覧から無くなり、ほかの行は残ること",
           "priority": "high",
+          "requirement": ["R1", "R2"],
           "given": "一覧に `ひとつめ` `ふたつめ` の2件がある",
           "steps": ["`ひとつめ` の行の「消す」を押す", "確かめの窓で「消す」を押す"],
           "expect": ["一覧: [\"ふたつめ\"]", "見出し: `アイデア (1)`", "知らせ: `消しました`"]

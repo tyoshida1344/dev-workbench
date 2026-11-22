@@ -122,8 +122,30 @@ async function collectFromDrive() {
     .map(entry => `${folder.name}/${entry.name}`)))
   const evidence = root.some(entry => entry.folder && entry.name === 'evidence')
     ? (await state.source.list('evidence')).filter(entry => entry.folder)
+        .map(folder => ({ name: folder.name, href: `../evidence/?folder=${encodeURIComponent(folder.id)}` }))
     : []
   return { paths: [...paths, ...nested.flat()], evidence }
+}
+
+/**
+ * URLから読む時の、evidence/ の下のフォルダの代わり。作業フォルダの evidence.json に [{ name, base }] で書く(base は作業フォルダからの相対)。
+ * 同じサイトの中のものだけを、エビデンスビューアへのリンクにする。
+ */
+async function evidenceFromUrl() {
+  let listed
+  try {
+    listed = await (await state.source.file('evidence.json')).json()
+  }
+  catch {
+    return []
+  }
+  if (!Array.isArray(listed)) return []
+  return listed.flatMap((entry) => {
+    if (typeof entry?.name !== 'string' || typeof entry?.base !== 'string') return []
+    const url = new URL(entry.base, state.source.base)
+    if (url.origin !== location.origin) return []
+    return [{ name: entry.name, href: `../evidence/?base=${encodeURIComponent(url.pathname)}` }]
+  })
 }
 
 /** URLから読む時は、フォルダの中身を一覧できない。決まったファイルから、相対リンクをたどって文書を集める */
@@ -150,7 +172,7 @@ async function collectFromUrl() {
       }
     }
   }
-  return { paths: found, evidence: [] }
+  return { paths: found, evidence: await evidenceFromUrl() }
 }
 
 function renderList(evidence) {
@@ -180,7 +202,7 @@ function renderList(evidence) {
       el('a', {
         text: folder.name,
         className: 'item plain',
-        attrs: { href: `../evidence/?folder=${encodeURIComponent(folder.id)}`, title: 'エビデンスビューアで開く' },
+        attrs: { href: folder.href, title: 'エビデンスビューアで開く' },
       }),
     ]))))
   }

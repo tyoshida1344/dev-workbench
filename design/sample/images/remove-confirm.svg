@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240" font-family="sans-serif" font-size="14">
+  <rect width="480" height="240" fill="#ffffff"/>
+  <text x="20" y="34" font-size="18" font-weight="bold" fill="#1b2a33">アイデア (2)</text>
+  <rect x="20" y="50" width="440" height="40" fill="#f4f5f6" stroke="#d5dde2"/>
+  <text x="34" y="75" fill="#1b2a33">ひとつめ</text>
+  <text x="414" y="75" fill="#b3261e">消す</text>
+  <rect x="20" y="98" width="440" height="40" fill="#f4f5f6" stroke="#d5dde2"/>
+  <text x="34" y="123" fill="#1b2a33">ふたつめ</text>
+  <text x="414" y="123" fill="#b3261e">消す</text>
+  <rect x="0" y="0" width="480" height="240" fill="#1b2a33" opacity="0.35"/>
+  <rect x="90" y="70" width="300" height="110" rx="6" fill="#ffffff" stroke="#d5dde2"/>
+  <text x="110" y="105" fill="#1b2a33">「ひとつめ」を消しますか?</text>
+  <rect x="210" y="130" width="76" height="32" rx="4" fill="#ffffff" stroke="#d5dde2"/>
+  <text x="230" y="151" fill="#1b2a33">やめる</text>
+  <rect x="296" y="130" width="76" height="32" rx="4" fill="#b3261e"/>
+  <text x="320" y="151" fill="#ffffff">消す</text>
+</svg>
