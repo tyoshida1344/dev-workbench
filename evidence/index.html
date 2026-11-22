@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>エビデンスビューア</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../lib/style.css">
   <script src="../config.js"></script>
-  <script src="app.js" defer></script>
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <header class="bar">
@@ -25,8 +25,10 @@
   <div id="viewer" class="viewer" hidden>
     <nav class="list" aria-label="受入確認の項目">
       <ul id="notes" class="notes"></ul>
+      <h2 id="requirements-title" class="section-title" hidden>要件</h2>
+      <ul id="requirements" class="requirements"></ul>
       <div id="sections"></div>
-      <h2 class="section-title">添付</h2>
+      <h2 id="attachments-title" class="section-title">添付</h2>
       <ul id="attachments" class="items"></ul>
     </nav>
 
@@ -43,8 +45,11 @@
       <video id="player" controls playsinline></video>
       <img id="image" alt="" hidden>
       <pre id="text" class="text" hidden></pre>
+      <p id="no-media" class="no-media" hidden></p>
       <div class="detail">
         <h2 id="item-title"></h2>
+        <p id="item-tags" class="case-tags" hidden></p>
+        <dl id="case-fields" class="case-fields"></dl>
         <h3 id="checks-title" class="detail-label" hidden>確かめたこと</h3>
         <ul id="item-checks" class="checks"></ul>
         <p id="item-note" class="note" hidden></p>

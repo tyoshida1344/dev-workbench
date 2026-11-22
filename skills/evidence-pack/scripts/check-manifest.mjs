@@ -11,6 +11,9 @@ const RESULTS = ['ok', 'partial', 'ng']
 const VIDEO = /\.(webm|mp4|mov)$/i
 const IMAGE = /\.(png|jpe?g|webp)$/i
 
+const KINDS = ['setup', 'unit', 'integration', 'regression', 'acceptance', 'cleanup']
+const PRIORITIES = ['high', 'mid', 'low']
+
 const errors = []
 const warnings = []
 const fail = (where, message) => errors.push(`${where}: ${message}`)
@@ -62,21 +65,50 @@ if (manifest.recordedAt && !/^\d{4}-\d{2}-\d{2}$/.test(manifest.recordedAt)) fai
 if (manifest.notes && !Array.isArray(manifest.notes)) fail('notes', '配列にします')
 
 const counts = { ok: 0, partial: 0, ng: 0 }
+/** 未実施(result の無い)項目の数。テストケースを書いた時点では、すべての項目が未実施になる */
+let pending = 0
 const ids = new Map()
+const duplicates = []
 const sections = manifest.sections ?? []
 if (!sections.length) fail('sections', '節がありません')
+
+const requirementIds = new Set()
+if (manifest.requirements !== undefined) {
+  if (!Array.isArray(manifest.requirements)) fail('requirements', '配列にします')
+  else manifest.requirements.forEach((requirement, r) => {
+    if (!requirement?.id || !requirement?.text) fail(`requirements[${r}]`, 'id と text を書きます')
+    else requirementIds.add(String(requirement.id))
+  })
+}
+
+/** 文字列か、文字列の配列 */
+const isTextList = value => typeof value === 'string' || (Array.isArray(value) && value.every(line => typeof line === 'string'))
 
 sections.forEach((section, s) => {
   const at = `sections[${s}]`
   if (!section.title) fail(at, '節の名前がありません')
+  if (section.kind !== undefined && !KINDS.includes(section.kind)) fail(at, `kind は ${KINDS.join(' / ')} のどれかにします(今は ${JSON.stringify(section.kind)})`)
   const items = section.items ?? []
   if (!items.length) warn(at, `項目がありません: ${section.title ?? ''}`)
   items.forEach((item, i) => {
     const where = `${at}.items[${i}]${item.id ? ` (#${item.id})` : ''}`
     if (!item.title) fail(where, '受入確認の文言がありません')
-    if (item.result === undefined) warn(where, 'result がありません(一覧に印が出ません)')
+    if (item.result === undefined) {
+      if (!item.duplicateOf) pending += 1
+    }
     else if (!RESULTS.includes(item.result)) fail(where, `result は ${RESULTS.join(' / ')} のどれかにします(今は ${JSON.stringify(item.result)})`)
-    else counts[item.result] += 1
+    else if (!item.duplicateOf) counts[item.result] += 1
+    for (const key of ['steps', 'expect']) {
+      if (item[key] !== undefined && !isTextList(item[key])) fail(where, `${key} は文字列か、文字列の配列にします`)
+    }
+    for (const key of ['given', 'basis', 'note']) {
+      if (item[key] !== undefined && typeof item[key] !== 'string') fail(where, `${key} は文字列にします`)
+    }
+    if (item.priority !== undefined && !PRIORITIES.includes(item.priority)) fail(where, `priority は ${PRIORITIES.join(' / ')} のどれかにします`)
+    for (const id of [].concat(item.requirement ?? [])) {
+      if (!requirementIds.has(String(id))) fail(where, `requirements に無い要件です: ${id}`)
+    }
+    if (item.duplicateOf !== undefined) duplicates.push({ where, to: String(item.duplicateOf) })
     if (item.id !== undefined) {
       const id = String(item.id)
       if (ids.has(id)) fail(where, `id が重なっています: ${id} (${ids.get(id)} と同じ)`)
@@ -92,7 +124,7 @@ sections.forEach((section, s) => {
     if (item.video && item.image) fail(where, 'video と image はどちらか一方にします(両方あると動画だけが出ます)')
     if (item.video) checkFile(where, item.video, VIDEO, '動画')
     else if (item.image) checkFile(where, item.image, IMAGE, '画像')
-    else warn(where, '動画も画像も無いので、一覧で押せません')
+    else if (item.result !== undefined && !item.duplicateOf) warn(where, '結果はあるのに、動画も画像もありません')
   })
 })
 
@@ -104,13 +136,18 @@ else attachments.forEach((attachment, a) => {
   checkFile(where, attachment.file, null, '添付')
 })
 
+for (const { where, to } of duplicates) {
+  if (!ids.has(to)) fail(where, `duplicateOf の先の項目がありません: ${to}`)
+}
+
 if (manifest.summary) {
+  if (manifest.summary.pending !== undefined) fail('summary', '未実施の数は書きません(ビューアが数えます)')
   for (const result of RESULTS) {
     const written = manifest.summary[result] ?? 0
     if (written !== counts[result]) fail('summary', `${result} は ${counts[result]} 件ですが ${written} と書いてあります`)
   }
 }
-else warn('summary', '件数がありません(見出しの横に出ません)')
+else if (counts.ok + counts.partial + counts.ng) warn('summary', '件数がありません')
 
 for (const name of names) {
   if (name === 'manifest.json' || name === 'README.md' || used.has(name)) continue
@@ -121,7 +158,7 @@ for (const name of names) {
 const total = counts.ok + counts.partial + counts.ng
 for (const line of warnings) console.log(`注意  ${line}`)
 for (const line of errors) console.log(`エラー ${line}`)
-console.log(`\n${dir}: 項目 ${total} 件(✓${counts.ok} / !${counts.partial} / ✕${counts.ng})、添付 ${attachments.length} 件`)
+console.log(`\n${dir}: 項目 ${total + pending} 件(✓${counts.ok} / !${counts.partial} / ✕${counts.ng}${pending ? ` / 未実施 ${pending}` : ''})、添付 ${attachments.length} 件`)
 console.log(errors.length ? `エラー ${errors.length} 件。直してからDriveに上げます。` : 'エラーはありません。')
 if (!errors.length && viewer) console.log(`Driveに上げたら: ${viewer}?folder=<フォルダID>`)
 process.exit(errors.length ? 1 : 0)

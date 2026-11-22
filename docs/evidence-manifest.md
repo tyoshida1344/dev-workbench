@@ -56,13 +56,22 @@
 | `summary` | | 結果の件数。`ok`(期待どおり)/ `partial`(一部だけ確認)/ `ng`(期待どおりでない) |
 | `notes` | | 一覧の上に出す、全体にかかる注意 |
 | `sections[].title` | ○ | 受入確認の節 |
+| `sections[].kind` | | テストの種別。`setup` / `unit` / `integration` / `regression` / `acceptance` / `cleanup`。節の見出しに添えて出す |
 | `sections[].items[].id` | | 番号。一覧と見出しに出す |
 | `sections[].items[].title` | ○ | 受入確認の文言 |
-| `sections[].items[].result` | | `ok` / `partial` / `ng`。一覧に ✓ / ! / ✕ で出す(`partial` と `ng` は行に色を敷いて目立たせる) |
+| `sections[].items[].result` | | `ok` / `partial` / `ng`。無ければ未実施。一覧に ✓ / ! / ✕ で出す(`partial` と `ng` は行に色を敷いて目立たせる) |
 | `sections[].items[].checks` | | 確かめたこと(1行ずつ)。頭に ○ / △ / × を付けると、一覧と同じ印で出す |
 | `sections[].items[].note` | | 補足 |
+| `sections[].items[].requirement` | | 満たす要件の `id`(`R1`、または `["R1", "R2"]`)。受け入れのテストの項目に付ける |
+| `sections[].items[].priority` | | `high` / `mid` / `low` |
+| `sections[].items[].given` | | 前提。満たしていないと結果が変わる状態 |
+| `sections[].items[].steps` | | 操作の手順(文字列の配列。番号を振って出す)。1つなら文字列でもよい |
+| `sections[].items[].expect` | | 期待する結果(文字列の配列。確認することごとに分ける)。1つなら文字列でもよい |
+| `sections[].items[].basis` | | 期待する結果の根拠(コードの `path:line` など)。折りたたんで出す |
+| `sections[].items[].duplicateOf` | | ほかの項目で確かめられるので行わない項目の、その項目の `id`。打ち消し線で出し、件数に数えない |
 | `sections[].items[].video` | | 動画のファイル名(`.webm` `.mp4` `.mov`)。`image` とはどちらか一方 |
 | `sections[].items[].image` | | 画像のファイル名(`.png` `.jpg` `.jpeg` `.webp`)。`video` とはどちらか一方 |
+| `requirements[]` | | 要件の一覧。`id`(`R1` など)と `text`。一覧の上に出す |
 | `attachments[]` | | 添付。`.webm` `.mp4` `.mov` はプレーヤーで、`.png` `.jpg` `.jpeg` `.webp` は画像で、それ以外はテキストとして開く |
 
 `video` と `image` は、1つの項目にはどちらか一方だけを書く(両方あれば動画を見せる)。どちらも無い項目は押せない。
@@ -70,5 +79,25 @@
 
 動画と画像は、プレーヤーと同じ場所・同じ大きさに出る。次へ/前へは動画と画像の両方で止まり、添付のテキストは飛ばす。
 連続再生で次へ進むのは動画が終わった時だけなので、画像で勝手に進むことはない。
+
+## テストケースとして書く
+
+テストケースは、`result` を書かずに(未実施として)同じ `manifest.json` に書く。
+テストを行ったら、項目ごとに `result`・`checks`・`video` か `image` を足し、`summary` を書く。
+
+```json
+{
+  "id": "tc02-01",
+  "title": "保存した名前が一覧に出ること",
+  "priority": "high",
+  "given": "名前が空の行が1件ある",
+  "steps": ["1行目の「名前」に `ひとつめ` を入れる", "「保存」を押す"],
+  "expect": ["一覧の1行目: `ひとつめ`", "トースト: `保存しました`"]
+}
+```
+
+- `title` は「何が正しいと言えれば合格か」を1文で書く(操作や期待する結果の言い換えにしない)
+- 未実施の項目は一覧で `・` になり、押すと前提・手順・期待する結果が出る(動画・画像はまだ無い)
+- `summary` は、結果を書いた項目だけを数える。未実施の数は書かない(ビューアが数える)
 
 文字はすべてテキストとして表示する(HTMLとしては解釈しない)。

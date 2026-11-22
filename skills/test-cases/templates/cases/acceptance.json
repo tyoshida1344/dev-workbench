@@ -1,0 +1,20 @@
+{
+  "sections": [
+    {
+      "id": "tc04",
+      "title": "TC-04 要件の受け入れ",
+      "kind": "acceptance",
+      "items": [
+        {
+          "id": "tc04-01",
+          "title": "何が正しいと言えれば合格かを1文で書く(例: R1 が満たされていること)",
+          "requirement": "R1",
+          "priority": "high",
+          "given": "一覧に1件ある",
+          "steps": ["一覧を開く"],
+          "expect": "R1 を満たしたと判定できる、画面に出る具体的な値"
+        }
+      ]
+    }
+  ]
+}

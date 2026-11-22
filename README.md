@@ -11,7 +11,35 @@
 
 | 道具 | 場所 | 使い方 |
 |---|---|---|
-| エビデンスビューア | [`evidence/`](./evidence/) | 受入確認の動画を、項目の一覧から見て回る。項目を押すとその動画を再生し、連続再生もできる |
+| 設計ビューア | [`design/`](./design/) | イシューごとの設計(Markdown)を、文書の一覧から読む |
+| エビデンスビューア | [`evidence/`](./evidence/) | テストケースと受入確認の動画・画像を、項目の一覧から見て回る。項目を押すとその動画を再生し、連続再生もできる |
+
+設計・テストケース・エビデンスは、イシューごとにDriveの1つのフォルダ(作業フォルダ)にまとめて置く。置き方は [docs/workspace.md](./docs/workspace.md)。
+
+### ログイン(どの道具も同じ)
+
+1. Driveのフォルダを開くと、Googleでのログインを求められる。押すとGoogleのログイン画面へ移り、ログインすると開いていたページに戻ってくる。フォルダを見られるアカウントでログインする
+2. 1つの道具でログインすれば、同じタブのほかの道具でもそのまま読める
+
+- 読めるのは、ログインした人がもともとDriveで見られるファイルだけ。見られる人はフォルダの共有設定で決まる
+- ログインの情報は見ている人のブラウザの中にだけあり、どこにも送らない
+- 受け取ったトークンは、期限(1時間)までタブの中(`sessionStorage`)に置く。その間は読み直してもログインは要らない
+- 一度ログインできたら、次からは開いた時に画面を出さずにログインし直す(一瞬Googleへ移って戻る)。Googleからログアウトしている時などは、ボタンが出る
+- 見ている途中で1時間が過ぎたら「ログインし直す」が出て、押すと見ていたところに戻ってくる
+
+### 設計ビューア
+
+```
+<サイト>/design/?folder=<作業フォルダのID>
+```
+
+どう見えるかは [`design/sample/`](./design/sample/) の見本で確かめられる(Driveもログインも要らない)。
+ビューアを `?base=sample/` を付けて開く。
+
+- 作業フォルダの `index.md`・`spec.md` などを、設計を進める順に呼び名で並べ、`search/` などの下書きをその下に並べる
+- 文書の中の相対リンク・画像はビューアの中で開く。HTMLは書いても文字のまま出る
+- 作業フォルダの `evidence/` の下のフォルダは「テスト・エビデンス」として並び、押すとエビデンスビューアで開く
+- 決まりは [docs/design-folder.md](./docs/design-folder.md)
 
 ### エビデンスビューア
 
@@ -22,17 +50,11 @@
 どう見えるかは [`evidence/sample/`](./evidence/sample/) の見本で確かめられる(Driveもログインも要らない)。
 ビューアを `?base=sample/` を付けて開く。
 
-1. 開くと、Googleでログインを求められる。押すとGoogleのログイン画面へ移り、ログインするとビューアに戻ってくる。エビデンスのフォルダを見られるアカウントでログインする
-2. フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
-
-- 読めるのは、ログインした人がもともとDriveで見られるファイルだけ。見られる人はフォルダの共有設定で決まる
-- ログインの情報は見ている人のブラウザの中にだけあり、どこにも送らない
-- 受け取ったトークンは、期限(1時間)までタブの中(`sessionStorage`)に置く。その間は読み直してもログインは要らない
-- 一度ログインできたら、次からは開いた時に画面を出さずにログインし直す(一瞬Googleへ移って戻る)。Googleからログアウトしている時などは、ボタンが出る
-- 見ている途中で1時間が過ぎたら「ログインし直す」が出て、押すと見ていた項目に戻ってくる
+- フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
+- テストケースも同じ `manifest.json` に、結果の無い(未実施の)項目として書く。押すと前提・手順・期待する結果が出る。テストを行うと、同じ項目に結果と動画・画像が付く
 - `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)。書いたものの見本は [`evidence/sample/`](./evidence/sample/)
 
-手元で確かめる時は、`manifest.json` と動画を置いたフォルダを簡易サーバーで配り、`?base=<そのURL>` で開く。
+手元で確かめる時は、ファイルを置いたフォルダを簡易サーバーで配り、`?base=<そのURL>` で開く(設計ビューアも同じ)。
 
 ## 準備(初回だけ)
 
@@ -46,8 +68,8 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
    - スコープに `https://www.googleapis.com/auth/drive.readonly` を足す
 4. 「認証情報」→「認証情報を作成」→「OAuth クライアント ID」。種類は **ウェブ アプリケーション**
    - 「承認済みの JavaScript 生成元」に、公開先の生成元(`<サイト>` のうち `https://ホスト名` まで)を登録する
-   - 「承認済みのリダイレクト URI」に `<サイト>/evidence/` を登録する(ログインのあと戻ってくる先。末尾の `/` まで同じにする)
-   - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:<ポート>/<パス>/evidence/` も足す
+   - 「承認済みのリダイレクト URI」に `<サイト>/auth/` を登録する(ログインのあと戻ってくる先。どの道具からログインしても、ここに戻ってから元のページへ戻る。末尾の `/` まで同じにする)
+   - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:<ポート>/<パス>/auth/` も足す
 5. 発行されたクライアントIDを [`config.js`](./config.js) の `googleClientId` に書く
 
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
@@ -55,16 +77,48 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 ## 他のプロジェクトから使う
 
-開発をしているプロジェクトのClaude Codeにスキルを置くと、受入確認のエビデンスをビューアで見られる形(動画・画像と `manifest.json`)にまとめるところまでを任せられる。
+開発をしているプロジェクトの Claude Code から、設計・テストケース作成・テストの実施をスキルとして使える。
+書いたものは開発しているリポジトリにも、このリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置いてビューアで見る。
 
-| スキル | 場所 | 何をする |
+| まとまり | スキル・サブエージェント | 何をする |
 |---|---|---|
-| evidence-pack | [`skills/evidence-pack/`](./skills/evidence-pack/) | エビデンスのフォルダを作り、`manifest.json` を書き、形を確かめて、Driveに上げたURLを渡すまで |
+| 設計 | `design`(全体の進め方)、`design-01-issue-review` 〜 `design-10-test-plan` | イシューから、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画を順に書く。設計ビューアで読む |
+| テストケース | `test-cases`、サブエージェント `test-cases-unit` / `-integration` / `-regression` / `-acceptance` / `-review` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む |
+| レビュー | `review`(入口と共通の進め方)、`review-design` / `review-impl` / `review-test-cases`(成果物ごと)、`review-perf` / `review-regression` / `review-ux`(観点ごと) | 設計・実装・テストケースを、観点ごとのチェックリストの形で指摘する。実装のレビューでは、回帰・性能・使い勝手も合わせて当てる。単体では報告だけで、頼まれた時は直すところまで |
+| テストの実施 | `test-run`、`test-retest` | ケースを実施して、結果と動画・画像を同じ `manifest.json` に足す。直した後は、やり直す項目だけを新しいフォルダで行う |
+| エビデンス | `evidence-pack` | PRの受入確認のエビデンスをまとめる(このスキルだけは写して使う。[skills/evidence-pack/README.md](./skills/evidence-pack/README.md)) |
 
-使うプロジェクトの `.claude/skills/` にフォルダごと写す。詳しくは [skills/evidence-pack/README.md](./skills/evidence-pack/README.md)。
+### 使い始める(PCごとに1回)
+
+1. このリポジトリを手元に clone する
+2. スキルとサブエージェントを `~/.claude` にリンクする(コピーではないので、`git pull` すれば新しくなる)
+
+```
+powershell -ExecutionPolicy Bypass -File scripts/link-global.ps1  # Windows(サブエージェントのリンクには開発者モードが要る)
+bash scripts/link-global.sh      # macOS・Linux
+```
+
+3. [Google ドライブ パソコン版](https://www.google.com/drive/download/) を入れ、同期フォルダの中に作業の置き場を作る
+4. `~/.claude/settings.json`(ユーザーの設定)に、次を足す
+
+```json
+{
+  "env": {
+    "DEV_WORKBENCH_HOME": "<このリポジトリの場所>",
+    "DEV_WORKBENCH_DOCS": "<作業の置き場>"
+  },
+  "permissions": {
+    "additionalDirectories": ["<このリポジトリの場所>", "<作業の置き場>"]
+  }
+}
+```
+
+スキルはビューアのURLを [`skills/config.json`](./skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
+プラグインとして配るかどうかは、イシューで検討している。
 
 ## 道具を足す時
 
 - 1つの道具につき1つのディレクトリを作り、トップの [index.html](./index.html) と上の表に足す
 - データは持たない。読む先はURLのパラメータで受け取る
+- 共通の部品は [`lib/`](./lib/) にある。見た目(`style.css`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)

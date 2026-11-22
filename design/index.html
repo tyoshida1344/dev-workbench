@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>設計ビューア</title>
+  <link rel="stylesheet" href="../lib/style.css">
+  <script src="../config.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-main">
+      <h1 id="title">設計ビューア</h1>
+      <span id="subtitle" class="muted bar-sub" hidden></span>
+    </div>
+  </header>
+
+  <section id="gate" class="gate">
+    <p id="gate-message">読み込み中...</p>
+    <button id="sign-in" type="button" hidden>Googleでログインして開く</button>
+  </section>
+
+  <div id="viewer" class="viewer" hidden>
+    <nav id="files" class="list" aria-label="設計の文書"></nav>
+
+    <section class="stage" aria-live="polite">
+      <p id="reauth" class="reauth" hidden>
+        ログインの期限が切れました。
+        <button id="reauth-button" type="button">Googleでログインし直す</button>
+      </p>
+      <article id="doc" class="doc"></article>
+    </section>
+  </div>
+</body>
+</html>
