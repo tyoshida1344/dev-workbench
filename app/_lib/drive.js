@@ -132,7 +132,10 @@ export class UrlSource {
   }
 
   async file(path) {
-    const response = await fetch(new URL(path.split('/').map(encodeURIComponent).join('/'), this.base))
+    // 読むのは base のフォルダの中だけ。.. や空の部分で外へ出るパスは読まない(Drive から読む時と同じ範囲にする)
+    const parts = path.split('/')
+    if (parts.some(part => part === '' || part === '.' || part === '..')) throw new Error(`フォルダの外は読めません: ${path}`)
+    const response = await fetch(new URL(parts.map(encodeURIComponent).join('/'), this.base))
     if (!response.ok) throw new Error(`${path} を読めませんでした(${response.status})`)
     return response
   }

@@ -53,7 +53,22 @@ export function sourceFromLocation() {
     return new DriveSource(folder, got.token, renew)
   }
 
-  if (base) return new UrlSource(new URL(base, location.href).href)
+  if (base) {
+    // 読む先は同じサイトの中だけ(見本と、手元で scripts/serve.mjs が配るもの)。
+    // ほかのサイトを読めると、そのサイトの文書をこのサイトの画面として見せられてしまう。
+    let url
+    try {
+      url = new URL(base, location.href)
+    }
+    catch {
+      url = null
+    }
+    if (!url || url.origin !== location.origin) {
+      showGate('?base= には、このサイトの中の場所だけを指定できます。', { links: true })
+      return null
+    }
+    return new UrlSource(url.href)
+  }
 
   showGate('URLに ?folder=<DriveのフォルダID> を付けて開いてください。', { links: true })
   return null
