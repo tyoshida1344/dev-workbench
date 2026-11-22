@@ -152,7 +152,7 @@ async function collectFromUrl() {
     }
   }
   // 見本は、エビデンスビューアの見本につなぐ(同じ「アイデアを消す」話)
-  return { paths: found, evidence: [{ name: '見本のテスト・エビデンス', href: '../evidence/?base=sample' }] }
+  return { paths: found, evidence: [{ name: '見本のテスト・エビデンス', href: '../evidence/?folder=sample' }] }
 }
 
 function renderList(evidence) {

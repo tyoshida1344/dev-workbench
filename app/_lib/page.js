@@ -20,14 +20,15 @@ export function showViewer() {
 }
 
 /**
- * URLの ?folder=<DriveのフォルダID> か ?base=sample(見本)から、読む先を作る。
- * sample は、そのビューアの見本(<サイト>/sample/<sample>/)。読む場所はビューアが決め、URLからは変えられない。
+ * URLの ?folder= から、読む先を作る。値は DriveのフォルダID か、sample(見本)。
+ * sample は、そのビューアの見本(<サイト>/sample/<sample>/)。読む場所はビューアが決め、URLからは変えられない
+ * (DriveのフォルダIDは28文字ほどの英数字なので、sample と重ならない)。
  * 読めない時(ログインが要る、ログインへ移っている、など)は案内を出して null を返す。
  */
 export function sourceFromLocation({ sample }) {
-  const params = new URLSearchParams(location.search)
-  const folder = params.get('folder')
-  const base = params.get('base')
+  const folder = new URLSearchParams(location.search).get('folder')
+
+  if (folder === 'sample') return new UrlSource(new URL(`../sample/${sample}/`, location.href).href)
 
   if (folder) {
     if (!isFolderId(folder)) {
@@ -54,14 +55,6 @@ export function sourceFromLocation({ sample }) {
     return new DriveSource(folder, got.token, renew)
   }
 
-  if (base !== null) {
-    if (base !== 'sample') {
-      showGate('?base= に指定できるのは sample(見本)だけです。Driveのフォルダは ?folder=<DriveのフォルダID> で開きます。', { links: true })
-      return null
-    }
-    return new UrlSource(new URL(`../sample/${sample}/`, location.href).href)
-  }
-
-  showGate('URLに ?folder=<DriveのフォルダID> を付けて開いてください。', { links: true })
+  showGate('URLに ?folder=<DriveのフォルダID> を付けて開いてください(見本は ?folder=sample)。', { links: true })
   return null
 }

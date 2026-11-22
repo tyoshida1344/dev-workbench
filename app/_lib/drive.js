@@ -125,7 +125,7 @@ export class DriveSource {
   }
 }
 
-/** URLから読む。見本(<サイト>/sample/<道具>/)を読む。フォルダの中身は一覧できない */
+/** URLから読む。見本(?folder=sample の時の <サイト>/sample/<道具>/)を読む。フォルダの中身は一覧できない */
 export class UrlSource {
   constructor(base) {
     this.base = base.endsWith('/') ? base : `${base}/`
