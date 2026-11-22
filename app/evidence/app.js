@@ -17,8 +17,9 @@ const MARK = { ok: '✓', partial: '!', ng: '✕', pending: '・', skip: '−' }
 const LABEL = { ok: '期待どおり', partial: '一部だけ確認', ng: '期待どおりでない', pending: '未実施', skip: '行わない' }
 /** 確認の行(checks)の頭に書かれた結果の記号 */
 const CHECK_RESULT = { '○': 'ok', '✓': 'ok', '△': 'partial', '!': 'partial', '×': 'ng', '✕': 'ng' }
-/** 添付の一覧に出す、何として開くかの印 */
+/** 一覧に出す、何として開くかの印と言葉 */
 const KIND_MARK = { video: '▶', image: '▣', text: '≡' }
+const KIND_LABEL = { video: '動画', image: '画像', text: 'テキスト' }
 const SECTION_KIND = {
   setup: '準備',
   unit: '単体テスト',
@@ -72,6 +73,19 @@ function check(line) {
     result ? mark(result) : el('span', { text: '・', className: 'mark', attrs: { 'aria-hidden': 'true' } }),
     el('span', {}, inline(result ? value.slice(head[0].length) : value)),
   ])
+}
+
+/** 何として開くかの札。記号の形と言葉の両方で出し、押す前に動画か画像かが分かるようにする */
+function kindBadge(kind) {
+  return el('span', { className: `tag kind ${kind}` }, [
+    el('span', { text: KIND_MARK[kind], attrs: { 'aria-hidden': 'true' } }),
+    KIND_LABEL[kind],
+  ])
+}
+
+/** 動画も画像も無い項目の札。出すものが無いのではなく、まだ行っていないことを示す */
+function statusBadge(status) {
+  return el('span', { text: LABEL[status], className: `tag kind ${status}` })
 }
 
 /** ファイル名の拡張子から、何として開くかを決める */
@@ -137,10 +151,15 @@ function render(manifest) {
       const entryKind = item.video ? 'video' : item.image ? 'image' : 'case'
       const index = state.playlist.length
       const title = status === 'skip' ? `${str(item.duplicateOf)} で確かめるので行わない` : LABEL[status]
+      // 行の右端の札。動画・画像を持つ項目はそれを、持たない未実施・行わない項目は状態を出す(押す前に、何が出るかが分かるように)。
+      // 状態を言葉で出す行は、同じことを二度言わないよう印を出さない(列は空けたままにして、文の頭をほかの行とそろえる)
+      const statusAsTag = !file && (status === 'pending' || status === 'skip')
+      const badge = file ? kindBadge(entryKind) : statusAsTag ? statusBadge(status) : null
       const node = row(index, `item ${status}`, title, [
         el('span', { text: str(item.id), className: 'item-id' }),
-        mark(status),
+        statusAsTag ? el('span', { className: 'mark' }) : mark(status),
         el('span', { className: 'item-title' }, inline(str(item.title))),
+        ...(badge ? [badge] : []),
       ])
       list.append(node)
       state.playlist.push({ kind: entryKind, file, item, section, row: node.firstChild, stop: status !== 'skip' })
@@ -163,8 +182,9 @@ function render(manifest) {
     const index = state.playlist.length
     const node = row(index, 'item', '', [
       el('span', { className: 'item-id' }),
-      el('span', { text: KIND_MARK[kind], className: 'mark', attrs: { 'aria-hidden': 'true' } }),
+      el('span', { className: 'mark' }),
       el('span', { text: str(attachment.title) || attachment.file, className: 'item-title' }),
+      kindBadge(kind),
     ])
     state.playlist.push({ kind, file: attachment.file, item: { title: str(attachment.title) || attachment.file }, row: node.firstChild, stop: kind !== 'text' })
     return node
