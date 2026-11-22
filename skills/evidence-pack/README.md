@@ -25,6 +25,7 @@ Copy-Item -Recurse <dev-workbenchの場所>\skills\evidence-pack <使うプロ�
 |---|---|
 | [SKILL.md](./SKILL.md) | 手順。フォルダを作る → 撮る → `manifest.json` を書く → 確かめる → Driveに上げてURLを渡す |
 | [reference/manifest.md](./reference/manifest.md) | `manifest.json` の形。項目の一覧と例 |
+| [reference/cases.md](./reference/cases.md) | 確かめる項目の作り方。要件・既存機能への影響・設計で追加した仕様の3つの見方と、撮る前の見直し |
 | [templates/manifest.json](./templates/manifest.json) | 写して埋めるひな形 |
 | [scripts/check-manifest.mjs](./scripts/check-manifest.mjs) | フォルダを確かめる(Nodeだけで動く。`node check-manifest.mjs <フォルダ>`) |
 | [config.json](./config.json) | ビューアのURL(`viewer`)。**写したら最初にここを書き換える。**スキルの中でURLを書くのはここだけ |
@@ -34,6 +35,7 @@ Copy-Item -Recurse <dev-workbenchの場所>\skills\evidence-pack <使うプロ�
 写した先で、そのプロジェクトに合わせて書き換えてよい。よく直すところ:
 
 - **ビューアのURL**(`config.json` の `viewer`)。ここだけは、写したら必ず見る
+- **項目の作り方**(reference/cases.md)。影響を受けやすい共通の処理など、プロジェクトで必ず見る場所があれば書き足す
 - **撮り方**(SKILL.md の手順3)。Playwright の `video` / `screenshot` を使うなら、そのコマンドを書いておくと毎回同じ形になる
 - **フォルダの置き場**(手順1)。プロジェクトで決まった場所があれば、そこに書き換える
 - **渡し方**(手順7)。PRのコメントに貼る形が決まっていれば、その文面を書いておく
