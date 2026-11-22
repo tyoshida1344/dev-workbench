@@ -11,7 +11,7 @@
 <body class="app">
   <header class="bar">
     <div class="bar-main">
-      <a class="crumb" href="../">dev-workbench</a>
+      <a class="crumb" href="../">← 道具の一覧</a>
       <h1 id="title">設計ビューア</h1>
       <span id="subtitle" class="muted bar-sub" hidden></span>
     </div>
@@ -29,7 +29,8 @@
   <div id="viewer" class="viewer" hidden>
     <nav id="files" class="list" aria-label="設計の文書"></nav>
 
-    <section class="stage" aria-live="polite">
+    <section class="stage">
+      <p id="status" class="visually-hidden" role="status"></p>
       <p id="reauth" class="reauth" hidden>
         ログインの期限が切れました。
         <button id="reauth-button" type="button">Googleでログインし直す</button>

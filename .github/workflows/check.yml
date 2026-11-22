@@ -1,0 +1,31 @@
+# 検査とテスト(node scripts/check.mjs)だけを走らせる。公開はしない。
+# マージの前に、CI の環境(Linux と決めた版の Node)で通るかを確かめる。main への push は pages.yml が同じ検査をしてから公開する。
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同じブランチで新しく push したら、前の検査は取り消す(公開はしないので、途中で止めてよい)
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # pages.yml と同じ版にする
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 検査とテスト
+        run: node scripts/check.mjs

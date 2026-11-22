@@ -5,24 +5,30 @@
 // 文字はすべて textContent で入れる。HTMLは書いてあっても文字のまま出す(他人の文書を開かされても、ログインの情報を抜かれないように)。
 
 import { el } from './dom.js'
+import { isWebUrl } from './path.js'
 
 const ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/
 const ORDERED = /^\s*\d+[.)]/
+/** 段落を終わらせる、ほかのかたまりの始まり(見出し・コードブロック・引用・表) */
+const BLOCK_START = /^(?:#{1,6}\s|\s*```|>\s?|\s*\|)/
+/** 表の区切りの行(|---|---|) */
+const TABLE_RULE = /^\s*\|[\s:|-]+\|\s*$/
 const indentOf = line => line.match(/^\s*/)[0].length
 
 /**
  * 行内の記法。先に現れたものから順に切り出す。
  * options.link(href) は開いてよいリンク先を返す(開かないなら null)。options.image(src) は画像のURLの約束を返す(出さないなら null)。
+ * (dom.js の inline は `…` だけを見る。こちらは Markdown の行内の記法をすべて見るので、名前を分けている)
  */
 const INLINE = [
   { re: /`([^`]+)`/, make: m => el('code', { text: m[1] }) },
   { re: /!\[([^\]]*)\]\(([^)\s]+)\)/, make: (m, options) => image(m[2], m[1], options) },
   { re: /\[([^\]]+)\]\(([^)\s]+)\)/, make: (m, options) => link(m[2], m[1], options) },
-  { re: /\*\*([^*]+)\*\*/, make: (m, options) => el('strong', {}, inline(m[1], options)) },
-  { re: /(?<![*\w])\*([^*\n]+)\*(?![*\w])/, make: (m, options) => el('em', {}, inline(m[1], options)) },
+  { re: /\*\*([^*]+)\*\*/, make: (m, options) => el('strong', {}, spans(m[1], options)) },
+  { re: /(?<![*\w])\*([^*\n]+)\*(?![*\w])/, make: (m, options) => el('em', {}, spans(m[1], options)) },
 ]
 
-function inline(text, options) {
+function spans(text, options) {
   const out = []
   let rest = text
   while (rest) {
@@ -44,16 +50,46 @@ function inline(text, options) {
 
 function link(href, label, options) {
   const resolved = options.link?.(href) ?? null
-  if (!resolved) return el('span', {}, inline(label, options))
-  const external = /^https?:\/\//.test(resolved)
-  return el('a', { attrs: { href: resolved, ...(external ? { target: '_blank', rel: 'noopener' } : {}) } }, inline(label, options))
+  if (!resolved) return el('span', {}, spans(label, options))
+  return el('a', { attrs: { href: resolved, ...(isWebUrl(resolved) ? { target: '_blank', rel: 'noopener' } : {}) } }, spans(label, options))
+}
+
+/** 画像は、見える所まで来てから読む(長い文書で、見ない画像まで一度に読まない) */
+let watcher = null
+/** 見張っている画像 → 見えた時に読む関数 */
+const loaders = new WeakMap()
+function whenVisible(node, load) {
+  if (typeof IntersectionObserver !== 'function') {
+    load()
+    return
+  }
+  watcher ??= new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue
+      watcher.unobserve(entry.target)
+      loaders.get(entry.target)?.()
+      loaders.delete(entry.target)
+    }
+  }, { rootMargin: '200px 0px' })
+  loaders.set(node, load)
+  watcher.observe(node)
 }
 
 function image(src, alt, options) {
-  const img = el('img', { attrs: { alt, loading: 'lazy' } })
-  const url = options.image?.(src)
-  if (!url) return el('span', { text: `[画像: ${alt || src}]`, className: 'muted' })
-  Promise.resolve(url).then((value) => { img.src = value }).catch(() => img.replaceWith(el('span', { text: `[画像を読めませんでした: ${src}]`, className: 'muted' })))
+  // 外の画像は読み込まない(開いた人のIPアドレスなどが、外のサーバーに届かないように)。押せば新しいタブで開く。
+  if (isWebUrl(src)) return el('a', { text: `[外の画像: ${alt || src}]`, attrs: { href: src, target: '_blank', rel: 'noopener' } })
+  if (!options.image) return el('span', { text: `[画像: ${alt || src}]`, className: 'muted' })
+  const img = el('img', { attrs: { alt } })
+  const failed = () => img.replaceWith(el('span', { text: `[画像を読めませんでした: ${src}]`, className: 'muted' }))
+  whenVisible(img, () => {
+    const url = options.image(src)
+    if (!url) {
+      img.replaceWith(el('span', { text: `[画像: ${alt || src}]`, className: 'muted' }))
+      return
+    }
+    img.addEventListener('error', failed, { once: true })
+    Promise.resolve(url).then((value) => { img.src = value }).catch(failed)
+  })
   return img
 }
 
@@ -65,7 +101,7 @@ function list(lines, start, options) {
   let current = null
   let body = []
   const flush = () => {
-    if (current) current.prepend(...inline(body.join(' '), options))
+    if (current) current.prepend(...spans(body.join(' '), options))
   }
   let i = start
   while (i < lines.length) {
@@ -124,22 +160,22 @@ export function renderMarkdown(text, options = {}) {
     }
 
     // 表。見出しの次の行が区切り(|---|---|)の時だけ表にする
-    if (/^\s*\|/.test(line) && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1] ?? '')) {
+    if (/^\s*\|/.test(line) && TABLE_RULE.test(lines[i + 1] ?? '')) {
       const cells = row => row.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())
       const head = cells(line)
       i += 2
       const rows = []
       while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++]))
       out.append(el('div', { className: 'table-wrap' }, [el('table', {}, [
-        el('thead', {}, [el('tr', {}, head.map(cell => el('th', {}, inline(cell, options))))]),
-        el('tbody', {}, rows.map(row => el('tr', {}, row.map(cell => el('td', {}, inline(cell, options)))))),
+        el('thead', {}, [el('tr', {}, head.map(cell => el('th', {}, spans(cell, options))))]),
+        el('tbody', {}, rows.map(row => el('tr', {}, row.map(cell => el('td', {}, spans(cell, options)))))),
       ])]))
       continue
     }
 
     const heading = /^(#{1,6})\s+(.*)$/.exec(line)
     if (heading) {
-      out.append(el(`h${Math.min(heading[1].length, 4)}`, {}, inline(heading[2], options)))
+      out.append(el(`h${Math.min(heading[1].length, 4)}`, {}, spans(heading[2], options)))
       i++
       continue
     }
@@ -169,14 +205,13 @@ export function renderMarkdown(text, options = {}) {
       continue
     }
 
-    // 段落。次の空行か、別のかたまりが始まるまで。行の区切りはそのまま改行にする
+    // 段落。次の空行か、別のかたまりが始まるまで。行の区切りはそのまま改行にする。
+    // 1行目は必ず読む(表の区切りが続かない | の行などは、ここで段落として出す。読まずに戻ると、同じ行を繰り返して止まらない)
     const para = el('p')
-    let first = true
-    while (i < lines.length && lines[i].trim() && !/^(?:#{1,6}\s|\s*```|>\s?|\s*\|)/.test(lines[i]) && !ITEM.test(lines[i])) {
-      if (!first) para.append(el('br'))
-      para.append(...inline(lines[i++], options))
-      first = false
-    }
+    do {
+      if (para.firstChild) para.append(el('br'))
+      para.append(...spans(lines[i++], options))
+    } while (i < lines.length && lines[i].trim() && !BLOCK_START.test(lines[i]) && !ITEM.test(lines[i]))
     out.append(para)
   }
   return out

@@ -11,7 +11,7 @@
 <body class="app">
   <header class="bar">
     <div class="bar-main">
-      <a class="crumb" href="../">dev-workbench</a>
+      <a class="crumb" href="../">← 道具の一覧</a>
       <h1 id="title">エビデンスビューア</h1>
       <a id="source" class="muted" hidden target="_blank" rel="noopener"></a>
     </div>
@@ -28,26 +28,31 @@
   </section>
 
   <div id="viewer" class="viewer" hidden>
-    <nav class="list" aria-label="受入確認の項目">
-      <ul id="notes" class="notes"></ul>
-      <h2 id="requirements-title" class="section-title" hidden>要件</h2>
-      <ul id="requirements" class="requirements"></ul>
+    <nav id="list" class="list" aria-label="受入確認の項目">
+      <!-- 全体にかかる注意書きと要件。狭い幅では畳む(app.js) -->
+      <details id="overview" class="overview" open>
+        <summary>注意書きと要件</summary>
+        <ul id="notes" class="notes"></ul>
+        <h2 id="requirements-title" class="section-title" hidden>要件</h2>
+        <ul id="requirements" class="requirements"></ul>
+      </details>
       <div id="sections"></div>
       <h2 id="attachments-title" class="section-title">添付</h2>
       <ul id="attachments" class="items"></ul>
     </nav>
 
-    <section class="stage" aria-live="polite">
+    <section class="stage">
+      <p id="status" class="visually-hidden" role="status"></p>
       <p id="reauth" class="reauth" hidden>
         ログインの期限が切れました。
         <button id="reauth-button" type="button">Googleでログインし直す</button>
       </p>
       <div class="controls">
-        <button id="prev" type="button">前へ</button>
-        <button id="next" type="button">次へ</button>
+        <button id="prev" type="button" disabled>前へ</button>
+        <button id="next" type="button" disabled>次へ</button>
         <label class="continuous"><input id="continuous" type="checkbox" checked> 連続再生</label>
       </div>
-      <video id="player" controls playsinline></video>
+      <video id="player" controls playsinline hidden></video>
       <img id="image" alt="" hidden>
       <pre id="text" class="text" hidden></pre>
       <p id="no-media" class="no-media" hidden></p>

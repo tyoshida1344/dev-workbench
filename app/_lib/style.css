@@ -4,12 +4,19 @@
   --text: #1b2a33;
   --muted: #5d6f78;
   --rule: #d5dde2;
+  /* ボタンの枠。背景(--bg・--panel)と 3:1 以上にする */
+  --control: #7a8a93;
   --current: #e3edf6;
   --ok: #2f7a45;
   --partial: #a26b00;
   --ng: #b3261e;
   --partial-bg: #fbf1dc;
   --ng-bg: #fbe7e5;
+  /* 動画・画像の余白と、文書の画像の下地(透けた画像が読めるように、暗い表示でも白) */
+  --media-bg: #000;
+  --img-bg: #fff;
+  --radius: 4px;
+  --font-small: 12px;
   color-scheme: light dark;
 }
 
@@ -20,6 +27,7 @@
     --text: #e4e9ec;
     --muted: #98a6ad;
     --rule: #33404a;
+    --control: #7d8c94;
     --current: #24384a;
     --ok: #6cc28a;
     --partial: #e0a83c;
@@ -43,10 +51,27 @@ body {
 button { font: inherit; color: inherit; }
 .muted { color: var(--muted); }
 [hidden] { display: none !important; }
+/* 画面には出さず、読み上げだけに渡す */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ボタン(ログイン・前へ/次へ・ログインし直す) */
+.gate button, .controls button, .reauth button {
+  padding: 4px 12px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius);
+  background: var(--panel);
+  cursor: pointer;
+}
+.gate button { padding: 8px 16px; }
+.controls button:disabled { cursor: default; opacity: 0.5; }
+
+/* 文中で、リンクのように見せるボタン(詳細の「行う側の項目」) */
+.link-button { padding: 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 
 .home { max-width: 720px; margin: 0 auto; padding: 32px 16px; }
 .tools { padding: 0; list-style: none; }
 .tools li { display: grid; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.tool-name { font-size: 16px; font-weight: 700; }
 
 .bar {
   display: flex;
@@ -60,22 +85,20 @@ button { font: inherit; color: inherit; }
 }
 .bar h1 { margin: 0; font-size: 16px; font-weight: 600; }
 .bar-main { display: grid; gap: 2px; min-width: 0; }
-.bar-main a, .bar-sub { font-size: 12px; }
+.bar-main a, .bar-sub { font-size: var(--font-small); }
 .crumb { color: var(--muted); text-decoration: none; }
 .crumb:hover { text-decoration: underline; }
-.summary { display: flex; gap: 12px; font-variant-numeric: tabular-nums; }
+.summary { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--font-small); font-variant-numeric: tabular-nums; }
 .count { display: inline-flex; align-items: center; gap: 4px; }
 
-/* 結果の印。期待どおりは薄い記号だけ、そうでないものは色を塗った丸に白抜きの記号 */
+/* 結果の印。期待どおり・未実施・行わないは薄い記号だけ、そうでないものは色を塗った丸に白抜きの記号 */
 .mark { display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; color: var(--muted); line-height: 1; }
-.mark.ok { color: var(--muted); }
-.mark.partial, .mark.ng { border-radius: 50%; color: var(--panel); font-size: 12px; font-weight: 700; }
+.mark.partial, .mark.ng { border-radius: 50%; color: var(--panel); font-size: var(--font-small); font-weight: 700; }
 .mark.partial { background: var(--partial); }
 .mark.ng { background: var(--ng); }
 
 .gate { padding: 48px 16px; text-align: center; }
 .gate-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; }
-.gate button { padding: 8px 16px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); cursor: pointer; }
 
 /* ビューアの画面。見出しの帯の下を、一覧と中身で埋める(帯の高さが変わっても、はみ出さない) */
 .app { display: flex; flex-direction: column; height: 100vh; }
@@ -89,8 +112,11 @@ button { font: inherit; color: inherit; }
 }
 
 .list { overflow-y: auto; padding: 8px 0 24px; border-right: 1px solid var(--rule); background: var(--panel); }
-.notes { margin: 0 12px 8px; padding-left: 18px; color: var(--muted); font-size: 12px; }
-.section-title { margin: 16px 12px 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+/* 一覧の上の注意書きと要件。広い幅では開いたままにし、畳む所は出さない */
+.overview > summary { display: none; margin: 4px 12px; color: var(--muted); font-size: var(--font-small); cursor: pointer; }
+.notes { margin: 0 12px 8px; padding-left: 18px; color: var(--muted); font-size: var(--font-small); }
+.section-title, .detail-label, .case-fields dt { font-size: var(--font-small); font-weight: 600; color: var(--muted); }
+.section-title { margin: 16px 12px 4px; }
 .items { margin: 0; padding: 0; list-style: none; }
 
 .item {
@@ -109,73 +135,77 @@ button { font: inherit; color: inherit; }
 .item.ng { background: var(--ng-bg); }
 .item:hover { background: var(--bg); }
 .item.current { background: var(--current); border-left-color: var(--text); }
-.item:disabled { cursor: default; opacity: 0.6; }
 .item-id { color: var(--muted); font-variant-numeric: tabular-nums; }
-
-.stage { overflow-y: auto; padding: 16px; display: grid; align-content: start; gap: 12px; }
-.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.controls button { padding: 4px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); cursor: pointer; }
-.reauth { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 12px; border: 1px solid var(--partial); border-radius: 4px; }
-.reauth button { padding: 4px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); cursor: pointer; }
-.continuous { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
-
-video, #image { width: 100%; max-height: 70vh; background: #000; border-radius: 4px; }
-/* 画像も動画と同じ枠に収める(縦横の比は変えず、余った所は背景のまま) */
-#image { display: block; object-fit: contain; }
-.text { max-height: 70vh; overflow: auto; margin: 0; padding: 12px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; font-size: 12px; white-space: pre-wrap; }
-
-.detail { padding: 12px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; }
-.detail h2 { margin: 0; font-size: 15px; font-weight: 600; }
-.detail h2.with-mark { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); align-items: start; }
-.detail h2 .mark { margin-top: 0.15em; }
-.detail-label { margin: 12px 0 0; font-size: 12px; font-weight: 600; color: var(--muted); }
-.checks { margin: 4px 0 0; padding: 0; list-style: none; }
-.checks li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); align-items: start; padding: 6px 0; border-top: 1px solid var(--rule); }
-.checks li:first-child { border-top: 0; }
-.checks .mark { margin-top: 0.15em; }
-code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
-.note { margin: 4px 0 0; color: var(--muted); }
+.item.current .item-id { color: var(--text); }
+/* 行わない項目(ほかの項目で確かめる)。件数に数えない */
+.item.skip .item-title { text-decoration: line-through; color: var(--muted); }
 
 /* 文字だけの行(設計の文書の一覧など)。印や番号の列を持たない */
 .item.plain { display: block; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
 
+.stage { overflow-y: auto; padding: 16px; display: grid; align-content: start; gap: 12px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.continuous { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+.reauth { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 12px; border: 1px solid var(--partial); border-radius: var(--radius); }
+
+video, #image { width: 100%; max-height: 70vh; background: var(--media-bg); border-radius: var(--radius); }
+/* 画像も動画と同じ枠に収める(縦横の比は変えず、余った所は背景のまま) */
+#image { display: block; object-fit: contain; }
+.text { max-height: 70vh; overflow: auto; margin: 0; padding: 12px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); font-size: var(--font-small); white-space: pre-wrap; }
+/* 動画・画像の場所の短い知らせ(読み込み中・動画・画像はありません) */
+.no-media { margin: 0; color: var(--muted); }
+
+.detail { padding: 12px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); }
+.detail h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.detail h2.with-mark, .checks li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); align-items: start; }
+.detail h2 .mark, .checks .mark { margin-top: 0.15em; }
+.detail-label { margin: 12px 0 0; }
+.checks { margin: 4px 0 0; padding: 0; list-style: none; }
+.checks li { padding: 6px 0; border-top: 1px solid var(--rule); }
+.checks li:first-child { border-top: 0; }
+code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+.note { margin: 4px 0 0; color: var(--muted); }
+
+/* テストケース(未実施の項目)の札・前提・手順・期待する結果 */
+.tag { display: inline-block; margin-right: 4px; padding: 0 6px; border: 1px solid var(--rule); border-radius: 10px; color: var(--muted); font-size: var(--font-small); font-weight: 400; }
+.section-kind { margin-left: 6px; }
+.case-tags { margin: 6px 0 0; }
+.requirements { margin: 0 12px 8px; padding: 0; list-style: none; font-size: var(--font-small); }
+.requirements li { display: grid; grid-template-columns: 3em minmax(0, 1fr); padding: 2px 0; }
+.case-fields { margin: 4px 0 0; }
+.case-fields dt { margin: 12px 0 0; }
+.case-fields dd { margin: 2px 0 0; }
+.case-fields ol, .case-fields ul { margin: 0; padding-left: 1.4em; }
+.case-fields details summary { cursor: pointer; color: var(--muted); font-size: var(--font-small); }
+
 /* 設計の文書 */
-.doc { padding: 16px 24px 32px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; overflow-wrap: anywhere; }
+.doc { padding: 16px 24px 32px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); overflow-wrap: anywhere; }
 .doc > :first-child { margin-top: 0; }
-.doc h1 { margin: 0 0 12px; font-size: 20px; font-weight: 600; }
-.doc h2 { margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); font-size: 17px; font-weight: 600; }
-.doc h3 { margin: 20px 0 6px; font-size: 15px; font-weight: 600; }
-.doc h4 { margin: 16px 0 4px; font-size: 14px; font-weight: 600; }
-.doc p { margin: 8px 0; }
-.doc ul, .doc ol { margin: 8px 0; padding-left: 1.6em; }
+.doc h1, .doc h2, .doc h3, .doc h4 { font-weight: 600; }
+.doc h1 { margin: 0 0 12px; font-size: 20px; }
+.doc h2 { margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); font-size: 17px; }
+.doc h3 { margin: 20px 0 6px; font-size: 15px; }
+.doc h4 { margin: 16px 0 4px; font-size: 14px; }
+.doc p, .doc ul, .doc ol, .doc blockquote, .doc pre.code, .table-wrap { margin: 8px 0; }
+.doc ul, .doc ol { padding-left: 1.6em; }
 .doc li > ul, .doc li > ol { margin: 2px 0; }
-.doc a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-.doc blockquote { margin: 8px 0; padding: 2px 12px; border-left: 3px solid var(--rule); color: var(--muted); }
+.doc a, .link-button { color: inherit; }
+.doc a { text-decoration: underline; text-underline-offset: 2px; }
+.doc blockquote { padding: 2px 12px; border-left: 3px solid var(--rule); color: var(--muted); }
 .doc hr { margin: 20px 0; border: 0; border-top: 1px solid var(--rule); }
-.doc img { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 4px; background: #fff; }
-.doc pre.code { margin: 8px 0; padding: 10px 12px; overflow-x: auto; background: var(--bg); border-radius: 4px; }
-.doc pre.code code { padding: 0; background: none; font-size: 12px; }
-.table-wrap { margin: 8px 0; overflow-x: auto; }
+.doc img { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--img-bg); }
+.doc pre.code { padding: 10px 12px; overflow-x: auto; background: var(--bg); border-radius: var(--radius); }
+.doc pre.code code { padding: 0; background: none; font-size: var(--font-small); }
+.table-wrap { overflow-x: auto; }
 .table-wrap table { border-collapse: collapse; font-size: 13px; }
 .table-wrap th, .table-wrap td { padding: 4px 8px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
 .table-wrap th { background: var(--bg); font-weight: 600; }
-
-/* テストケース(未実施の項目)の前提・手順・期待する結果 */
-.mark.pending { color: var(--muted); }
-.item.duplicate .item-title { text-decoration: line-through; color: var(--muted); }
-.section-kind { margin-left: 6px; font-weight: 400; }
-.requirements { margin: 0 12px 8px; padding: 0; list-style: none; font-size: 12px; }
-.requirements li { display: grid; grid-template-columns: 3em minmax(0, 1fr); padding: 2px 0; }
-.tag { display: inline-block; margin-right: 4px; padding: 0 6px; border: 1px solid var(--rule); border-radius: 10px; color: var(--muted); font-size: 12px; font-weight: 400; }
-.case-fields { margin: 4px 0 0; }
-.case-fields dt { margin: 12px 0 0; font-size: 12px; font-weight: 600; color: var(--muted); }
-.case-fields dd { margin: 2px 0 0; }
-.case-fields ol, .case-fields ul { margin: 0; padding-left: 1.4em; }
-.case-fields details summary { cursor: pointer; color: var(--muted); font-size: 12px; }
-.no-media { margin: 0; padding: 24px 12px; border: 1px dashed var(--rule); border-radius: 4px; color: var(--muted); text-align: center; }
 
 @media (max-width: 760px) {
   .app { height: auto; }
   .viewer { grid-template-columns: 1fr; }
   .list { max-height: 40vh; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .overview > summary { display: list-item; }
+  /* 指で押しやすい高さにする */
+  .item { min-height: 44px; }
 }

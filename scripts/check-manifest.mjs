@@ -5,13 +5,12 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
+import { KINDS } from '../.claude/skills/test-cases/scripts/build-manifest.mjs'
 
 const SCHEMA = 'dev-workbench/evidence@1'
 const RESULTS = ['ok', 'partial', 'ng']
 const VIDEO = /\.(webm|mp4|mov)$/i
 const IMAGE = /\.(png|jpe?g|webp)$/i
-
-const KINDS = ['setup', 'unit', 'integration', 'regression', 'acceptance', 'cleanup']
 const PRIORITIES = ['high', 'mid', 'low']
 
 const errors = []
@@ -25,7 +24,8 @@ const dir = process.argv[2] ?? '.'
 let viewer = ''
 try {
   const { site } = JSON.parse(readFileSync(new URL('../.claude/skills/config.json', import.meta.url), 'utf8'))
-  if (site) viewer = new URL('evidence/', site).href
+  // site の末尾に / が無いと、最後の部分が置き換わってしまうので補う
+  if (site) viewer = new URL('evidence/', site.endsWith('/') ? site : `${site}/`).href
 }
 catch {}
 
@@ -44,6 +44,14 @@ try {
 }
 catch (error) {
   console.error(`manifest.json が読めません: ${error.message}`)
+  process.exit(1)
+}
+
+/** null でも配列でもないオブジェクト */
+const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+if (!isObject(manifest)) {
+  console.log(`エラー manifest.json: オブジェクト({ … })にします(今は ${JSON.stringify(manifest)})`)
+  console.log('エラー 1 件。直してから渡します。')
   process.exit(1)
 }
 
@@ -67,14 +75,23 @@ if (manifest.schema !== SCHEMA) fail('schema', `${SCHEMA} にします(今は ${
 if (!manifest.title) fail('title', '見出しがありません')
 if (manifest.recordedAt && !/^\d{4}-\d{2}-\d{2}$/.test(manifest.recordedAt)) fail('recordedAt', 'YYYY-MM-DD にします')
 if (manifest.notes && !Array.isArray(manifest.notes)) fail('notes', '配列にします')
+if (manifest.source !== undefined) {
+  if (!isObject(manifest.source)) fail('source', 'オブジェクトにします')
+  // ビューアは http / https の時だけリンクにする
+  else if (manifest.source.url !== undefined && !/^https?:\/\//i.test(String(manifest.source.url))) fail('source.url', `http: か https: のURLにします(今は ${JSON.stringify(manifest.source.url)})`)
+}
 
 const counts = { ok: 0, partial: 0, ng: 0 }
 /** 未実施(result の無い)項目の数。テストケースを書いた時点では、すべての項目が未実施になる */
 let pending = 0
 const ids = new Map()
 const duplicates = []
-const sections = manifest.sections ?? []
-if (!sections.length) fail('sections', '節がありません')
+let sections = manifest.sections ?? []
+if (!Array.isArray(sections)) {
+  fail('sections', '配列にします')
+  sections = []
+}
+else if (!sections.length) fail('sections', '節がありません')
 
 const requirementIds = new Set()
 if (manifest.requirements !== undefined) {
@@ -90,11 +107,14 @@ const isTextList = value => typeof value === 'string' || (Array.isArray(value) &
 
 sections.forEach((section, s) => {
   const at = `sections[${s}]`
+  if (!isObject(section)) return fail(at, '節がオブジェクトではありません')
   if (!section.title) fail(at, '節の名前がありません')
   if (section.kind !== undefined && !KINDS.includes(section.kind)) fail(at, `kind は ${KINDS.join(' / ')} のどれかにします(今は ${JSON.stringify(section.kind)})`)
   const items = section.items ?? []
+  if (!Array.isArray(items)) return fail(at, 'items は配列にします')
   if (!items.length) warn(at, `項目がありません: ${section.title ?? ''}`)
   items.forEach((item, i) => {
+    if (!isObject(item)) return fail(`${at}.items[${i}]`, '項目がオブジェクトではありません')
     const where = `${at}.items[${i}]${item.id ? ` (#${item.id})` : ''}`
     if (!item.title) fail(where, '受入確認の文言がありません')
     if (item.result === undefined) {
@@ -129,6 +149,7 @@ sections.forEach((section, s) => {
     if (item.video) checkFile(where, item.video, VIDEO, '動画')
     else if (item.image) checkFile(where, item.image, IMAGE, '画像')
     else if (item.result !== undefined && !item.duplicateOf) warn(where, '結果はあるのに、動画も画像もありません')
+    if (item.result === undefined && (item.video || item.image)) warn(where, '動画か画像はあるのに、結果(result)がありません。書き忘れていないか確かめます')
   })
 })
 
@@ -136,6 +157,7 @@ const attachments = manifest.attachments ?? []
 if (!Array.isArray(attachments)) fail('attachments', '配列にします')
 else attachments.forEach((attachment, a) => {
   const where = `attachments[${a}]`
+  if (!isObject(attachment)) return fail(where, '添付がオブジェクトではありません')
   if (!attachment.title) fail(where, 'title がありません')
   checkFile(where, attachment.file, null, '添付')
 })
@@ -144,7 +166,8 @@ for (const { where, to } of duplicates) {
   if (!ids.has(to)) fail(where, `duplicateOf の先の項目がありません: ${to}`)
 }
 
-if (manifest.summary) {
+if (manifest.summary !== undefined && manifest.summary !== null && !isObject(manifest.summary)) fail('summary', 'オブジェクトにします')
+else if (manifest.summary) {
   if (manifest.summary.pending !== undefined) fail('summary', '未実施の数は書きません(ビューアが数えます)')
   for (const result of RESULTS) {
     const written = manifest.summary[result] ?? 0

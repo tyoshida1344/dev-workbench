@@ -13,9 +13,10 @@ permissions:
   pages: write
   id-token: write
 
+# 公開は1つずつ行う。途中の公開は取り消さない(GitHub のひな形と同じ)
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -25,6 +26,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      # 版を決めておく(ES モジュールの .js を調べられない古い版だと、検査で止まって公開されない)。check.yml と同じ版にする
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: 検査する
         run: node scripts/check.mjs

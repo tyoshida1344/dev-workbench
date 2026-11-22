@@ -1,0 +1,24 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "テスト用 #1 main の形の受入確認",
+  "source": {
+    "repository": "owner/name",
+    "pullRequest": 1,
+    "url": "https://github.com/owner/name/pull/1"
+  },
+  "recordedAt": "2026-11-01",
+  "summary": { "ok": 2, "partial": 1, "ng": 0 },
+  "sections": [
+    {
+      "title": "一覧を見る",
+      "items": [
+        { "id": "1", "title": "開くと一覧が並ぶ", "result": "ok", "checks": ["○ 一覧: 2件"], "image": "01-list.png" },
+        { "id": "2", "title": "行を足せる", "result": "ok", "video": "02-add.webm" },
+        { "id": "3", "title": "空の時に案内が出る", "result": "partial", "checks": ["△ 案内: 出るが文言が違う"], "note": "動画も画像も撮っていない" }
+      ]
+    }
+  ],
+  "attachments": [
+    { "title": "ログ", "file": "00-log.txt" }
+  ]
+}

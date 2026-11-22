@@ -1,0 +1,10 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "節・項目・要件に null がある",
+  "requirements": [null, { "id": "R1", "text": "要件" }],
+  "sections": [
+    null,
+    { "title": "節", "items": [null, { "id": "1", "title": "項目", "requirement": "R1" }] }
+  ],
+  "attachments": [null]
+}
