@@ -11,10 +11,28 @@
 
 | 道具 | 場所 | 使い方 |
 |---|---|---|
-| 設計ビューア | [`design/`](./design/) | イシューごとの設計(Markdown)を、文書の一覧から読む |
-| エビデンスビューア | [`evidence/`](./evidence/) | テストケースと受入確認の動画・画像を、項目の一覧から見て回る。項目を押すとその動画を再生し、連続再生もできる |
+| 設計ビューア | [`app/design/`](./app/design/) | イシューごとの設計(Markdown)を、文書の一覧から読む |
+| エビデンスビューア | [`app/evidence/`](./app/evidence/) | テストケースと受入確認の動画・画像を、項目の一覧から見て回る。項目を押すとその動画を再生し、連続再生もできる |
 
 設計・テストケース・エビデンスは、イシューごとにDriveの1つのフォルダ(作業フォルダ)にまとめて置く。置き方は [docs/workspace.md](./docs/workspace.md)。
+
+### サイトの作り
+
+公開するのは `app/`(画面)と `sample/`(見本)だけ。ビルドはせず、[.github/workflows/pages.yml](./.github/workflows/pages.yml) が `app/` をサイトの直下に、`sample/` を `/sample/` に写して公開する。
+`app/` の中は、フォルダの場所がそのまま URL になる(Next.js の `app/` と同じ考え方)。`_` で始まるフォルダは画面ではない部品。
+
+```
+app/
+  index.html        → <サイト>/            道具の一覧
+  auth/             → <サイト>/auth/       Googleでのログインから戻ってくる先
+  design/           → <サイト>/design/     設計ビューア
+  evidence/         → <サイト>/evidence/   エビデンスビューア
+  _lib/             (画面ではない、共通の部品)
+  config.js
+sample/
+  design/           → <サイト>/sample/design/     設計ビューアの見本
+  evidence/         → <サイト>/sample/evidence/   エビデンスビューアの見本
+```
 
 ### ログイン(どの道具も同じ)
 
@@ -33,8 +51,8 @@
 <サイト>/design/?folder=<作業フォルダのID>
 ```
 
-どう見えるかは [`design/sample/`](./design/sample/) の見本で確かめられる(Driveもログインも要らない)。
-ビューアを `?base=sample/` を付けて開く。
+どう見えるかは [`sample/design/`](./sample/design/) の見本で確かめられる(Driveもログインも要らない)。
+ビューアを `?base=../sample/design/` を付けて開く。
 
 - 作業フォルダの `index.md`・`spec.md` などを、設計を進める順に呼び名で並べ、`search/` などの下書きをその下に並べる
 - 文書の中の相対リンク・画像はビューアの中で開く。HTMLは書いても文字のまま出る
@@ -47,16 +65,18 @@
 <サイト>/evidence/?folder=<DriveのフォルダID>
 ```
 
-どう見えるかは [`evidence/sample/`](./evidence/sample/) の見本で確かめられる(Driveもログインも要らない)。
-ビューアを `?base=sample/` を付けて開く。
+どう見えるかは [`sample/evidence/`](./sample/evidence/) の見本で確かめられる(Driveもログインも要らない)。
+ビューアを `?base=../sample/evidence/` を付けて開く。
 
 - フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
 - テストケースも同じ `manifest.json` に、結果の無い(未実施の)項目として書く。押すと前提・手順・期待する結果が出る。テストを行うと、同じ項目に結果と動画・画像が付く
-- `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)。書いたものの見本は [`evidence/sample/`](./evidence/sample/)
+- `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)。書いたものの見本は [`sample/evidence/`](./sample/evidence/)
 
-手元で確かめる時は、ファイルを置いたフォルダを簡易サーバーで配り、`?base=<そのURL>` で開く(設計ビューアも同じ)。
+手元で見る時は `node scripts/serve.mjs` で、公開と同じ形(`app/` を直下に、`sample/` を `/sample/` に)で `http://localhost:8126/` に配る。
 
 ## 準備(初回だけ)
+
+GitHub の Settings → Pages の **Source** を「**GitHub Actions**」にする(`main` に入ると、ワークフローが `app/` と `sample/` を公開する)。
 
 Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
@@ -69,8 +89,8 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 4. 「認証情報」→「認証情報を作成」→「OAuth クライアント ID」。種類は **ウェブ アプリケーション**
    - 「承認済みの JavaScript 生成元」に、公開先の生成元(`<サイト>` のうち `https://ホスト名` まで)を登録する
    - 「承認済みのリダイレクト URI」に `<サイト>/auth/` を登録する(ログインのあと戻ってくる先。どの道具からログインしても、ここに戻ってから元のページへ戻る。末尾の `/` まで同じにする)
-   - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:<ポート>/<パス>/auth/` も足す
-5. 発行されたクライアントIDを [`config.js`](./config.js) の `googleClientId` に書く
+   - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:8126/auth/` も足す(`scripts/serve.mjs` で配った時)
+5. 発行されたクライアントIDを [`app/config.js`](./app/config.js) の `googleClientId` に書く
 
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
 テストのまま(または内部)で使う。
@@ -117,13 +137,13 @@ bash scripts/link-global.sh      # macOS・Linux
 }
 ```
 
-スキルはビューアのURLを [`.claude/skills/config.json`](./skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
+スキルはビューアのURLを [`.claude/skills/config.json`](./.claude/skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
 プラグインとして配るかどうかは、イシューで検討している。
 
 ## 道具を足す時
 
-- 1つの道具につき1つのディレクトリを作り、トップの [index.html](./index.html) と上の表に足す
+- 1つの道具につき `app/` の下に1つのフォルダを作り(フォルダの名前が URL になる)、[app/index.html](./app/index.html) と上の表に足す。見本は `sample/<道具>/` に置く
 - データは持たない。読む先はURLのパラメータで受け取る
-- 共通の部品は [`lib/`](./lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
+- 共通の部品は [`app/_lib/`](./app/_lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)
-- コミットの前に `node scripts/check.mjs` を通す。画面は `.claude/launch.json` の設定で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
+- コミットの前に `node scripts/check.mjs` を通す。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)

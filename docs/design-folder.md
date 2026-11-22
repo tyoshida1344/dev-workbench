@@ -1,7 +1,7 @@
 # 設計の Markdown
 
-設計のビューア(`design/`)が読む、作業フォルダ([workspace.md](./workspace.md))の Markdown の決まり。
-書き上がりがどう出るかは、見本([`design/sample/`](../design/sample/))で見られる。ビューアを `?base=sample/` を付けて開く。
+設計のビューア(`app/design/`)が読む、作業フォルダ([workspace.md](./workspace.md))の Markdown の決まり。
+書き上がりがどう出るかは、見本([`sample/design/`](../sample/design/))で見られる。ビューアを `?base=../sample/design/` を付けて開く。
 
 ## 一覧に出る順
 

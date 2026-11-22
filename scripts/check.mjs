@@ -44,7 +44,7 @@ for (const file of files.filter(file => file.endsWith('.json'))) {
 }
 
 // 3. 読み込んだ文字を HTML として入れていないか(CLAUDE.md の「読み込んだ文字は textContent で出す」)
-for (const file of files.filter(file => /\.(m?js)$/.test(file) && /[\\/](lib|design|evidence|auth)[\\/]/.test(file))) {
+for (const file of files.filter(file => /\.(m?js)$/.test(file) && /^app\//.test(rel(file)))) {
   readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
     if (/\.(innerHTML|outerHTML)\s*[+]?=|insertAdjacentHTML\s*\(|document\.write\s*\(/.test(line)) {
       fail(`${rel(file)}:${i + 1}`, 'HTML として入れています(textContent と要素の組み立てで出す)')
@@ -60,7 +60,7 @@ for (const file of files.filter(file => file.endsWith('.html'))) {
 }
 
 // 5. エビデンスの見本
-run('エビデンスの見本 evidence/sample', ['scripts/check-manifest.mjs', 'evidence/sample'])
+run('エビデンスの見本 sample/evidence', ['scripts/check-manifest.mjs', 'sample/evidence'])
 
 // 6. 設計の見本の相対リンクと画像が、ファイルを指しているか
 function markdownFiles(dir) {
@@ -69,7 +69,7 @@ function markdownFiles(dir) {
     return statSync(path).isDirectory() ? markdownFiles(path) : name.endsWith('.md') ? [path] : []
   })
 }
-for (const file of markdownFiles(join(root, 'design', 'sample'))) {
+for (const file of markdownFiles(join(root, 'sample', 'design'))) {
   for (const m of readFileSync(file, 'utf8').matchAll(/!?\[[^\]]*\]\(([^)\s]+)\)/g)) {
     const href = m[1]
     if (/^(?:[a-z]+:|#|\/)/i.test(href)) continue
@@ -77,9 +77,9 @@ for (const file of markdownFiles(join(root, 'design', 'sample'))) {
     if (!existsSync(target)) fail(rel(file), `リンク先がありません: ${href}`)
   }
 }
-for (const entry of JSON.parse(readFileSync(join(root, 'design', 'sample', 'evidence.json'), 'utf8'))) {
-  const target = resolve(root, 'design', 'sample', entry.base, 'manifest.json')
-  if (!existsSync(target)) fail('design/sample/evidence.json', `manifest.json がありません: ${entry.base}`)
+for (const entry of JSON.parse(readFileSync(join(root, 'sample', 'design', 'evidence.json'), 'utf8'))) {
+  const target = resolve(root, 'sample', 'design', entry.base, 'manifest.json')
+  if (!existsSync(target)) fail('sample/design/evidence.json', `manifest.json がありません: ${entry.base}`)
 }
 
 // 7. テストケースのひな形から、正本が作れて検査を通るか

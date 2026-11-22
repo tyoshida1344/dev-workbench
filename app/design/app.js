@@ -3,9 +3,9 @@
 //
 // 読み込んだ文字は textContent でだけ出す(md.js)。他人が作ったフォルダを開かされても、ログインの情報を抜かれないようにするため。
 
-import { el } from '../lib/dom.js'
-import { renderMarkdown } from '../lib/md.js'
-import { showGate, showViewer, sourceFromLocation } from '../lib/page.js'
+import { el } from '../_lib/dom.js'
+import { renderMarkdown } from '../_lib/md.js'
+import { showGate, showViewer, sourceFromLocation } from '../_lib/page.js'
 
 /** 作業フォルダの直下の決まったファイル。設計を進める順に、呼び名で出す */
 const FILE_LABELS = {
