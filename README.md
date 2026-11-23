@@ -147,9 +147,15 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 3. Claude Code で、プラグインを入れる
 
-```
-/plugin install dev-workbench@dev-workbench
-```
+   ```
+   /plugin install dev-workbench@dev-workbench
+   ```
+
+   - 「見つからない」と出た時だけ: 先に `/plugin marketplace add <owner>/<name>` でマーケットプレイスを足してから入れ直す
+
+4. 入れた後、`settings.json` に `autoUpdate: true` が残っているかを見る(いつも行う)
+   - マーケットプレイスを足す・入れる時に Claude Code が `extraKnownMarketplaces` を書き直し、`autoUpdate` が消えることがある
+   - 消えていたら足し直す(`/plugin` のマーケットプレイスの画面で自動更新を入れてもよい)
 
 #### スキルを直す時
 
