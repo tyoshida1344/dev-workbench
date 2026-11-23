@@ -159,6 +159,7 @@ test('列の名前が違う表は、項目を黙って落とさず、足りな�
     const checked = run('check-cases.mjs', [dir])
     assert.equal(checked.status, 1, checked.out)
     assert.match(checked.out, /「要件」の表に、期待する結果 の列がありません/)
+    assert.doesNotMatch(checked.out, /test\.md: AC\d+ が acceptance\.md にありません/)
   }
   finally {
     rmSync(dir, { recursive: true, force: true })

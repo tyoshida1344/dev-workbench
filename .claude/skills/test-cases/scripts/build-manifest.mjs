@@ -104,6 +104,8 @@ export function readAcceptance(workDir) {
     const missing = ['前提', '操作', '期待する結果'].filter(name => column(name) < 0)
     if (missing.length) {
       errors.push(`acceptance.md の「${table.heading || '見出しの無い'}」の表に、${missing.join('・')} の列がありません(列の名前はひな形 design/templates/acceptance.md のとおりにします)`)
+      // 読めない表の AC も、あるものとして数える(test.md との食い違いのエラーを重ねて出さない)
+      for (const row of table.rows) if (row[id]) seen.add(row[id])
       continue
     }
     const items = []
