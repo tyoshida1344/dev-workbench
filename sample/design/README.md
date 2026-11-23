@@ -8,7 +8,7 @@
 
 | ファイル | 何を見せているか |
 |---|---|
-| `index.md` `QA.md` `spec.md` `acceptance.md` | 作業フォルダの直下の決まったファイル(一覧に呼び名で出る) |
+| `index.md` `QA.md` `spec.md` `acceptance.md` `test.md` | 作業フォルダの直下の決まったファイル(一覧に呼び名で出る) |
 | `search/` `spec/` | 下書きのフォルダ(一覧に「調査」「変更仕様」として出る) |
 | `images/` | 文書に埋め込む画面イメージ |
 

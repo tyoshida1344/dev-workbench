@@ -1,6 +1,6 @@
 ---
 name: test-cases-acceptance
-description: テストケースの受け入れの項目を書く。イシューと設計の要件を1つずつ取り出し、各要件が満たされたかを業務の言葉で判定できる項目を、要件の id(requirement)つきで作業フォルダの cases/acceptance.json に書く。test-cases スキルの手順で、単体・結合・回帰のサブエージェントと並行に呼ばれる。
+description: テストケースの受け入れの項目を書く。イシューと設計の要件を1つずつ取り出し、各要件が満たされたかを業務の言葉で判定できる項目を、要件の id(requirement)つきで作業フォルダの cases/acceptance.json に書く。test-cases スキルの手順で、単体・結合・回帰のサブエージェントと並行に呼ばれる。作業フォルダに設計の acceptance.md がある時は呼ばれない(受け入れの項目はスクリプトが acceptance.md から作る)。
 tools: Read, Glob, Write
 ---
 

@@ -183,7 +183,8 @@ code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: u
 .case-fields details summary { cursor: pointer; color: var(--muted); font-size: var(--font-small); }
 
 /* 設計の文書 */
-.doc { padding: 16px 24px 32px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); overflow-wrap: anywhere; }
+/* 格子の中で、広い表やコードに引っぱられて広がらない(はみ出すものは、その枠の中で横に送る) */
+.doc { min-width: 0; padding: 16px 24px 32px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); overflow-wrap: anywhere; }
 .doc > :first-child { margin-top: 0; }
 .doc h1, .doc h2, .doc h3, .doc h4 { font-weight: 600; }
 .doc h1 { margin: 0 0 12px; font-size: 20px; }
@@ -202,8 +203,9 @@ code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: u
 .doc pre.code code { padding: 0; background: none; font-size: var(--font-small); }
 .table-wrap { overflow-x: auto; }
 .table-wrap table { border-collapse: collapse; font-size: 13px; }
-.table-wrap th, .table-wrap td { padding: 4px 8px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
-.table-wrap th { background: var(--bg); font-weight: 600; }
+/* 列の多い表は、狭い幅で1字ずつ折り返さず、枠の中で横に送る */
+.table-wrap th, .table-wrap td { min-width: 6em; padding: 4px 8px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.table-wrap th { background: var(--bg); font-weight: 600; white-space: nowrap; }
 
 @media (max-width: 760px) {
   .app { height: auto; }

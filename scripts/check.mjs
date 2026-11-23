@@ -255,6 +255,8 @@ async function checkTemplates() {
     results.push(['テストケースのひな形 check-cases', await node(['.claude/skills/test-cases/scripts/check-cases.mjs', work])])
     results.push(['テストケースのひな形 build-manifest', await node(['.claude/skills/test-cases/scripts/build-manifest.mjs', work, '--out', out])])
     results.push(['テストケースのひな形から作った正本 check-manifest', await node(['scripts/check-manifest.mjs', out])])
+    // 設計の見本の acceptance.md が、受け入れの項目を作るスクリプトの読める形か(設計のひな形と同じ形)
+    results.push(['設計の見本の受け入れ基準 check-cases', await node(['.claude/skills/test-cases/scripts/check-cases.mjs', 'sample/design'])])
   }
   finally {
     rmSync(work, { recursive: true, force: true })

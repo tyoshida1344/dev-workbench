@@ -161,7 +161,8 @@ export function renderMarkdown(text, options = {}) {
 
     // 表。見出しの次の行が区切り(|---|---|)の時だけ表にする
     if (/^\s*\|/.test(line) && TABLE_RULE.test(lines[i + 1] ?? '')) {
-      const cells = row => row.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())
+      // \| はセルの中の | として扱う(区切りにしない)
+      const cells = row => row.trim().replace(/^\||(?<!\\)\|$/g, '').split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'))
       const head = cells(line)
       i += 2
       const rows = []
