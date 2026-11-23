@@ -6,7 +6,7 @@ description: >-
 
 # 設計の統括(フェーズ1〜10)
 
-dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。
 
 ## 振り分け
 
@@ -15,8 +15,8 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 | 頼まれたこと | 読む手順 |
 |---|---|
 | 設計を進める・続きから・フェーズXをやる | このファイルの「進め方」と、そのフェーズの手順 `design/reference/NN-*.md` |
-| 設計をレビューする・詰め漏れを見る | 設計のレビュー([review/SKILL.md](review/SKILL.md))。レビューの共通の進め方と出力の形は `review/SKILL.md` |
-| 実装の担当から、実装中に決めた・変えたことの報告を受けた | 実装からの反映([reference/11-feedback-from-impl.md](reference/11-feedback-from-impl.md)) |
+| 設計をレビューする・詰め漏れを見る | 設計のレビュー([review/SKILL.md](/.claude/skills/design/review/SKILL.md))。レビューの共通の進め方と出力の形は `review/SKILL.md` |
+| 実装の担当から、実装中に決めた・変えたことの報告を受けた | 実装からの反映([reference/11-feedback-from-impl.md](/.claude/skills/design/reference/11-feedback-from-impl.md)) |
 
 このファイルは、設計の進め方と、全フェーズに共通する決まりを持つ。各フェーズの手順(`design/reference/NN-*.md`)には、そのフェーズに固有の手順・調べ方・完了条件・例外のケースだけを書く。何をどの節に書くかは、ひな形(`design/templates/`)の `> 書き方:` が正本。フェーズに入る時に、その手順を読む。
 
@@ -30,7 +30,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 - 設計の Markdown は `docs/design-folder.md`(`<dev-workbench>/docs/design-folder.md`)を守る
 
 ### 読むもの
-- イシュー: フェーズ1([01-issue-review.md](reference/01-issue-review.md))の読み方で読む
+- イシュー: フェーズ1([01-issue-review.md](/.claude/skills/design/reference/01-issue-review.md))の読み方で読む
 - コード: スキルを呼び出したリポジトリ(cwd)と、そのイシューやPRに出てくる関連リポジトリ。関連リポジトリが手元のどこにあるか分からなければ、ユーザーに聞く
 - 既存の仕様の根拠にするのは、各リポジトリの既定のブランチ(`origin/<既定のブランチ>`)。cwd 以外のリポジトリのブランチは切り替えず、`git show` で読む。課題ごとの worktree や作業中のブランチは、まだマージされていない変更を含むので、根拠にしない(あてはまった時はフェーズ4の「例外のケース」)
 - 各リポジトリの `CLAUDE.md` や `docs/` に、既存の仕様の背景や、守る決まり(実行してはいけない操作など)がある。既存の仕様を書く前に、関係するところを読む
@@ -44,7 +44,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
    - `QA.md` に未決が残っているか
 3. 推し量った結果と根拠を伝え、**「フェーズ X から進めてよいですか」とユーザーに確かめる**。ユーザーが別のフェーズを指定したら、そちらに従う
 4. 確かめられたら、そのフェーズの手順を読んで進める。各段の結果は、1つの最終仕様(`spec.md`)にまとめていく
-5. フェーズの完了条件をすべて満たすまで、次のフェーズへ進まない。満たしたら、結果を短く伝え、次へ進んでよいか確かめる
+5. フェーズの完了条件をすべて満たすまで、次のフェーズへ進まない。満たしたら、`docs/workspace.md` の「Driveへの置き方」で Drive に揃え、結果を短く伝え、次へ進んでよいか確かめる
 6. 設計を見せる時は、ビューアのURLを渡す(上の「作業フォルダと読むもの」)
 7. 最後のフェーズ(テストの方針・計画 `test.md`)まで終わったら、イシューへの反映をどうするかを、ユーザーに確かめる。テストケースは `test-cases` で作る
    - `issue-handler` から来た時は、どのフェーズまで行うか・イシューへのコメントは `issue-handler/SKILL.md` に従う
@@ -54,17 +54,17 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 
 | # | 手順 | やること | 成果物 |
 |---|--------|----------|--------|
-| 1 | [01-issue-review.md](reference/01-issue-review.md) | 本文・コメント・リンクされたPRやイシューを読み、決まったことと未決を分ける | `index.md` |
-| 2 | [02-requirements.md](reference/02-requirements.md) | 何を・誰が・なぜ。イシューの事実と自分の解釈を分ける。考慮すべき観点の要否を判定する | `search/NN_requirements.md` |
-| 3 | [03-related.md](reference/03-related.md) | 影響しうる画面・API・データ・処理と、類似機能を、関係するリポジトリから洗い出す | `search/NN_related.md` |
-| 4 | [04-current-spec.md](reference/04-current-spec.md) | 今の実装が条件ごとにどう動くかを表にする。埋まらないセルはコードを追って確かめる | `search/NN_<slug>.md` |
-| 5 | [05-change-spec.md](reference/05-change-spec.md) | 既存の仕様の表と同じ軸で、変更後の動きを並べる(差分がひと目で分かるように) | `spec/NN_<slug>.md` |
-| — | 設計のレビュー([review/SKILL.md](review/SKILL.md)) | フェーズ5・7・9・10 を書き終えた時に当てる。読むだけで、指摘を返す | 指摘(成果物は直さない) |
-| 6 | [06-questions.md](reference/06-questions.md) | 決める人への質問として書く(選択肢・推奨案・影響つき)。未決が出た時点で行う | `QA.md`(未決がある間だけ) |
-| 7 | [07-final.md](reference/07-final.md) | 変更仕様をまとめて、最終仕様にする | `spec.md` |
-| 8 | [08-acceptance.md](reference/08-acceptance.md) | 設計が確定(仮・未決が0件)した後に、実装後の確認の条件を書く | `acceptance.md` |
-| 9 | [09-implementation-plan.md](reference/09-implementation-plan.md) | 実装の方針・計画(データ構造の変更、手を加える機能、データの流れ、画面の文言、作業の分割)を、下書き(根拠・調査つき)から、決まったことだけにまとめる | `impl/NN_<slug>.md`、`impl.md` |
-| 10 | [10-test-plan.md](reference/10-test-plan.md) | 受け入れ基準を、どの層・手段・担当で確かめるかという、テストの方針・計画を書く | `test/NN_<slug>.md`、`test.md` |
+| 1 | [01-issue-review.md](/.claude/skills/design/reference/01-issue-review.md) | 本文・コメント・リンクされたPRやイシューを読み、決まったことと未決を分ける | `index.md` |
+| 2 | [02-requirements.md](/.claude/skills/design/reference/02-requirements.md) | 何を・誰が・なぜ。イシューの事実と自分の解釈を分ける。考慮すべき観点の要否を判定する | `search/NN_requirements.md` |
+| 3 | [03-related.md](/.claude/skills/design/reference/03-related.md) | 影響しうる画面・API・データ・処理と、類似機能を、関係するリポジトリから洗い出す | `search/NN_related.md` |
+| 4 | [04-current-spec.md](/.claude/skills/design/reference/04-current-spec.md) | 今の実装が条件ごとにどう動くかを表にする。埋まらないセルはコードを追って確かめる | `search/NN_<slug>.md` |
+| 5 | [05-change-spec.md](/.claude/skills/design/reference/05-change-spec.md) | 既存の仕様の表と同じ軸で、変更後の動きを並べる(差分がひと目で分かるように) | `spec/NN_<slug>.md` |
+| — | 設計のレビュー([review/SKILL.md](/.claude/skills/design/review/SKILL.md)) | フェーズ5・7・9・10 を書き終えた時に当てる。読むだけで、指摘を返す | 指摘(成果物は直さない) |
+| 6 | [06-questions.md](/.claude/skills/design/reference/06-questions.md) | 決める人への質問として書く(選択肢・推奨案・影響つき)。未決が出た時点で行う | `QA.md`(未決がある間だけ) |
+| 7 | [07-final.md](/.claude/skills/design/reference/07-final.md) | 変更仕様をまとめて、最終仕様にする | `spec.md` |
+| 8 | [08-acceptance.md](/.claude/skills/design/reference/08-acceptance.md) | 設計が確定(仮・未決が0件)した後に、実装後の確認の条件を書く | `acceptance.md` |
+| 9 | [09-implementation-plan.md](/.claude/skills/design/reference/09-implementation-plan.md) | 実装の方針・計画(データ構造の変更、手を加える機能、データの流れ、画面の文言、作業の分割)を、下書き(根拠・調査つき)から、決まったことだけにまとめる | `impl/NN_<slug>.md`、`impl.md` |
+| 10 | [10-test-plan.md](/.claude/skills/design/reference/10-test-plan.md) | 受け入れ基準を、どの層・手段・担当で確かめるかという、テストの方針・計画を書く | `test/NN_<slug>.md`、`test.md` |
 
 ## 4. 全フェーズ共通の決まり
 
@@ -73,7 +73,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 - 未確認のことは、確定した文書(`spec.md`・`impl.md`・`test.md`・`acceptance.md`)に書かず、QA.md に起こす(推奨案つき)
 - 未決を確定として書かない。推奨案は「仮」と書いて該当する行に載せ、QA.md に残す。仮が残る間は、実装に入ってよいとしない
 - 「できないこと」「正常系以外の動き」を書き漏らさない(正常系だけの仕様は現場で事故になる)。`search/`・`spec/`・`acceptance.md` では先に書く
-- すでに確定したデータや、利用者がすでに受け取った結果は変えない。扱いは [viewpoints/existing-data.md](reference/viewpoints/existing-data.md)
+- すでに確定したデータや、利用者がすでに受け取った結果は変えない。扱いは [viewpoints/existing-data.md](/.claude/skills/design/reference/viewpoints/existing-data.md)
 - `spec.md`・`impl.md`・`test.md` は、ほかの成果物(`search/`・`spec/`・`impl/`・`test/`・`QA.md`)を参照せず、1ファイルで完結させる。参照は QA.md → 下書きの一方通行で、下書きや確定した文書から QA の ID や QA.md を参照しない
 - 下書きのファイル名は `NN_<slug>.md`。NN はそのフォルダの中で作った順の連番、slug は英小文字とハイフン。連番(NN・QA の Q01・受け入れ基準の AC01)の欠番は使い直さない
 - 画面の変更が大きい時は、画面イメージ(SVG など)を `images/` に作り、`spec.md` に相対パスで埋め込む(`![一覧の画面](images/list.svg)`)
@@ -113,7 +113,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 - 決まったことは、先に成果物へ反映してから、QA.md の項目を消す
 
 ### 詰め漏れをなくす
-- 書く時も、詰め漏れの観点([viewpoints/completeness.md](reference/viewpoints/completeness.md))で確かめる
+- 書く時も、詰め漏れの観点([viewpoints/completeness.md](/.claude/skills/design/reference/viewpoints/completeness.md))で確かめる
 
 ### 各フェーズの共通の約束
 - 例外のケースは、各フェーズの手順の末尾の「例外のケース」に書いてある。あてはまった時に読む

@@ -158,16 +158,22 @@ for (const file of files.filter(file => file.endsWith('.css'))) checkCss(file, t
 // 5. エビデンスの見本
 const sampleRun = node(['scripts/check-manifest.mjs', 'sample/evidence'])
 
-// 6. 相対リンクと画像が、ファイルを指しているか(見本の Markdown と、スキル・サブエージェントの手順)
+// 6. リンクと画像が、ファイルを指しているか
+//    スキル・サブエージェント・docs/・README・CLAUDE.md は、リポジトリの根からの場所を / で始めて書く(../ やそのファイルからの相対は使わない)
+//    sample/ の見本は、ビューアが作業フォルダの中の相対として開くので、そのファイルからの相対で書く
 //    コードブロックと `…` の中は、書き方の例なので見ない(ビューアもリンクにしない)
 function checkLinks(file) {
+  const fromRoot = !file.startsWith('sample/')
   const body = text(file).replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
   for (const m of body.matchAll(/\]\(([^)\s]+)\)/g)) {
     const href = m[1]
-    if (/^(?:[a-z][a-z\d+.-]*:|#|\/|<)/i.test(href)) continue
+    if (/^(?:[a-z][a-z\d+.-]*:|#|<)/i.test(href) || href.startsWith('//')) continue
+    if (fromRoot && !href.startsWith('/')) { fail(file, `リンクはリポジトリの根からの場所を / で始めて書きます: ${href}`); continue }
+    if (!fromRoot && href.startsWith('/')) { fail(file, `見本のリンクは、そのファイルからの相対で書きます: ${href}`); continue }
     let target
     try {
-      target = posix.normalize(posix.join(posix.dirname(file), decodeURIComponent(href.split(/[?#]/)[0]))).replace(/\/$/, '')
+      const path = decodeURIComponent(href.split(/[?#]/)[0])
+      target = posix.normalize(fromRoot ? path.slice(1) : posix.join(posix.dirname(file), path)).replace(/\/$/, '')
     }
     catch {
       fail(file, `リンクの % の書き方が壊れています: ${href}`)
@@ -176,7 +182,7 @@ function checkLinks(file) {
     if (!tracked.has(target) && !folders.has(target)) fail(file, `リンク先がありません: ${href}`)
   }
 }
-for (const file of files.filter(file => file.endsWith('.md') && (file.startsWith('sample/') || /^(?:\.claude\/skills|agents)\//.test(file)))) {
+for (const file of files.filter(file => file.endsWith('.md') && (/^(?:sample|docs|agents|\.claude\/skills)\//.test(file) || file === 'README.md' || file === 'CLAUDE.md'))) {
   checkLinks(file)
 }
 

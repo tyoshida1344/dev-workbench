@@ -11,14 +11,14 @@
 
 | 道具 | 場所 | 使い方 |
 |---|---|---|
-| 設計ビューア | [`app/design/`](./app/design/) | イシューごとの設計(Markdown)を、文書の一覧から読む |
-| エビデンスビューア | [`app/evidence/`](./app/evidence/) | テストケースと受入確認の動画・画像を、項目の一覧から見て回る。行に「動画」「画像」の札が出て、押すとその場に出る(動画は連続再生もできる) |
+| 設計ビューア | [`app/design/`](/app/design/) | イシューごとの設計(Markdown)を、文書の一覧から読む |
+| エビデンスビューア | [`app/evidence/`](/app/evidence/) | テストケースと受入確認の動画・画像を、項目の一覧から見て回る。行に「動画」「画像」の札が出て、押すとその場に出る(動画は連続再生もできる) |
 
-設計・テストケース・エビデンスは、イシューごとにDriveの1つのフォルダ(作業フォルダ)にまとめて置く。置き方は [docs/workspace.md](./docs/workspace.md)。
+設計・テストケース・エビデンスは、イシューごとにDriveの1つのフォルダ(作業フォルダ)にまとめて置く。置き方は [docs/workspace.md](/docs/workspace.md)。
 
 ### サイトの作り
 
-公開するのは `app/`(画面)と `sample/`(見本)だけ。ビルドはせず、[.github/workflows/pages.yml](./.github/workflows/pages.yml) が `app/` をサイトの直下に、`sample/` を `/sample/` に写して公開する。
+公開するのは `app/`(画面)と `sample/`(見本)だけ。ビルドはせず、[.github/workflows/pages.yml](/.github/workflows/pages.yml) が `app/` をサイトの直下に、`sample/` を `/sample/` に写して公開する。
 `app/` の中は、フォルダの場所がそのまま URL になる(Next.js の `app/` と同じ考え方)。`_` で始まるフォルダは画面ではない部品。
 
 ```
@@ -52,13 +52,13 @@ sample/
 <サイト>/design/?folder=<作業フォルダのID>
 ```
 
-どう見えるかは [`sample/design/`](./sample/design/) の見本で確かめられる(Driveもログインも要らない)。
+どう見えるかは [`sample/design/`](/sample/design/) の見本で確かめられる(Driveもログインも要らない)。
 ビューアを `?folder=sample` で開く。
 
 - 作業フォルダの `index.md`・`spec.md` などを、設計を進める順に呼び名で並べ、`search/` などの下書きをその下に並べる
 - 文書の中の相対リンク・画像はビューアの中で開く。HTMLは書いても文字のまま出る
 - 作業フォルダの `evidence/` の下のフォルダは「テスト・エビデンス」として並び、押すとエビデンスビューアで開く
-- 決まりは [docs/design-folder.md](./docs/design-folder.md)
+- 決まりは [docs/design-folder.md](/docs/design-folder.md)
 
 ### エビデンスビューア
 
@@ -66,12 +66,12 @@ sample/
 <サイト>/evidence/?folder=<DriveのフォルダID>
 ```
 
-どう見えるかは [`sample/evidence/`](./sample/evidence/) の見本で確かめられる(Driveもログインも要らない)。
+どう見えるかは [`sample/evidence/`](/sample/evidence/) の見本で確かめられる(Driveもログインも要らない)。
 ビューアを `?folder=sample` で開く。
 
 - フォルダの `manifest.json` を読み、項目の一覧とプレーヤーが出る
 - テストケースも同じ `manifest.json` に、結果の無い(未実施の)項目として書く。押すと前提・手順・期待する結果が出る。テストを行うと、同じ項目に結果と動画・画像が付く
-- `manifest.json` の形は [docs/evidence-manifest.md](./docs/evidence-manifest.md)。書いたものの見本は [`sample/evidence/`](./sample/evidence/)
+- `manifest.json` の形は [docs/evidence-manifest.md](/docs/evidence-manifest.md)。書いたものの見本は [`sample/evidence/`](/sample/evidence/)
 
 手元で見る時は `node scripts/serve.mjs` で、公開と同じ形(`app/` を直下に、`sample/` を `/sample/` に)で `http://localhost:8126/` に配る。
 
@@ -91,7 +91,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
    - 「承認済みの JavaScript 生成元」に、公開先の生成元(`<サイト>` のうち `https://ホスト名` まで)を登録する
    - 「承認済みのリダイレクト URI」に `<サイト>/auth/` を登録する(ログインのあと戻ってくる先。どの道具からログインしても、ここに戻ってから元のページへ戻る。末尾の `/` まで同じにする)
    - 手元で確かめるなら、生成元に `http://localhost:<ポート>`、リダイレクトURIに `http://localhost:8126/auth/` も足す(`scripts/serve.mjs` で配った時)
-5. 発行されたクライアントIDを [`app/config.js`](./app/config.js) の `googleClientId` に書く
+5. 発行されたクライアントIDを [`app/config.js`](/app/config.js) の `googleClientId` に書く
 
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
 テストのまま(または内部)で使う。
@@ -99,7 +99,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 ## 他のプロジェクトから使う
 
 開発をしているプロジェクトの Claude Code から、イシュー対応・設計・テストケース作成・テストの実施・レビューをスキルとして使える。
-書いたものは開発しているリポジトリにも、このリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置いてビューアで見る。
+書いたものは開発しているリポジトリにも、このリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](/docs/workspace.md))に置いてビューアで見る。
 
 ユーザーが呼ぶスキルは次の5つ。細かい使い分け(レビュー・やり直し・受入確認のまとめなど)は、各スキルの `SKILL.md` の「振り分け」が、頼まれたことに合わせて中の手順へ回す。
 
@@ -107,7 +107,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 |---|---|---|
 | `/issue-handler` | イシュー番号から、不明点の確認 → 確定した仕様のコメント → 実装 → 検証 → セルフレビュー → コミット → 受入確認のエビデンス → PR までを通して行う。大きなイシューは `/design` の流れに切り替える | — |
 | `/design` | イシューの設計を、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画の順に書く。設計ビューアで読む | フェーズごとの手順 `design/reference/`、ひな形 `design/templates/`、設計のレビュー `design/review/` |
-| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ(リポジトリの直下の [`agents/`](./agents/)) |
+| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ(リポジトリの直下の [`agents/`](/agents/)) |
 | `/test-run` | ケースを行い、結果と動画・画像を同じ `manifest.json` に足す | やり直し `test-run/retest/`、テストケースを作らない PR の受入確認のまとめ `test-run/evidence/`、撮り方のこつ `test-run/reference/capture.md` |
 | `/review` | 実装を、観点ごとのチェックリストの形で指摘する。単体では報告だけで、頼まれた時は直すところまで | 実装 `review/impl/`・性能とコード量 `review/perf/`・回帰 `review/regression/`・使い勝手 `review/ux/`(設計とテストケースのレビューは、それぞれ `/design`・`/test-cases` の中) |
 
@@ -118,13 +118,16 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 スキルとサブエージェントは、このリポジトリを Claude Code のプラグイン(マーケットプレイスもプラグインも `dev-workbench`)として入れて使う。
 入れたプラグインのスキルは `/dev-workbench:issue-handler` のように、名前の前に `dev-workbench:` が付く(サブエージェントも `dev-workbench:test-cases-unit` のように付く)。
 
-1. [Google ドライブ パソコン版](https://www.google.com/drive/download/) を入れ、同期フォルダの中に作業の置き場を作る
+1. 作業の置き場を決める。設計・テストケース・エビデンスは手元に書いて、Drive に同じ形で置く([docs/workspace.md](/docs/workspace.md) の「Driveへの置き方」)
+   - [Google ドライブ パソコン版](https://www.google.com/drive/download/) を使う PC: 同期フォルダの中に作業の置き場を作る。同期が Drive へ上げる
+   - 使わない PC: 手元の好きなフォルダを作業の置き場にし、Drive に基準フォルダを作る。スキルが区切りごとに Claude in Chrome で上げる
 2. `~/.claude/settings.json`(ユーザーの設定)に、次を足す。`<owner>/<name>` は GitHub のこのリポジトリ
 
 ```json
 {
   "env": {
-    "DEV_WORKBENCH_DOCS": "<作業の置き場>"
+    "DEV_WORKBENCH_DOCS": "<作業の置き場>",
+    "DEV_WORKBENCH_DRIVE_FOLDER": "<Drive の基準フォルダの ID(パソコン版を使わない PC だけ)>"
   },
   "permissions": {
     "additionalDirectories": ["<作業の置き場>", "<ホーム>/.claude/plugins/cache/dev-workbench"]
@@ -139,6 +142,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 ```
 
 - `additionalDirectories` の2つめは、入れたプラグインの写しの置き場。スキルが中の手順を読む時に、そのたびに許可を聞かれないようにする
+- `DEV_WORKBENCH_DRIVE_FOLDER` は、Drive の基準フォルダの URL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。パソコン版を使う PC では書かない
 - `autoUpdate` で、Claude Code を起動した時に `main` の新しい版が入る
 
 3. Claude Code で、プラグインを入れる
@@ -149,16 +153,16 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 #### スキルを直す時
 
-- このリポジトリの中では、プラグインを入れていなくても `.claude/skills/` がプロジェクトのスキルとして使える(`/issue-handler` など。手元の、今のブランチの中身が効く)。サブエージェント([`agents/`](./agents/))はプラグインからしか読まれないので、入れたプラグインの版(`dev-workbench:test-cases-unit` など)が使われる
+- このリポジトリの中では、プラグインを入れていなくても `.claude/skills/` がプロジェクトのスキルとして使える(`/issue-handler` など。手元の、今のブランチの中身が効く)。サブエージェント([`agents/`](/agents/))はプラグインからしか読まれないので、入れたプラグインの版(`dev-workbench:test-cases-unit` など)が使われる
 - `main` に入る前の変更を別のプロジェクトで試す時は、そのプロジェクトで `claude --plugin-dir <このリポジトリの場所>` と起動する(手元の中身をそのまま読み込む。直したら `/reload-plugins`)
 - ほかのPCには、`main` に入れた後、それぞれで Claude Code を起動した時に入る
 
-スキルはビューアのURLを [`.claude/skills/config.json`](./.claude/skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
+スキルはビューアのURLを [`.claude/skills/config.json`](/.claude/skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
 
 ## 道具を足す時
 
-- 1つの道具につき `app/` の下に1つのフォルダを作り(フォルダの名前が URL になる)、[app/index.html](./app/index.html) と上の表に足す。見本は `sample/<道具>/` に置く
+- 1つの道具につき `app/` の下に1つのフォルダを作り(フォルダの名前が URL になる)、[app/index.html](/app/index.html) と上の表に足す。見本は `sample/<道具>/` に置く
 - データは持たない。読む先はURLのパラメータで受け取る
-- 共通の部品は [`app/_lib/`](./app/_lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
+- 共通の部品は [`app/_lib/`](/app/_lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)
-- コミットの前に `node scripts/check.mjs` を通す(Node 22 以上。`app/` の `.js` を ES モジュールとして調べるため)。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
+- コミットの前に `node scripts/check.mjs` を通す(Node 22 以上。`app/` の `.js` を ES モジュールとして調べるため)。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](/CLAUDE.md)

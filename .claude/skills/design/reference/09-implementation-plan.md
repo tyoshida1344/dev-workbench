@@ -1,8 +1,8 @@
 # フェーズ9: 実装の方針・計画
 
-作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](../SKILL.md)にある。
+作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](/.claude/skills/design/SKILL.md)にある。
 
-以下の「1.1」などの番号は、ひな形 [templates/impl.md](../templates/impl.md) の節の番号。何をどの節に書くかは、ひな形の `> 書き方:` に従う。
+以下の「1.1」などの番号は、ひな形 [templates/impl.md](/.claude/skills/design/templates/impl.md) の節の番号。何をどの節に書くかは、ひな形の `> 書き方:` に従う。
 
 ## 前提
 - `spec.md` に仮が無く、`acceptance.md` がある(無ければ、ユーザーに伝える)
