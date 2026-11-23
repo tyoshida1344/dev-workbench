@@ -7,7 +7,7 @@
 
 ## 対象の特定
 
-`review/SKILL.md` の「対象の特定」に加えて、設計を読む。作業フォルダ(決め方は `$DEV_WORKBENCH_HOME/docs/workspace.md`)があれば `spec.md`・`impl.md`・`acceptance.md`。無ければイシューと PR の本文(`gh issue view <番号> --comments`、`gh pr view`)。
+`review/SKILL.md` の「対象の特定」に加えて、設計を読む。作業フォルダ(決め方は `<dev-workbench>/docs/workspace.md`)があれば `spec.md`・`impl.md`・`acceptance.md`。無ければイシューと PR の本文(`gh issue view <番号> --comments`、`gh pr view`)。
 
 ## 確認観点
 

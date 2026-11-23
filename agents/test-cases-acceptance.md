@@ -8,7 +8,7 @@ tools: Read, Glob, Write
 
 ## 先に読む
 
-場所は `$DEV_WORKBENCH_HOME/.claude/skills/` からの場所(`$DEV_WORKBENCH_HOME` は親が渡す絶対パス)。
+場所は `<dev-workbench>/.claude/skills/` からの場所(`<dev-workbench>` は親が渡す絶対パス)。
 
 - `test-cases/SKILL.md` の「一番大事な決まり」(Claude はコマンドを実行しない)
 - `test-cases/reference/subagent.md`(動く条件・共通の約束・終わりの報告)

@@ -7,7 +7,7 @@
 ケースを新しく作るのは `test-cases`、やり直す項目を行うのは `test-run` の本体。
 
 - 欄の意味: [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 
 ## 決まり
 
@@ -46,7 +46,7 @@ git diff <前の正本の source.commit>..HEAD
 5. 新しいフォルダを作る。前のフォルダの結果を、やり直さない項目にだけ写す(この手順に固有の引数は `--results-from` と `--redo`)
 
 ```bash
-node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail \
+node "<dev-workbench>/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail \
   --out <作業フォルダ>/evidence/<今日の日付>-<内容> \
   --results-from <作業フォルダ>/evidence/<前のフォルダ> \
   --redo <id>,<id>

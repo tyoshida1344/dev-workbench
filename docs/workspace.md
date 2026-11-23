@@ -47,10 +47,18 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
 | 環境変数 | 中身 |
 |---|---|
 | `DEV_WORKBENCH_DOCS` | 作業の置き場。Google ドライブ パソコン版の同期フォルダの中 |
-| `DEV_WORKBENCH_HOME` | dev-workbench を手元に置いた場所。スキル・`docs/`・`scripts/`・`.claude/skills/config.json` を読む |
 
-- どちらもユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](../README.md) の「使い始める」
-- 使う前に `echo "$DEV_WORKBENCH_DOCS" "$DEV_WORKBENCH_HOME"` で確かめる。**空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
+- ユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](../README.md) の「使い始める」
+- 使う前に `echo "$DEV_WORKBENCH_DOCS"` で確かめる。**空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
+
+## dev-workbench の場所
+
+スキル・`docs/`・`scripts/`・`.claude/skills/config.json` は、dev-workbench の中から読む。その場所を `<dev-workbench>` と書く。
+
+- 入口の `SKILL.md` に、`${CLAUDE_SKILL_DIR}/../../..` として書いてある。Claude Code がスキルを読み込む時に、そのスキルのフォルダの絶対パスに置き換える。プラグインとして入れた時はその写し(`~/.claude/plugins/` の下)、このリポジトリの中ではこのリポジトリを指す
+- 中の手順・`docs/`・コマンドの中の `<dev-workbench>` は、入口で分かった絶対パスに置き換えて使う(中の手順は Read で読むので、`${...}` は置き換わらない)
+- サブエージェントには、絶対パスにして渡す
+- プラグインとして入れた時は、スキルとサブエージェントの名前の前に `dev-workbench:` が付く。手順の中で `review`・`test-run`・`test-cases-unit` などと書いた名前は、`dev-workbench:review` のように付けて呼ぶ(このリポジトリの中で、プロジェクトのスキルとして読まれた時のスキルは付けない)
 
 ```
 DEV_WORKBENCH_DOCS = G:\マイドライブ\dev-docs         (Windows の例)
@@ -72,6 +80,6 @@ DEV_WORKBENCH_DOCS = ~/Google Drive/My Drive/dev-docs  (macOS の例)
 | 設計 | `<site>design/?folder=<作業フォルダのID>` |
 | テストケース・エビデンス | `<site>evidence/?folder=<evidence の下の1回分のフォルダのID>` |
 
-- `<site>` は `$DEV_WORKBENCH_HOME/.claude/skills/config.json` の `site`(末尾は `/`)。読めなければユーザーに聞く。人に向けた説明では [README.md](../README.md) の先頭の1行が公開先
+- `<site>` は `<dev-workbench>/.claude/skills/config.json` の `site`(末尾は `/`)。読めなければユーザーに聞く。人に向けた説明では [README.md](../README.md) の先頭の1行が公開先
 - `<ID>` は、DriveのフォルダのURL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。Drive のコネクタがあれば、フォルダの名前で探し、親フォルダ(`<リポジトリ名>` など)も合っていることを確かめて取る。無ければユーザーにフォルダのURLを聞く
 - 設計のビューアは、作業フォルダの `evidence/` の下にあるフォルダを一覧に出し、そこからエビデンスビューアへ移れる

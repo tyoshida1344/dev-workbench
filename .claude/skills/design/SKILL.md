@@ -6,6 +6,8 @@ description: >-
 
 # 設計の統括(フェーズ1〜10)
 
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+
 ## 振り分け
 
 頼まれたことで、読む手順を選ぶ。
@@ -20,12 +22,12 @@ description: >-
 
 ## 1. 作業フォルダと読むもの
 
-作業フォルダとビューアのURLは `docs/workspace.md`(`$DEV_WORKBENCH_HOME/docs/workspace.md`)のとおり。以下この作業フォルダを `<作業フォルダ>` と書く。設計に固有のことは次のとおり。
+作業フォルダとビューアのURLは `docs/workspace.md`(`<dev-workbench>/docs/workspace.md`)のとおり。以下この作業フォルダを `<作業フォルダ>` と書く。設計に固有のことは次のとおり。
 
 - 直下の文書は確定したものを置く: `index.md`(イシューの概要とリンク)、`QA.md`(今の未決だけ。未決がある間だけ置き、解決したら項目を消し、なくなったらファイルごと消す)、`spec.md`(最終仕様)、`acceptance.md`(受け入れ基準)、`impl.md`(実装の方針・計画)、`test.md`(テストの方針・計画)
 - `search/`(調査)・`spec/`(変更仕様)・`impl/`(実装の調査・検討)・`test/`(テストの検討)は、話題ごとの下書き。書き終えたら、決まったことを直下の文書にまとめる。`spec.md`・`impl.md`・`test.md` は直下に置き、下書きのフォルダの中には置かない
 - 設計を見せる時は、設計のビューア(`design/`)で作業フォルダを開くURLを渡す
-- 設計の Markdown は `docs/design-folder.md`(`$DEV_WORKBENCH_HOME/docs/design-folder.md`)を守る
+- 設計の Markdown は `docs/design-folder.md`(`<dev-workbench>/docs/design-folder.md`)を守る
 
 ### 読むもの
 - イシュー: フェーズ1([01-issue-review.md](reference/01-issue-review.md))の読み方で読む
