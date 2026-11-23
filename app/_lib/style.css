@@ -63,7 +63,7 @@ button { font: inherit; color: inherit; }
   cursor: pointer;
 }
 .gate button { padding: 8px 16px; }
-.controls button:disabled { cursor: default; opacity: 0.5; }
+.gate button:disabled, .controls button:disabled, .reauth button:disabled { cursor: default; opacity: 0.5; }
 
 /* 文中で、リンクのように見せるボタン(詳細の「行う側の項目」) */
 .link-button { padding: 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }

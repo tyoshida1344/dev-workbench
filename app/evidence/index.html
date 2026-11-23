@@ -19,7 +19,7 @@
   </header>
 
   <section id="gate" class="gate">
-    <p id="gate-message">読み込み中...</p>
+    <p id="gate-message" role="status">読み込み中...</p>
     <button id="sign-in" type="button" hidden>Googleでログインして開く</button>
     <p id="gate-links" class="gate-links" hidden>
       <span><a href="?folder=sample">見本を開く</a>(Driveもログインも要らない)</span>
@@ -44,7 +44,7 @@
     <section class="stage">
       <p id="status" class="visually-hidden" role="status"></p>
       <p id="reauth" class="reauth" hidden>
-        ログインの期限が切れました。
+        <span id="reauth-message" role="status">ログインの期限が切れました。</span>
         <button id="reauth-button" type="button">Googleでログインし直す</button>
       </p>
       <div class="controls">

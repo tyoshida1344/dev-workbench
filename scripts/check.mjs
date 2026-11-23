@@ -4,6 +4,7 @@
 // 外のものは何も読み込まない(Node だけで動く)。最後に scripts/test/ のテスト(node --test)も走らせる。
 
 import { execFileSync, spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, posix, relative, resolve } from 'node:path'
@@ -106,7 +107,7 @@ for (const file of scripts.filter(file => file.startsWith('app/'))) {
   }
 }
 
-// 4. 外のものを読み込んでいないか(CLAUDE.md の「外部のスクリプトを読み込まない」)
+// 4. 外のものを読み込んでいないか(CLAUDE.md の「外部のスクリプトを読み込まない」。例外は Googleのログインの部品だけ)
 //    外 = http: / https: / // で始まるもの
 const OUTSIDE = /^\s*(?:https?:|\/\/)/i
 
@@ -132,6 +133,42 @@ for (const file of scripts) {
   // import … from '…' / import '…' / export … from '…' / import('…')
   for (const m of body.matchAll(/\b(?:import|export)\s*(?:[\w$*{},\s]*?\bfrom\s*)?["'`]((?:https?:|\/\/)[^"'`]*)|\bimport\s*\(\s*["'`]((?:https?:|\/\/)[^"'`]*)/gi)) {
     fail(`${file}:${lineAt(body, m.index)}`, `外のスクリプトを読み込んでいます: ${m[1] ?? m[2]}`)
+  }
+}
+
+// JS で <script>・<iframe> を作る形(document.createElement と、共通の部品 el の1つ目)は、外のものを読み込める。
+// Googleのログインの部品を読み込む drive.js のほかでは作らない。drive.js の中の外の URL は、ログインの部品と Drive の API だけにする
+// (dom.js の el は、要素の名前を変数で受け取って作るだけなので、見ない。要素の名前を変数で渡す形、object・embed・link の要素は拾わないので、
+//  外のものを読み込む作りを足す時は、この検査を広げる。部品は drive.js の script.src = SIGN_IN_SCRIPT の1か所だけで読み込む)
+const SIGN_IN_LOADER = 'app/_lib/drive.js'
+const SIGN_IN_SCRIPT = 'https://accounts.google.com/gsi/client'
+for (const file of scripts.filter(file => file.startsWith('app/'))) {
+  const body = text(file)
+  for (const m of body.matchAll(/\b(?:createElement|el)\s*\(\s*["'`](script|iframe)["'`]/gi)) {
+    if (file !== SIGN_IN_LOADER) fail(`${file}:${lineAt(body, m.index)}`, `外のものを読み込める要素を作っています(Googleのログインの部品を読み込む ${SIGN_IN_LOADER} のほかでは作らない): ${m[1]}`)
+  }
+}
+if (tracked.has(SIGN_IN_LOADER)) {
+  const body = text(SIGN_IN_LOADER)
+  for (const m of body.matchAll(/["'`]((?:https?:)?\/\/[^"'`\s]*)/g)) {
+    if (m[1] !== SIGN_IN_SCRIPT && !m[1].startsWith('https://www.googleapis.com/')) {
+      fail(`${SIGN_IN_LOADER}:${lineAt(body, m.index)}`, `Googleのログインの部品と Drive の API のほかの、外の URL があります: ${m[1]}`)
+    }
+  }
+
+  // drive.js の版の印。page.js は drive.js を ?v=<印> で読み込み、ブラウザのキャッシュに残った前の版の drive.js を引かないようにする。
+  // 印は drive.js の中身から作る(改行の違いは除く)。drive.js を変えたら、検査が出す印に読み込みを直す。
+  // 印の無い読み込みは、前の版から移る人の片付けのために drive.js だけを読む道具の一覧(app/index.html)だけに許す
+  // (同じページで印のあり・なしを両方読むと、別のモジュールが2つできる)。
+  const mark = createHash('sha256').update(body.replace(/\r\n/g, '\n')).digest('hex').slice(0, 8)
+  for (const file of files.filter(file => file.startsWith('app/') && /\.(?:m?js|html)$/.test(file) && file !== SIGN_IN_LOADER)) {
+    const source = text(file)
+    // 名前の前に区切り(/ か引用符)を求め、? や # の後ろは全体を拾って、?v=<印> と同じかを見る
+    for (const m of source.matchAll(/(?:^|[/"'`])drive\.js([?#][^"'`]*)?["'`]/gm)) {
+      const suffix = m[1] ?? ''
+      if (file === 'app/index.html' && suffix === '') continue
+      if (suffix !== `?v=${mark}`) fail(`${file}:${lineAt(source, m.index)}`, `drive.js は ?v=${mark} を付けて読み込みます(drive.js の中身から作った印。今は ${suffix || '印が無い'})`)
+    }
   }
 }
 

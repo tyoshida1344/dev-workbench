@@ -35,6 +35,8 @@ const PARALLEL = 6
 /** 読んだ見出しを覚えておく場所(sessionStorage)。{ "<ファイルのID>@<更新日時>": 見出し }。変わっていない文書は読み直さない */
 const HEADINGS_KEY = 'design:headings'
 const NOT_FOUND = '設計の Markdown が見つかりません。フォルダのIDが正しいか、このGoogleアカウントで見られるフォルダかを確かめてください(index.md や spec.md などを置くと、ここに出ます)。'
+/** 見つからない時のエラー。code を残す(Driveのフォルダなら、次のログインでアカウントを選べるようにするため) */
+const notFound = () => Object.assign(new Error(NOT_FOUND), { code: 'not-found' })
 
 const state = {
   source: null,
@@ -259,9 +261,9 @@ async function load(source) {
     collected = await (source.list ? collectFromDrive() : collectFromUrl())
   }
   catch (error) {
-    throw new Error(error.code === 'not-found' ? NOT_FOUND : error.message)
+    throw error.code === 'not-found' ? notFound() : new Error(error.message)
   }
-  if (!collected.docs.length && !collected.evidence.length) throw new Error(NOT_FOUND)
+  if (!collected.docs.length && !collected.evidence.length) throw notFound()
 
   // 一覧はファイル名(決まったファイルは呼び名)ですぐ出し、見出しは後から書き換える。並べ替えは一度だけ
   for (const doc of collected.docs) {
