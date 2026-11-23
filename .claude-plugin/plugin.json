@@ -1,0 +1,10 @@
+{
+  "name": "dev-workbench",
+  "description": "イシュー対応・設計・テストケース作成・テストの実施・レビューのスキルと、テストケースを書くサブエージェント",
+  "author": {
+    "name": "tyoshida1344"
+  },
+  "skills": [
+    "./.claude/skills/"
+  ]
+}

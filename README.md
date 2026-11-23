@@ -96,17 +96,6 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
 テストのまま(または内部)で使う。
 
-## 前の版から移る
-
-道具の作りを変えた時に、すでに使っている環境で要る作業。
-
-- **ログインの戻り先が `<サイト>/auth/` になった**(前は `<サイト>/evidence/`)。Google Cloud の「承認済みのリダイレクト URI」に `<サイト>/auth/` を足す。前の `<サイト>/evidence/` は、新しい版を公開してしばらく(ブラウザに古いページが残っている間。少なくとも1日)は消さずに残す
-- **公開の仕方が GitHub Actions になった**。fork している時は、Settings → Pages の Source を「GitHub Actions」にする(ブランチから公開したままだと、直下に `index.html` が無いので開けない)
-- **見本は `?folder=sample` で開く**。前の `?base=<URL>` は無くなった。手元のフォルダを開く代わりの方法は無いので、Drive の作業フォルダに置いて `?folder=<DriveのフォルダID>` で開く
-- **evidence-pack を写したプロジェクト**: 写したスキルは前の `?base=` を案内しているので、写しを消し、下の「使い始める」でリンクして `/test-run`(受入確認のまとめは `test-run` が振り分ける)を使う
-- 一度ログインしたしるしは、新しい版でもそのまま使われる(前の版のしるしを移す)
-- 手元で `scripts/` を動かすには Node 22 以上が要る(`app/` の `.js` を ES モジュールとして調べるため)
-
 ## 他のプロジェクトから使う
 
 開発をしているプロジェクトの Claude Code から、イシュー対応・設計・テストケース作成・テストの実施・レビューをスキルとして使える。
@@ -118,7 +107,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 |---|---|---|
 | `/issue-handler` | イシュー番号から、不明点の確認 → 確定した仕様のコメント → 実装 → 検証 → セルフレビュー → コミット → 受入確認のエビデンス → PR までを通して行う。大きなイシューは `/design` の流れに切り替える | — |
 | `/design` | イシューの設計を、要件・影響範囲・今の振る舞い・変更仕様・未決・最終仕様・受け入れ基準・実装の計画・テストの計画の順に書く。設計ビューアで読む | フェーズごとの手順 `design/reference/`、ひな形 `design/templates/`、設計のレビュー `design/review/` |
-| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ `.claude/agents/test-cases/` |
+| `/test-cases` | 変更から、単体・結合・回帰・受け入れのケースを並行に書き、漏れを見直して、未実施の項目の `manifest.json` にする。エビデンスビューアで読む 形とコマンド `test-cases/reference/format.md`・項目の書き方 `writing.md`・観点 `perspectives.md`、テストケースのレビュー `test-cases/review/`、サブエージェント5つ(リポジトリの直下の [`agents/`](./agents/)) |
 | `/test-run` | ケースを行い、結果と動画・画像を同じ `manifest.json` に足す | やり直し `test-run/retest/`、テストケースを作らない PR の受入確認のまとめ `test-run/evidence/`、撮り方のこつ `test-run/reference/capture.md` |
 | `/review` | 実装を、観点ごとのチェックリストの形で指摘する。単体では報告だけで、頼まれた時は直すところまで | 実装 `review/impl/`・性能とコード量 `review/perf/`・回帰 `review/regression/`・使い勝手 `review/ux/`(設計とテストケースのレビューは、それぞれ `/design`・`/test-cases` の中) |
 
@@ -126,31 +115,45 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 
 ### 使い始める(PCごとに1回)
 
-1. このリポジトリを手元に clone する
-2. スキルとサブエージェントを、このリポジトリと同じ階層で `~/.claude` にリンクする(`.claude/skills/<スキル>/` → `~/.claude/skills/<スキル>/`、`.claude/agents/<スキル>/` → `~/.claude/agents/<スキル>/`。このリポジトリの中では、リンクしなくてもプロジェクトのスキルとして使える。コピーではないので、`git pull` すれば新しくなる)。プロジェクトの `.claude/skills/` に同じ名前のスキル(`issue-handler`・`review` など)がある時は、そのプロジェクトではどちらも見える。プロジェクトの方を消すか、名前を変えて使い分ける
+スキルとサブエージェントは、このリポジトリを Claude Code のプラグイン(マーケットプレイスもプラグインも `dev-workbench`)として入れて使う。
+入れたプラグインのスキルは `/dev-workbench:issue-handler` のように、名前の前に `dev-workbench:` が付く(サブエージェントも `dev-workbench:test-cases-unit` のように付く)。
 
-```
-powershell -ExecutionPolicy Bypass -File scripts/link-global.ps1  # Windows(フォルダのリンクなので、管理者の権限は要らない)
-bash scripts/link-global.sh      # macOS・Linux
-```
-
-3. [Google ドライブ パソコン版](https://www.google.com/drive/download/) を入れ、同期フォルダの中に作業の置き場を作る
-4. `~/.claude/settings.json`(ユーザーの設定)に、次を足す
+1. [Google ドライブ パソコン版](https://www.google.com/drive/download/) を入れ、同期フォルダの中に作業の置き場を作る
+2. `~/.claude/settings.json`(ユーザーの設定)に、次を足す。`<owner>/<name>` は GitHub のこのリポジトリ
 
 ```json
 {
   "env": {
-    "DEV_WORKBENCH_HOME": "<このリポジトリの場所>",
     "DEV_WORKBENCH_DOCS": "<作業の置き場>"
   },
   "permissions": {
-    "additionalDirectories": ["<このリポジトリの場所>", "<作業の置き場>"]
+    "additionalDirectories": ["<作業の置き場>", "<ホーム>/.claude/plugins/cache/dev-workbench"]
+  },
+  "extraKnownMarketplaces": {
+    "dev-workbench": {
+      "source": { "source": "github", "repo": "<owner>/<name>" },
+      "autoUpdate": true
+    }
   }
 }
 ```
 
+- `additionalDirectories` の2つめは、入れたプラグインの写しの置き場。スキルが中の手順を読む時に、そのたびに許可を聞かれないようにする
+- `autoUpdate` で、Claude Code を起動した時に `main` の新しい版が入る
+
+3. Claude Code で、プラグインを入れる
+
+```
+/plugin install dev-workbench@dev-workbench
+```
+
+#### スキルを直す時
+
+- このリポジトリの中では、プラグインを入れていなくても `.claude/skills/` がプロジェクトのスキルとして使える(`/issue-handler` など。手元の、今のブランチの中身が効く)。サブエージェント([`agents/`](./agents/))はプラグインからしか読まれないので、入れたプラグインの版(`dev-workbench:test-cases-unit` など)が使われる
+- `main` に入る前の変更を別のプロジェクトで試す時は、そのプロジェクトで `claude --plugin-dir <このリポジトリの場所>` と起動する(手元の中身をそのまま読み込む。直したら `/reload-plugins`)
+- ほかのPCには、`main` に入れた後、それぞれで Claude Code を起動した時に入る
+
 スキルはビューアのURLを [`.claude/skills/config.json`](./.claude/skills/config.json) の `site` から作る。公開先を移したら、ここを書き換える。
-プラグインとして配るかどうかは、イシューで検討している。
 
 ## 道具を足す時
 
@@ -158,4 +161,4 @@ bash scripts/link-global.sh      # macOS・Linux
 - データは持たない。読む先はURLのパラメータで受け取る
 - 共通の部品は [`app/_lib/`](./app/_lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)
-- コミットの前に `node scripts/check.mjs` を通す。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
+- コミットの前に `node scripts/check.mjs` を通す(Node 22 以上。`app/` の `.js` を ES モジュールとして調べるため)。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)

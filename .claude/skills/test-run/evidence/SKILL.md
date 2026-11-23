@@ -5,7 +5,7 @@
 受け入れ項目を決め、受入確認の動画・画像と、確かめたことを書いた `manifest.json` を作業フォルダの1つのフォルダにまとめ、エビデンスビューアのURLを渡すまでを行う。
 流れは **項目を決める → 撮る → まとめる → 渡す → PR に返す**。撮る・記録するは `test-run` の本体と同じ決まりで行う。
 
-- 作業フォルダ・環境変数・Drive への置き方・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 作業フォルダ・環境変数・Drive への置き方・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 - `manifest.json` の欄の意味: [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md)
 
 ## 守ること

@@ -176,15 +176,15 @@ function checkLinks(file) {
     if (!tracked.has(target) && !folders.has(target)) fail(file, `リンク先がありません: ${href}`)
   }
 }
-for (const file of files.filter(file => file.endsWith('.md') && (file.startsWith('sample/') || /^\.claude\/(?:skills|agents)\//.test(file)))) {
+for (const file of files.filter(file => file.endsWith('.md') && (file.startsWith('sample/') || /^(?:\.claude\/skills|agents)\//.test(file)))) {
   checkLinks(file)
 }
 
 // 7. スキルとサブエージェントの frontmatter
 //    ユーザーが呼ぶスキルは .claude/skills/<スキル>/SKILL.md だけ(name はフォルダ名)。その中の入れ子の SKILL.md は、親が振り分けて読む手順なので frontmatter を持たない
-//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントは .claude/agents/<スキル>/ に置き、name はファイル名と同じにする
+//    (持つと、入れ子まで探す環境でスキルとして一覧に出てしまう)。サブエージェントはプラグインが読む agents/ の直下に置き(入れ子は読まれない)、name はファイル名と同じにする
 const names = new Map()
-for (const where of files.filter(file => /^\.claude\/(skills\/.*\/SKILL\.md|agents\/.+\.md)$/.test(file))) {
+for (const where of files.filter(file => /^(\.claude\/skills\/.*\/SKILL\.md|agents\/.+\.md)$/.test(file))) {
   const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text(where))
   const name = head && /^name:\s*(\S+)/m.exec(head[1])?.[1]
   const isAgent = !where.endsWith('SKILL.md')
@@ -198,6 +198,7 @@ for (const where of files.filter(file => /^\.claude\/(skills\/.*\/SKILL\.md|agen
   else if (name !== expected) fail(where, `name を ${expected} にします(今は ${name})`)
   else if (!/^description:/m.test(head[1])) fail(where, 'description がありません')
   else if (names.has(name)) fail(where, `name が ${names.get(name)} と重なっています: ${name}`)
+  else if (isEntry && !text(where).includes('${CLAUDE_SKILL_DIR}/../../..')) fail(where, 'dev-workbench の場所の行(${CLAUDE_SKILL_DIR}/../../..)がありません(docs/workspace.md の「dev-workbench の場所」)')
   else names.set(name, where)
 }
 

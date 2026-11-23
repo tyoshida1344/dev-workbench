@@ -183,11 +183,11 @@
 テストケースとエビデンスで使うコマンドの一覧。各手順はここを指し、その手順に固有の引数(やり直しの `--results-from` など)だけを手順に書く。
 
 ```
-node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
-node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --file <cases/unit.json のパス>
-node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --manifest <正本のフォルダ>
-node "$DEV_WORKBENCH_HOME/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
-node "$DEV_WORKBENCH_HOME/scripts/check-manifest.mjs" <エビデンスのフォルダ>
+node "<dev-workbench>/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ>
+node "<dev-workbench>/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --file <cases/unit.json のパス>
+node "<dev-workbench>/.claude/skills/test-cases/scripts/check-cases.mjs" <作業フォルダ> --manifest <正本のフォルダ>
+node "<dev-workbench>/.claude/skills/test-cases/scripts/build-manifest.mjs" <作業フォルダ> --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>
+node "<dev-workbench>/scripts/check-manifest.mjs" <エビデンスのフォルダ>
 ```
 
 | コマンド | 見るもの・作るもの |

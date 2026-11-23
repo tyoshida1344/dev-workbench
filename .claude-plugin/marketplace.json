@@ -1,0 +1,14 @@
+{
+  "name": "dev-workbench",
+  "owner": {
+    "name": "tyoshida1344"
+  },
+  "description": "dev-workbench のスキルとサブエージェントを配るマーケットプレイス",
+  "plugins": [
+    {
+      "name": "dev-workbench",
+      "source": "./",
+      "description": "イシュー対応・設計・テストケース作成・テストの実施・レビューのスキル"
+    }
+  ]
+}

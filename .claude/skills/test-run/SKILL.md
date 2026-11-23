@@ -6,6 +6,8 @@ description: >-
 
 # テストケースを実施してエビデンスを残す
 
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+
 ## 振り分け
 
 頼まれたことで、読む手順を選ぶ。
@@ -20,7 +22,7 @@ description: >-
 テストケースは、原則として人が行う(test-cases の一番大事な決まり)。このスキルは、**ユーザーがはっきり「実施して」と頼んだグループ・項目だけ**を、Claude が代わりに行う時の手順。頼まれていない項目は行わない。
 
 - 実施する正本: `<作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>/manifest.json`(項目の id は `tc02-01` など、グループは節の見出しの `G05` など)
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 - 記録の欄の意味: [docs/evidence-manifest.md](../../../docs/evidence-manifest.md)(**書く前に読む**)。結果は、正本の**同じ項目**に足す(下の「記録する」)
 - 撮り方: [reference/capture.md](reference/capture.md)(**撮る前に読む**)
 - 結果のある正本は、開発しているリポジトリにコミットしない

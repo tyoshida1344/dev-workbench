@@ -6,6 +6,8 @@ description: >-
 
 # テストケースを作る
 
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+
 ## 振り分け
 
 頼まれたことで、読む手順を選ぶ。
@@ -27,7 +29,7 @@ description: >-
 | [reference/perspectives.md](reference/perspectives.md) | 項目を導く観点(3つの見方・観点の出どころ・技法・狭い幅・変更前と比べる・重なり) |
 | [reference/subagent.md](reference/subagent.md) | サブエージェントの動く条件と共通の約束 |
 | [templates/cases/](templates/cases/) | ひな形(フォルダごと写して使う) |
-| [.claude/agents/test-cases/](../../agents/test-cases/) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
+| [agents/](../../../agents/)(dev-workbench の直下) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
 
 ## 一番大事な決まり
 
@@ -66,11 +68,11 @@ description: >-
 |---|---|
 | **対象のリポジトリ**(cwd) | `git diff`・`gh`、コードの grep・調べもの。**何も書き込まない**(テストケースもコミットしない) |
 | **作業フォルダ** | 設計(spec.md・acceptance.md・test.md)を読む。下書き(`cases/`)と正本(`evidence/<YYYY-MM-DD>-<内容>/manifest.json`)を書く |
-| **dev-workbench**(`$DEV_WORKBENCH_HOME`) | このスキルのスクリプト・ひな形・サブエージェント、`.claude/skills/config.json`、`docs/` |
+| **dev-workbench**(`<dev-workbench>`) | このスキルのスクリプト・ひな形・サブエージェント、`.claude/skills/config.json`、`docs/` |
 
-- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS`・`DEV_WORKBENCH_HOME` が空なら止めて聞く)
+- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 - 以降のパスは、Read / Write / Agent に**絶対パスに展開して**渡す(環境変数は展開されない)。cwd の外に書き込むので、作業フォルダを書き込みの許可に入れておく(`additionalDirectories` か `--add-dir`)
-- サブエージェントを使えるようにする手順は `$DEV_WORKBENCH_HOME/README.md` の「使い始める」。見つからなければ、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す
+- サブエージェントが見つからない時(dev-workbench をプラグインとして入れていない、など)は、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す。入れ方は `<dev-workbench>/README.md` の「使い始める」
 
 ## 全体の流れ
 
@@ -160,11 +162,13 @@ gh issue view <イシュー番号> --comments
 | 回帰 | `test-cases-regression` | `<作業フォルダ>/cases/regression.json` |
 | 受け入れ | `test-cases-acceptance` | `<作業フォルダ>/cases/acceptance.json` |
 
+プラグインとして入れた時の名前(`dev-workbench:test-cases-unit` など)は `docs/workspace.md` の「dev-workbench の場所」。
+
 ### 親がプロンプトに入れるもの
 
 サブエージェントが読む決まり(`test-cases/reference/` の `format.md`・`writing.md`・`subagent.md` など)は、各サブエージェントのファイルの「先に読む」に挙げてある。プロンプトには、決まりを写さず、次の中身を入れる。
 
-- **作業フォルダ・対象のリポジトリ・`$DEV_WORKBENCH_HOME` の絶対パス**
+- **作業フォルダ・対象のリポジトリ・`<dev-workbench>` の絶対パス**
 - イシューの要件・変更の概要、差分の範囲。**結合にはコードのパスを渡さず**、仕様・画面の情報・メニューの並びだけを渡す
 - 受け持つ節の一覧(`id` / `title` / `kind` / 節の説明)と、書き込む先のファイル
 - 受け入れには**要件の一覧**(`plan.json` の `requirements`)
