@@ -35,6 +35,8 @@ const VIDEO = /\.(webm|mp4|mov)$/i
 const IMAGE = /\.(png|jpe?g|webp)$/i
 const BAD_MANIFEST = 'manifest.json の書き方に誤りがあります。'
 const NOT_FOUND = 'manifest.json が見つかりません。フォルダのIDが正しいか、このGoogleアカウントで見られるフォルダかを確かめてください。'
+/** 見つからない時のエラー。code を残す(Driveのフォルダなら、次のログインでアカウントを選べるようにするため) */
+const notFound = () => Object.assign(new Error(NOT_FOUND), { code: 'not-found' })
 /** 狭い幅。一覧の上の注意書きと要件を畳む */
 const NARROW = matchMedia('(max-width: 760px)')
 
@@ -239,7 +241,7 @@ function keepAround(index) {
   }
 }
 
-/** 見ているものを、URLの # に残す(ログインし直した時や、URLを渡した時に、そこから開く)。項目は id で、id の無いものは並びの番号で */
+/** 見ているものを、URLの # に残す(読み直した時や、URLを渡した時に、そこから開く)。項目は id で、id の無いものは並びの番号で */
 function remember(entry, index) {
   const hash = entry.section && str(entry.item.id) ? `item=${encodeURIComponent(str(entry.item.id))}` : `index=${index}`
   history.replaceState(null, '', `${location.pathname}${location.search}#${hash}`)
@@ -364,7 +366,7 @@ async function load(source) {
     manifest = JSON.parse(await source.text('manifest.json'))
   }
   catch (error) {
-    throw new Error(error.code === 'not-found' ? NOT_FOUND : error instanceof SyntaxError ? BAD_MANIFEST : error.message)
+    throw error.code === 'not-found' ? notFound() : new Error(error instanceof SyntaxError ? BAD_MANIFEST : error.message)
   }
   try {
     render(manifest)
