@@ -1,8 +1,8 @@
 # フェーズ10: テストの方針・計画
 
-作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](../SKILL.md)にある。
+作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](/.claude/skills/design/SKILL.md)にある。
 
-以下の「1.2」「2.1」などの番号は、ひな形 [templates/test.md](../templates/test.md) の節の番号。何をどの節に書くかは、ひな形の `> 書き方:` に従う。
+以下の「1.2」「2.1」などの番号は、ひな形 [templates/test.md](/.claude/skills/design/templates/test.md) の節の番号。何をどの節に書くかは、ひな形の `> 書き方:` に従う。
 
 ## 前提
 - `acceptance.md` と、`impl.md` の実装方針がある(無ければ、ユーザーに伝える)

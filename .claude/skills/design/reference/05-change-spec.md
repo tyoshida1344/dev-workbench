@@ -1,16 +1,16 @@
 # フェーズ5: 変わる仕様の整理
 
-作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](../SKILL.md)にある。
+作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](/.claude/skills/design/SKILL.md)にある。
 
 ## 手順
 1. フェーズ4の表と **同じ軸・同じ行** で、変更後の動きを並べる
 2. 変わるセルをはっきり示す(変更前 → 変更後)
 3. 変わらないセルも残す(変わらないことを確かめた、という意味になる)
 4. 既存データの実際にありうる状態ごとに、変更後の動きを書く
-5. すでに確定したデータや、利用者がすでに受け取った結果が変わるかを確かめる(扱いは [viewpoints/existing-data.md](viewpoints/existing-data.md))
+5. すでに確定したデータや、利用者がすでに受け取った結果が変わるかを確かめる(扱いは [viewpoints/existing-data.md](/.claude/skills/design/reference/viewpoints/existing-data.md))
 6. 似た機能(フェーズ4の表)と違う動きにする時は、理由を書き、QA.md に起こす。画面と API の責務は、似た機能の表を揃える先にする
-7. 画面がある時は [viewpoints/ui.md](viewpoints/ui.md)に従い、今の画面に揃える先、または新しい表示の場所・中身を書く
-8. 詰め漏れの観点([viewpoints/completeness.md](viewpoints/completeness.md))で確かめる
+7. 画面がある時は [viewpoints/ui.md](/.claude/skills/design/reference/viewpoints/ui.md)に従い、今の画面に揃える先、または新しい表示の場所・中身を書く
+8. 詰め漏れの観点([viewpoints/completeness.md](/.claude/skills/design/reference/viewpoints/completeness.md))で確かめる
 
 ## 成果物
 `<作業フォルダ>/spec/NN_<slug>.md`(話題ごとに1ファイル)

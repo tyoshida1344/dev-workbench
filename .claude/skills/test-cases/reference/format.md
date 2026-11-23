@@ -1,12 +1,12 @@
 # テストケースの形(下書きと manifest.json)
 
 テストケースは、エビデンスビューアが読む `manifest.json` に、`result` の無い(未実施の)項目として書く。
-`manifest.json` の欄の意味は [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md) が正本。
-ここには、テストケースを作る時の下書きの形(どの欄に何を書けるか)と、正本を作るコマンドを書く。中身の書き方は [writing.md](writing.md)。
+`manifest.json` の欄の意味は [docs/evidence-manifest.md](/docs/evidence-manifest.md) が正本。
+ここには、テストケースを作る時の下書きの形(どの欄に何を書けるか)と、正本を作るコマンドを書く。中身の書き方は [writing.md](/.claude/skills/test-cases/reference/writing.md)。
 
 ## 置き場
 
-作業フォルダ([docs/workspace.md](../../../../docs/workspace.md))の中に置く。開発しているリポジトリにはコミットしない。
+作業フォルダ([docs/workspace.md](/docs/workspace.md))の中に置く。開発しているリポジトリにはコミットしない。
 
 ```
 <作業フォルダ>/
@@ -27,7 +27,7 @@
 ```
 
 - 種別のファイルは、項目の無い種別なら作らない(`plan.json` の `notes` に「単体: 該当なし(理由)」と残す)
-- ひな形は [../templates/cases/](../templates/cases/)。フォルダごと写して使う
+- ひな形は [../templates/cases/](/.claude/skills/test-cases/templates/cases/)。フォルダごと写して使う
 - `cases/` の中の下書きは、「なぜこの項目が無いか」を追える**証跡**。正本を作ったあとも消さない
 
 ## plan.json
@@ -114,7 +114,7 @@
 | `basis` | 期待する結果の根拠(単体は必須、単体だけに付ける)。コードの `path:line` か、既存のテストの assert。**コードの言葉はここにだけ書ける** |
 | `priority` | `high` / `mid` / `low`(テストの項目は必須) |
 | `requirement` | 満たす要件の `id`(`R1`、または `["R1", "R2"]`)。**受け入れは必須、ほかの種別には付けない** |
-| `noScreen` | 画面で確かめられない理由(結合・回帰・受け入れだけ)。手順にコマンドを置くなら必須([writing.md](writing.md)「画面ベースの原則」)。正本では `note` に「画面で確かめられない理由: …」として出る |
+| `noScreen` | 画面で確かめられない理由(結合・回帰・受け入れだけ)。手順にコマンドを置くなら必須([writing.md](/.claude/skills/test-cases/reference/writing.md)「画面ベースの原則」)。正本では `note` に「画面で確かめられない理由: …」として出る |
 | `duplicateOf` | ほかの項目で確かめられるので行わない時、その項目の `id`。証跡では打ち消し線で出て、正本には入らない。行う側は、**階層が同じか上で、自身が `duplicateOf` を持たない項目**(`test-cases/SKILL.md` 5節) |
 
 - 下書きには `result`・`checks`・`video`・`image` を書かない(結果は正本に書く)
@@ -199,7 +199,7 @@ node "<dev-workbench>/scripts/check-manifest.mjs" <エビデンスのフォル�
 | `build-manifest.mjs … --trail` | 証跡。下書きの全件を種別の順に並べ、`duplicateOf` の付いた項目も打ち消し線で残したもの。`cases/manifest.json` に書く。ビューアで `cases/` のフォルダを開くと見られる(重なりの判断をレビューする時に使う) |
 | `check-manifest.mjs <フォルダ>` | `manifest.json` の形そのもの。ファイル名の綴り・拡張子・`summary` の数・使っていないファイル |
 
-- 正本のフォルダに結果のある `manifest.json` があると、上書きしない(テストの結果を消さないため)。やり直しは [やり直し(`test-run/retest/`)](../../test-run/retest/SKILL.md) の手順で、新しいフォルダに作る
+- 正本のフォルダに結果のある `manifest.json` があると、上書きしない(テストの結果を消さないため)。やり直しは [やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) の手順で、新しいフォルダに作る
 - 下書きを直したら、正本を作り直す(結果がまだ無い時)。そのあと `--manifest` で合っているかを確かめる
 
 ### 正本で変わること

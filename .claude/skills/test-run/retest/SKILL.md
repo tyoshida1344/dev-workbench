@@ -6,8 +6,8 @@
 **やり直す項目は、それらを外して未実施に戻す。** 前の結果は消さずに残す。
 ケースを新しく作るのは `test-cases`、やり直す項目を行うのは `test-run` の本体。
 
-- 欄の意味: [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
+- 欄の意味: [docs/evidence-manifest.md](/docs/evidence-manifest.md)、下書きと正本の作り方とコマンド: `test-cases/reference/format.md`
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](/docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 
 ## 決まり
 
@@ -22,7 +22,7 @@
 ユーザーに渡す前の、同じ回の中で撮り損ねた項目を撮り直す時と、受入確認のまとめ(`test-run/evidence/`)で直してから撮り直す時だけは、同じフォルダの中で直してよい。前のものは消さずに残す(期待どおりでなかったことも記録になる)。
 
 - 前のファイルを `<元の名前>-before.<拡張子>` に名前を変え(ファイル名の決まりは `test-run/SKILL.md` の「エビデンスを撮る」)、`attachments` に `{ "title": "<id> 修正前(<前の結果と、わけ>)", "file": "<元の名前>-before.png" }` で載せる
-- その項目の `result`・`checks`・`video` / `image` を外して未実施に戻し、[test-run](../SKILL.md) で行い直す
+- その項目の `result`・`checks`・`video` / `image` を外して未実施に戻し、[test-run](/.claude/skills/test-run/SKILL.md) で行い直す
 - ケースの中身(`title`・`given`・`steps`・`expect`)を直す時は、この形にしない(新しいフォルダを作る)
 
 ## 手順
@@ -59,7 +59,7 @@ node "<dev-workbench>/.claude/skills/test-cases/scripts/build-manifest.mjs" <作
    - `<内容>` は前と同じものに `-retest` などを付ける(例: `2026-11-25-pr45-retest`)。同じ日に2回作るなら `-retest2`
 6. 新しいフォルダを `check-manifest.mjs` と `check-cases.mjs … --manifest` で確かめる(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)
 
-7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(作り方は [docs/workspace.md](../../../../docs/workspace.md) の「ビューアで開く」)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](../SKILL.md))
+7. ユーザーに返す: **やり直す項目の一覧(id とわけ)**、結果を引き継いだ項目の数、足した・行わない項目にした項目、新しいフォルダのビューアのURL(作り方は [docs/workspace.md](/docs/workspace.md) の「ビューアで開く」)。やり直す項目を Claude が行うかは、ユーザーに聞く(行うなら [test-run](/.claude/skills/test-run/SKILL.md))
 
 ## 気をつけること
 

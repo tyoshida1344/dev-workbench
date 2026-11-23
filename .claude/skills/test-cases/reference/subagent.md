@@ -16,8 +16,8 @@
 - 書き込むのは、親が渡した書き込む先の1つのファイル(`<作業フォルダ>/cases/<kind>.json`)だけ。`plan.json`・ほかの種別のファイル・対象のリポジトリは触らない(フックでは止めないので、各自が守る)。結合・受け入れは、作業フォルダと `<dev-workbench>` の決まりの外のコードを読まない
 - 出力は `{ "sections": [...] }` だけを持つ JSON。各節に自分の種別の `kind` を付ける。渡された節の中身(`notes` と `items`)だけを書き、節を増やしたり減らしたりしない。項目の `id` は渡された節の `id` を頭にする(`tc02-01`)
 - `duplicateOf` は付けない(種別をまたぐ重なりは、親が付ける)
-- 分からないことは推測で埋めず、該当の欄に `【要確認】<質問>` と書く([writing.md](writing.md)「分からないことは聞く」)
-- 書き終えたら、[writing.md](writing.md) の「読みやすく書く」の11の決まりで見直す
+- 分からないことは推測で埋めず、該当の欄に `【要確認】<質問>` と書く([writing.md](/.claude/skills/test-cases/reference/writing.md)「分からないことは聞く」)
+- 書き終えたら、[writing.md](/.claude/skills/test-cases/reference/writing.md) の「読みやすく書く」の11の決まりで見直す
 
 ## 終わりの報告
 

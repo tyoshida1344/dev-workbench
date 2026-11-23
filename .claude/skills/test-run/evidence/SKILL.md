@@ -5,8 +5,8 @@
 受け入れ項目を決め、受入確認の動画・画像と、確かめたことを書いた `manifest.json` を作業フォルダの1つのフォルダにまとめ、エビデンスビューアのURLを渡すまでを行う。
 流れは **項目を決める → 撮る → まとめる → 渡す → PR に返す**。撮る・記録するは `test-run` の本体と同じ決まりで行う。
 
-- 作業フォルダ・環境変数・Drive への置き方・ビューアのURL: [docs/workspace.md](../../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
-- `manifest.json` の欄の意味: [docs/evidence-manifest.md](../../../../docs/evidence-manifest.md)
+- 作業フォルダ・環境変数・Drive への置き方・ビューアのURL: [docs/workspace.md](/docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
+- `manifest.json` の欄の意味: [docs/evidence-manifest.md](/docs/evidence-manifest.md)
 
 ## 守ること
 
@@ -69,7 +69,7 @@
 
 ## 4. まとめる
 
-[templates/manifest.json](templates/manifest.json) をフォルダに写して埋める。結果・`checks`・`summary`・`notes` の書き方は `test-run/SKILL.md` の「記録する」。
+[templates/manifest.json](/.claude/skills/test-run/evidence/templates/manifest.json) をフォルダに写して埋める。結果・`checks`・`summary`・`notes` の書き方は `test-run/SKILL.md` の「記録する」。
 
 - 節と項目は、項目の一覧(`00-cases.md`)の順にし、`title` は項目の確認内容にする
 - `source.commit` は撮った時のコミット。直すたびに一部の項目だけ撮り直したなら、最後のコミットを書き、どの項目をどのコミットで撮ったかを `notes` に書く
@@ -78,7 +78,7 @@
 
 ## 5. 渡す
 
-1. [docs/workspace.md](../../../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」で Drive に揃え、フォルダの ID からビューアのURL(`<site>evidence/?folder=<ID>`)を作る
+1. [docs/workspace.md](/docs/workspace.md) の「Driveへの置き方」「ビューアで開く」で Drive に揃え、フォルダの ID からビューアのURL(`<site>evidence/?folder=<ID>`)を作る
 2. そのURLで開き、一覧・印・動画と画像の切り替わりが崩れていないかを見る
 3. 報告に、URLと1行の要約(件数)を書く。`partial` / `ng` があれば、番号とわけを1行ずつ添える
 

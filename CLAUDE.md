@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-開発で使う道具の置き場。GitHub Pagesで公開する静的なサイト。概要と使い方は [README.md](./README.md)。
+開発で使う道具の置き場。GitHub Pagesで公開する静的なサイト。概要と使い方は [README.md](/README.md)。
 
 ## 守ること
 
@@ -8,18 +8,18 @@
   (例外は `sample/` の見本。開発のエビデンスや設計ではなく、ビューアを見てもらうために作った架空のもの)
 - **秘密の値を置かない。** GoogleのOAuthクライアントIDは秘密ではないので `app/config.js` に置いてよい(許可する生成元をこのサイトに限って登録する)。クライアントシークレットやトークンは置かない
 - **読み込んだ文字は `textContent` で出す。** 他人が作ったファイルを開かされても、ログインの情報を抜かれないようにする
-- **サイトのURLを決め打ちしない。** 公開先を書くのは [README.md](./README.md) の先頭の1行だけ。
+- **サイトのURLを決め打ちしない。** 公開先を書くのは [README.md](/README.md) の先頭の1行だけ。
   リポジトリの中からは相対で指し、スキルからは `.claude/skills/config.json` の1か所を読む。公開先を移しても、forkされても動くように
 - ビルドの手順を持たない。HTML・CSS・JavaScriptをそのまま置く(外部のスクリプトを読み込まない。Googleのログインも、ページごとGoogleへ移って戻ってくる形で行う)
 - 画面は `app/` に、フォルダの場所がそのまま URL になるように置く。画面ではない部品は `app/_lib/` に置き、道具ごとに作り直さない(見た目も道具の間でそろえる)
-- スキルが書く設計・テストケース・エビデンスは、開発しているリポジトリにもこのリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](./docs/workspace.md))に置く
+- スキルが書く設計・テストケース・エビデンスは、開発しているリポジトリにもこのリポジトリにも置かず、Driveの作業フォルダ([docs/workspace.md](/docs/workspace.md))に置く
 
 ## スキルの書き方
 
 - **1つの決まりは1か所にだけ書く。** ほかの所からは、その場所を指す1行にする(書き写すと、片方だけ直って食い違う)。スキルをまたぐ決まりは `docs/` に置く
 - ユーザーが呼ぶのは入口の `.claude/skills/<スキル>/SKILL.md` だけにし、細かい使い分けは「振り分け」から中の手順へ回す。中の手順は frontmatter を持たない(スキルの一覧に出さない)
-- **場所の書き方**: 文の中で手順やファイルを指す時は、`.claude/skills/` からの場所を `` ` `` で囲んで書く(`review/impl/`)。実行するコマンドの中は `<dev-workbench>/` から書く([docs/workspace.md](./docs/workspace.md) の「dev-workbench の場所」)。Markdown のリンクだけは、そのファイルからの相対にする
-- 入口の `SKILL.md` には、見出しのすぐ下に dev-workbench の場所の行(`${CLAUDE_SKILL_DIR}/../../..`)を置く。中の手順・サブエージェントは置き換わらないので `<dev-workbench>` と書く([docs/workspace.md](./docs/workspace.md) の「dev-workbench の場所」)。サブエージェントはプラグインが読む `agents/` の直下に置く
+- **場所の書き方**: 文の中で手順やファイルを指す時は、`.claude/skills/` からの場所を `` ` `` で囲んで書く(`review/impl/`)。実行するコマンドの中は `<dev-workbench>/` から書く([docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。Markdown のリンクは、リポジトリの根からの場所を `/` で始めて書く(`[docs/workspace.md](/docs/workspace.md)`。`../` は使わない)。ただし `sample/` の見本は、ビューアが作業フォルダの中の相対として開くので、そのファイルからの相対にする
+- 入口の `SKILL.md` には、見出しのすぐ下に dev-workbench の場所の行(`${CLAUDE_SKILL_DIR}/../../..`)を置く。中の手順・サブエージェントは置き換わらないので `<dev-workbench>` と書く([docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。サブエージェントはプラグインが読む `agents/` の直下に置く
 - 入れ子の手順は、自分を「この手順」と呼ぶ(「このスキル」は入口の `SKILL.md` だけ)。冒頭の「読む時:」は、どの振り分けから来るかを1行で書く
 - サブエージェントは親の会話を見られない。読む決まりは、サブエージェントのファイルに「先に読む」として全部挙げる
 

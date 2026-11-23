@@ -6,7 +6,7 @@ description: >-
 
 # テストケースを実施してエビデンスを残す
 
-dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。
 
 ## 振り分け
 
@@ -15,16 +15,16 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 | 頼まれたこと | 読む手順 |
 |---|---|
 | 作ったテストケースを行う・エビデンスを残す | このファイル |
-| 行ったテストの一部をやり直す・結果を消す | [retest/SKILL.md](retest/SKILL.md)(やり直し) |
-| テストケースを作っていない PR の受入確認をまとめる・エビデンスを残す | [evidence/SKILL.md](evidence/SKILL.md)(受入確認のまとめ) |
+| 行ったテストの一部をやり直す・結果を消す | [retest/SKILL.md](/.claude/skills/test-run/retest/SKILL.md)(やり直し) |
+| テストケースを作っていない PR の受入確認をまとめる・エビデンスを残す | [evidence/SKILL.md](/.claude/skills/test-run/evidence/SKILL.md)(受入確認のまとめ) |
 | テストケースを作る | `test-cases` スキル |
 
 テストケースは、原則として人が行う(test-cases の一番大事な決まり)。このスキルは、**ユーザーがはっきり「実施して」と頼んだグループ・項目だけ**を、Claude が代わりに行う時の手順。頼まれていない項目は行わない。
 
 - 実施する正本: `<作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>/manifest.json`(項目の id は `tc02-01` など、グループは節の見出しの `G05` など)
-- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
-- 記録の欄の意味: [docs/evidence-manifest.md](../../../docs/evidence-manifest.md)(**書く前に読む**)。結果は、正本の**同じ項目**に足す(下の「記録する」)
-- 撮り方: [reference/capture.md](reference/capture.md)(**撮る前に読む**)
+- 作業フォルダ・環境変数・ビューアのURL: [docs/workspace.md](/docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
+- 記録の欄の意味: [docs/evidence-manifest.md](/docs/evidence-manifest.md)(**書く前に読む**)。結果は、正本の**同じ項目**に足す(下の「記録する」)
+- 撮り方: [reference/capture.md](/.claude/skills/test-run/reference/capture.md)(**撮る前に読む**)
 - 結果のある正本は、開発しているリポジトリにコミットしない
 
 ## 守ること
@@ -107,7 +107,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 
 ## 記録する
 
-正本の `manifest.json` に書き足す(欄の意味は [docs/evidence-manifest.md](../../../docs/evidence-manifest.md))。項目の中身(`title`・`given`・`steps`・`expect`・`basis` など)は変えない。受入確認のまとめ(`test-run/evidence/`)も、これに従う。
+正本の `manifest.json` に書き足す(欄の意味は [docs/evidence-manifest.md](/docs/evidence-manifest.md))。項目の中身(`title`・`given`・`steps`・`expect`・`basis` など)は変えない。受入確認のまとめ(`test-run/evidence/`)も、これに従う。
 
 - 項目ごとに:
 
@@ -123,17 +123,17 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
   - `recordedAt` に行った日(`YYYY-MM-DD`)、`source.commit` に確かめたコミット
   - `notes` に、行った回のことを1行で足す: `実施 <日付>(<誰が: Claude(手立て)>、<環境: 手元 localhost:3000 など>、<アカウント>、<グループ>): <補足>`。日を分けて行った時は、回ごとに1行。グループごとにコミットが違えば、どの項目をどのコミットで確かめたかも書く
   - `summary` を、`result` を書いた項目だけで数え直す(`ok` / `partial` / `ng`。未実施は数えない)
-- **確かめた力が弱い合格は、`note` に書いて報告する**(実例:「初めの設定に戻す」の前と後で名前が同じだったため、戻ったかどうかを見分けられない)。直し方(手順を足すなど)を提案し、ユーザーが了承したら、[やり直し(`test-run/retest/`)](retest/SKILL.md) で直してから行い直す
+- **確かめた力が弱い合格は、`note` に書いて報告する**(実例:「初めの設定に戻す」の前と後で名前が同じだったため、戻ったかどうかを見分けられない)。直し方(手順を足すなど)を提案し、ユーザーが了承したら、[やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) で直してから行い直す
 - 書いたら、`check-manifest.mjs <正本のフォルダ>`(ファイル名・`summary` の数)と `check-cases.mjs <作業フォルダ> --manifest <正本のフォルダ>`(項目の中身を変えていないか)で確かめ、エラーが出たら直す(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)
 
 ## ケースの不備を見つけたら
 
 - 行っている途中で、手順・期待する結果・前提の誤りに気づいたら、**ケースは勝手に直さず**、伝えて直し方を提案する。その項目は `partial` か未実施にし、`note` に不備を書く
-- 直す時は [やり直し(`test-run/retest/`)](retest/SKILL.md) の手順で行う(下書きを直し、新しい日付のフォルダに、結果を引き継いで作り直す)。項目の id は変えない。足す項目は、下書きの節の末尾に新しい番号で足す
+- 直す時は [やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) の手順で行う(下書きを直し、新しい日付のフォルダに、結果を引き継いで作り直す)。項目の id は変えない。足す項目は、下書きの節の末尾に新しい番号で足す
 - 項目をまとめる(行わない項目にする)時も、ユーザーに伝えてから行う
 
 ## 終わったら
 
 1. 開いたタブ・ウィンドウを閉じる
 2. ユーザーに報告する: 項目ごとの結果の表(ok・partial・ng・実施できない・飛ばした)、記録した QA(前からあるか)、ユーザーにしてほしいこと(実施できない項目)、確かめた力が弱い項目、ケースの不備、戻した・変えたデータ
-3. 正本のフォルダのビューアのURLを渡す(作り方は [docs/workspace.md](../../../docs/workspace.md) の「ビューアで開く」)。件数を1行で添える(`全24項目(✓20 / !2 / ✕0 / 未実施 2)`)
+3. 正本のフォルダのビューアのURLを渡す(作り方は [docs/workspace.md](/docs/workspace.md) の「ビューアで開く」)。件数を1行で添える(`全24項目(✓20 / !2 / ✕0 / 未実施 2)`)

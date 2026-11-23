@@ -1,14 +1,14 @@
 # フェーズ7: 最終仕様のまとめ
 
-作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](../SKILL.md)にある。
+作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](/.claude/skills/design/SKILL.md)にある。
 
 ## 成果物
 `<作業フォルダ>/spec.md`(最終仕様)。実装の方針・計画(`impl.md`)は、フェーズ9で作る
 
 ## 手順
-1. ひな形 [templates/spec.md](../templates/spec.md) を写し、変更仕様(`spec/`)と `search/` の中身を、ひな形の `> 書き方:` に従って節ごとに埋める。詳細仕様の小節は、ひな形の「話題の候補」から、変更に関係するものを選ぶ
+1. ひな形 [templates/spec.md](/.claude/skills/design/templates/spec.md) を写し、変更仕様(`spec/`)と `search/` の中身を、ひな形の `> 書き方:` に従って節ごとに埋める。詳細仕様の小節は、ひな形の「話題の候補」から、変更に関係するものを選ぶ
 2. QA.md に残っている項目は、該当する行に「仮」と書いて載せる
-3. 詰め漏れの観点([viewpoints/completeness.md](viewpoints/completeness.md))で確かめる
+3. 詰め漏れの観点([viewpoints/completeness.md](/.claude/skills/design/reference/viewpoints/completeness.md))で確かめる
 
 ## 決まり
 - 最終仕様をイシューへコメントとして載せる時は、載せる前にユーザーに確かめる。載せる文面はユーザーに見せる

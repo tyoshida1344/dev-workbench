@@ -13,7 +13,7 @@
 ## 観点
 
 ### 1. 詰め漏れ
-- 詰め漏れの観点([completeness.md](../reference/viewpoints/completeness.md))の進め方と観点で確かめる
+- 詰め漏れの観点([completeness.md](/.claude/skills/design/reference/viewpoints/completeness.md))の進め方と観点で確かめる
 - 読んだ成果物のフェーズについて、各フェーズの完了条件(`design/reference/NN-*.md` の「完了条件」)を満たしているか
 
 ### 2. 成果物どうしの食い違い

@@ -1,6 +1,6 @@
 # フェーズ2: 要件の整理
 
-作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](../SKILL.md)にある。
+作業フォルダ(`<作業フォルダ>`)の場所と共通の決まりは [SKILL.md](/.claude/skills/design/SKILL.md)にある。
 
 ## 手順
 1. 要件を「何を」「誰が」「なぜ」で書く
@@ -13,16 +13,16 @@
 
 | 観点 | 関係すると判定する条件 | 読む reference |
 |------|------------------------|----------------|
-| 権限 | 利用者の種類(ロール)によって、できること・見えるものが変わる | [permission.md](viewpoints/permission.md) |
-| データ移行 | テーブルや列、データの持ち方を変える。マスタ・設定・初期データを足す・変える・消す | [data-migration.md](viewpoints/data-migration.md) |
-| API と画面の責務 | 入力の検証・計算・表示を、API(サーバー)と画面のどちらに置くかが論点になる | [api-ui-responsibility.md](viewpoints/api-ui-responsibility.md) |
-| UI | 画面を足す、または表示を変える | [ui.md](viewpoints/ui.md) |
-| 詰め漏れ | 判定せず常に適用する(フェーズ5・7 で書く時と、設計のレビューで使う) | [completeness.md](viewpoints/completeness.md) |
+| 権限 | 利用者の種類(ロール)によって、できること・見えるものが変わる | [permission.md](/.claude/skills/design/reference/viewpoints/permission.md) |
+| データ移行 | テーブルや列、データの持ち方を変える。マスタ・設定・初期データを足す・変える・消す | [data-migration.md](/.claude/skills/design/reference/viewpoints/data-migration.md) |
+| API と画面の責務 | 入力の検証・計算・表示を、API(サーバー)と画面のどちらに置くかが論点になる | [api-ui-responsibility.md](/.claude/skills/design/reference/viewpoints/api-ui-responsibility.md) |
+| UI | 画面を足す、または表示を変える | [ui.md](/.claude/skills/design/reference/viewpoints/ui.md) |
+| 詰め漏れ | 判定せず常に適用する(フェーズ5・7 で書く時と、設計のレビューで使う) | [completeness.md](/.claude/skills/design/reference/viewpoints/completeness.md) |
 
 この表は例。プロジェクトで繰り返し出てくる観点(外部サービスとの連携、通知、履歴や有効期間を持つデータ、性能など)があれば、行と reference を足して使う。
 
 判定の結果は、成果物の末尾に「適用する観点: …(無ければ『なし』)」と1行で書く。
-**既存データへの影響・後方互換は、判定せず常に適用する**([existing-data.md](viewpoints/existing-data.md) を読む。フェーズ4・5 で扱う)。
+**既存データへの影響・後方互換は、判定せず常に適用する**([existing-data.md](/.claude/skills/design/reference/viewpoints/existing-data.md) を読む。フェーズ4・5 で扱う)。
 
 ## 成果物
 `<作業フォルダ>/search/NN_requirements.md`(NN は search/ の中で作った順の連番)

@@ -6,7 +6,7 @@ description: >-
 
 # テストケースを作る
 
-dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。
 
 ## 振り分け
 
@@ -15,7 +15,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 | 頼まれたこと | 読む手順 |
 |---|---|
 | テストケースを作る・作り直す・観点を洗い出す | このファイル |
-| 作ったテストケースをレビューする・漏れを見る | [review/SKILL.md](review/SKILL.md)(テストケースのレビュー。ケースを作る流れの中では、サブエージェント `test-cases-review` がこの手順で行う) |
+| 作ったテストケースをレビューする・漏れを見る | [review/SKILL.md](/.claude/skills/test-cases/review/SKILL.md)(テストケースのレビュー。ケースを作る流れの中では、サブエージェント `test-cases-review` がこの手順で行う) |
 | 作ったケースを行う・やり直す | `test-run` スキル |
 
 変更の差分からテストケースを導き、作業フォルダに**下書き**(種別ごとの JSON)を書き、
@@ -24,12 +24,12 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 
 | 読むもの | 中身 |
 |---|---|
-| [reference/format.md](reference/format.md) | 下書き・`order.json`・`00-cases.md` の形と、正本を作るコマンド(**書く前に必ず読む**) |
-| [reference/writing.md](reference/writing.md) | 項目の書き方(分からないことは聞く・3つの約束・読みやすく書く・優先度・コマンド・画面ベース・準備) |
-| [reference/perspectives.md](reference/perspectives.md) | 項目を導く観点(3つの見方・観点の出どころ・技法・狭い幅・変更前と比べる・重なり) |
-| [reference/subagent.md](reference/subagent.md) | サブエージェントの動く条件と共通の約束 |
-| [templates/cases/](templates/cases/) | ひな形(フォルダごと写して使う) |
-| [agents/](../../../agents/)(dev-workbench の直下) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
+| [reference/format.md](/.claude/skills/test-cases/reference/format.md) | 下書き・`order.json`・`00-cases.md` の形と、正本を作るコマンド(**書く前に必ず読む**) |
+| [reference/writing.md](/.claude/skills/test-cases/reference/writing.md) | 項目の書き方(分からないことは聞く・3つの約束・読みやすく書く・優先度・コマンド・画面ベース・準備) |
+| [reference/perspectives.md](/.claude/skills/test-cases/reference/perspectives.md) | 項目を導く観点(3つの見方・観点の出どころ・技法・狭い幅・変更前と比べる・重なり) |
+| [reference/subagent.md](/.claude/skills/test-cases/reference/subagent.md) | サブエージェントの動く条件と共通の約束 |
+| [templates/cases/](/.claude/skills/test-cases/templates/cases/) | ひな形(フォルダごと写して使う) |
+| [agents/](/agents/)(dev-workbench の直下) | サブエージェント5つ(単体・結合・回帰・受け入れ・レビュー) |
 
 ## 一番大事な決まり
 
@@ -70,7 +70,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 | **作業フォルダ** | 設計(spec.md・acceptance.md・test.md)を読む。下書き(`cases/`)と正本(`evidence/<YYYY-MM-DD>-<内容>/manifest.json`)を書く |
 | **dev-workbench**(`<dev-workbench>`) | このスキルのスクリプト・ひな形・サブエージェント、`.claude/skills/config.json`、`docs/` |
 
-- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](../../../docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
+- 作業フォルダ・リポジトリ名と番号の決め方・環境変数・ビューアのURL: [docs/workspace.md](/docs/workspace.md)(`DEV_WORKBENCH_DOCS` が空なら止めて聞く)
 - 以降のパスは、Read / Write / Agent に**絶対パスに展開して**渡す(環境変数は展開されない)。cwd の外に書き込むので、作業フォルダを書き込みの許可に入れておく(`additionalDirectories` か `--add-dir`)
 - サブエージェントが見つからない時(dev-workbench をプラグインとして入れていない、など)は、そのファイルの中身をプロンプトに写して汎用のサブエージェントに渡す。入れ方は `<dev-workbench>/README.md` の「使い始める」
 
@@ -105,9 +105,9 @@ gh issue view <イシュー番号> --comments
 ```
 
 - 作業フォルダに設計(`spec.md` 最終仕様・`acceptance.md` 受け入れ基準・`test.md` テストの方針)があれば読む。決まった仕様と受け入れ基準は要件の出どころに、テストの方針(範囲・環境・確かめないこと)は2節以降の前提にする
-- 作業フォルダを作り直す(`<イシュー番号>_2`)時は、作り直しの範囲をユーザーに確かめ、再テストなら、対象のコミットの範囲と、要件をその変更で動きが変わる点に絞ったものを `plan.json` に書く。結果を残したまま一部の項目だけやり直すなら、作り直さず [やり直し(`test-run/retest/`)](../test-run/retest/SKILL.md) を使う
+- 作業フォルダを作り直す(`<イシュー番号>_2`)時は、作り直しの範囲をユーザーに確かめ、再テストなら、対象のコミットの範囲と、要件をその変更で動きが変わる点に絞ったものを `plan.json` に書く。結果を残したまま一部の項目だけやり直すなら、作り直さず [やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) を使う
 
-[templates/cases/](templates/cases/) を `<作業フォルダ>/cases/` に写す(すでにあれば上書きしない)。`plan.json` には `title`(イシュー番号と内容が分かる短い名前)と `source`(リポジトリ・PR・コミット・URL)を置き、`notes`(変更の概要と確かめる条件)・`requirements`・`excluded` は2節で埋める。`setup.json` / `cleanup.json` は親が書く。項目の無い種別のファイルは消す。**この時点では観点ごとの節(TC-01 など)はまだ作らない。**
+[templates/cases/](/.claude/skills/test-cases/templates/cases/) を `<作業フォルダ>/cases/` に写す(すでにあれば上書きしない)。`plan.json` には `title`(イシュー番号と内容が分かる短い名前)と `source`(リポジトリ・PR・コミット・URL)を置き、`notes`(変更の概要と確かめる条件)・`requirements`・`excluded` は2節で埋める。`setup.json` / `cleanup.json` は親が書く。項目の無い種別のファイルは消す。**この時点では観点ごとの節(TC-01 など)はまだ作らない。**
 
 ## 2. テストの観点を洗い出す
 
@@ -215,7 +215,7 @@ gh issue view <イシュー番号> --comments
 
 ## 6. レビューのエージェントで漏れを見る
 
-重なりの整理まで終えたら、`test-cases-review` を起動する。項目の書き手とは別の文脈で、**差分と要件に対して項目に漏れが無いか**を見る(読み取りだけ。直さず、指摘だけを返す。見るものは [review/SKILL.md](review/SKILL.md))。
+重なりの整理まで終えたら、`test-cases-review` を起動する。項目の書き手とは別の文脈で、**差分と要件に対して項目に漏れが無いか**を見る(読み取りだけ。直さず、指摘だけを返す。見るものは [review/SKILL.md](/.claude/skills/test-cases/review/SKILL.md))。
 
 - 渡すもの: `<作業フォルダ>/cases/` のパス、対象のリポジトリのパスと差分の範囲、要件、作業フォルダの設計(あれば)、事実のシート
 - 打ち消し線の付いた全件をビューアで見たい時は、先に `build-manifest.mjs <作業フォルダ> --trail` で `cases/manifest.json` を作っておく
@@ -242,7 +242,7 @@ gh issue view <イシュー番号> --comments
 
 ### 7-2. 作って確かめる
 
-`check-cases.mjs` → `build-manifest.mjs --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>` → `check-manifest.mjs` の順に動かす(コマンドと、正本で何が変わるかは `test-cases/reference/format.md`「正本と証跡を作る」)。証跡の項目を直したら、正本を作り直してから `--manifest` で合っているかを確かめる。正本にすでに結果があれば、[やり直し(`test-run/retest/`)](../test-run/retest/SKILL.md) の手順で新しいフォルダに作る。
+`check-cases.mjs` → `build-manifest.mjs --trail --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>` → `check-manifest.mjs` の順に動かす(コマンドと、正本で何が変わるかは `test-cases/reference/format.md`「正本と証跡を作る」)。証跡の項目を直したら、正本を作り直してから `--manifest` で合っているかを確かめる。正本にすでに結果があれば、[やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) の手順で新しいフォルダに作る。
 
 ### 7-3. 報告
 
@@ -250,5 +250,5 @@ gh issue view <イシュー番号> --comments
 
 ## 8. 渡す
 
-正本のフォルダ(`evidence/<YYYY-MM-DD>-<内容>/`)のビューアのURLを作る。作り方(Drive への置き方・フォルダ ID の取り方・`<site>evidence/?folder=<ID>`)は [docs/workspace.md](../../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」。
+正本のフォルダ(`evidence/<YYYY-MM-DD>-<内容>/`)のビューアのURLを作る。作り方(Drive への置き方・フォルダ ID の取り方・`<site>evidence/?folder=<ID>`)は [docs/workspace.md](/docs/workspace.md) の「Driveへの置き方」「ビューアで開く」。
 ユーザーに、そのURLと件数(グループ・行う項目・種別ごとの全件/行わない)を渡す。証跡を見たい人には、`cases/` のフォルダ ID で同じ形のURLを作る。

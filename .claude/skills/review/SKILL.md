@@ -6,7 +6,7 @@ description: >-
 
 # レビュー
 
-dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。
 
 **見る範囲を先に数える → 観点ごとに当てる → 見つけたら同じ形を全部数える。**
 

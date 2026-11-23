@@ -13,7 +13,7 @@ description: >-
 
 # イシュー対応
 
-dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](../../../docs/workspace.md) の「dev-workbench の場所」)。
+dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..`。中の手順・コマンド・サブエージェントに渡すパスは、ここを絶対パスにして使う(決まりは [docs/workspace.md](/docs/workspace.md) の「dev-workbench の場所」)。
 
 GitHub イシューを「ブランチ準備 → 読む → 不明点を潰す → 仕様を確定して記録する → 実装する → 検証する → セルフレビュー → コミット → エビデンス → PR → 完了報告」の流れで対応する。
 
@@ -132,7 +132,7 @@ gh issue view <番号> --json title,body,comments,labels,state
 ユーザーの答えを反映して最終の仕様をまとめ、**実装に入る前に**イシューへコメントとして残す。
 「何を作ると合意したか」の記録になり、後から実装の意図を追えるようにするため。
 
-イシューへのコメントは外に公開される。**本文をユーザーに見せ、了承を得てから投稿する。** 型は [reference/templates.md](reference/templates.md) の「確定仕様のコメント」。
+イシューへのコメントは外に公開される。**本文をユーザーに見せ、了承を得てから投稿する。** 型は [reference/templates.md](/.claude/skills/issue-handler/reference/templates.md) の「確定仕様のコメント」。
 
 ### 6. 実装
 
@@ -187,7 +187,7 @@ git commit -m "prefix: #<番号> 説明"
 
 PR の作成は外に公開される操作。ユーザーがこのスキルでイシューの対応を頼んだことを、PR を作る了承とみなしてよい。ただし、ステップ4〜10のどこかで、ユーザーが PR の前に見たいと言った時は、それに従う。
 
-本文の型と、Test plan の写し方は [reference/templates.md](reference/templates.md) の「PR の本文」。`--base` にはステップ1の `<base>` を指定する。
+本文の型と、Test plan の写し方は [reference/templates.md](/.claude/skills/issue-handler/reference/templates.md) の「PR の本文」。`--base` にはステップ1の `<base>` を指定する。
 
 ### 12. 完了報告
 

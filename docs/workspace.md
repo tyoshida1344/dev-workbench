@@ -26,8 +26,8 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
         <YYYY-MM-DD>-<内容>/         1回のテスト。manifest.json と動画・画像・テキスト
 ```
 
-- 設計の Markdown の決まりは [design-folder.md](./design-folder.md)
-- テストケースとエビデンスは、どちらも `manifest.json`([evidence-manifest.md](./evidence-manifest.md))。
+- 設計の Markdown の決まりは [design-folder.md](/docs/design-folder.md)
+- テストケースとエビデンスは、どちらも `manifest.json`([evidence-manifest.md](/docs/evidence-manifest.md))。
   テストケースを作った時点では `result` の無い(未実施の)項目で、テストを行うと結果と動画・画像が付く
 
 ## 作業フォルダを決める
@@ -49,7 +49,7 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
 | `DEV_WORKBENCH_DOCS` | 手元の作業の置き場。スキルはここに書く。同期を使う PC は Google ドライブ パソコン版の同期フォルダの中、使わない PC は手元の好きなフォルダ |
 | `DEV_WORKBENCH_DRIVE_FOLDER` | (任意)Drive の基準フォルダの ID。**あれば、Claude in Chrome で Drive に上げる。無ければ、同期に任せる**(下の「Driveへの置き方」)。同期フォルダの中を `DEV_WORKBENCH_DOCS` にした PC では書かない(二重に上がる) |
 
-- ユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](../README.md) の「使い始める」
+- ユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](/README.md) の「使い始める」
 - 使う前に `echo "$DEV_WORKBENCH_DOCS" "$DEV_WORKBENCH_DRIVE_FOLDER"` で確かめる。**`DEV_WORKBENCH_DOCS` が空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
 
 ```
@@ -66,6 +66,7 @@ DEV_WORKBENCH_DRIVE_FOLDER = 12iXVido-...              (Chrome で上げる時�
 - 入口の `SKILL.md` に、`${CLAUDE_SKILL_DIR}/../../..` として書いてある。Claude Code がスキルを読み込む時に、そのスキルのフォルダの絶対パスに置き換える。プラグインとして入れた時はその写し(`~/.claude/plugins/` の下)、このリポジトリの中ではこのリポジトリを指す
 - 中の手順・`docs/`・コマンドの中の `<dev-workbench>` は、入口で分かった絶対パスに置き換えて使う(中の手順は Read で読むので、`${...}` は置き換わらない)
 - サブエージェントには、絶対パスにして渡す
+- スキル・`docs/` の中の Markdown のリンクは `/` で始まる(`[docs/workspace.md](/docs/workspace.md)`)。この `/` は `<dev-workbench>` のことなので、`<dev-workbench>/docs/workspace.md` を読む
 - プラグインとして入れた時は、スキルとサブエージェントの名前の前に `dev-workbench:` が付く。手順の中で `review`・`test-run`・`test-cases-unit` などと書いた名前は、`dev-workbench:review` のように付けて呼ぶ(このリポジトリの中で、プロジェクトのスキルとして読まれた時のスキルは付けない)
 
 ## Driveへの置き方
@@ -111,6 +112,6 @@ DEV_WORKBENCH_DRIVE_FOLDER = 12iXVido-...              (Chrome で上げる時�
 | テストケース・エビデンス | `<site>evidence/?folder=<evidence の下の1回分のフォルダのID>` |
 
 - URL を作る前に、上の「Driveへの置き方」で Drive に揃える
-- `<site>` は `<dev-workbench>/.claude/skills/config.json` の `site`(末尾は `/`)。読めなければユーザーに聞く。人に向けた説明では [README.md](../README.md) の先頭の1行が公開先
+- `<site>` は `<dev-workbench>/.claude/skills/config.json` の `site`(末尾は `/`)。読めなければユーザーに聞く。人に向けた説明では [README.md](/README.md) の先頭の1行が公開先
 - `<ID>` は、DriveのフォルダのURL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。Chrome で上げた時は、そのフォルダの URL から取る。同期の時は、Drive のコネクタがあればフォルダの名前で探し、親フォルダ(`<リポジトリ名>` など)も合っていることを確かめて取る。無ければユーザーにフォルダのURLを聞く
 - 設計のビューアは、作業フォルダの `evidence/` の下にあるフォルダを一覧に出し、そこからエビデンスビューアへ移れる
