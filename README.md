@@ -96,18 +96,6 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 `drive.readonly` はGoogleが「制限付き」に分類しているスコープで、誰でも使えるよう本番に公開するにはGoogleの審査が要る。
 テストのまま(または内部)で使う。
 
-## 前の版から移る
-
-道具の作りを変えた時に、すでに使っている環境で要る作業。
-
-- **ログインの戻り先が `<サイト>/auth/` になった**(前は `<サイト>/evidence/`)。Google Cloud の「承認済みのリダイレクト URI」に `<サイト>/auth/` を足す。前の `<サイト>/evidence/` は、新しい版を公開してしばらく(ブラウザに古いページが残っている間。少なくとも1日)は消さずに残す
-- **公開の仕方が GitHub Actions になった**。fork している時は、Settings → Pages の Source を「GitHub Actions」にする(ブランチから公開したままだと、直下に `index.html` が無いので開けない)
-- **見本は `?folder=sample` で開く**。前の `?base=<URL>` は無くなった。手元のフォルダを開く代わりの方法は無いので、Drive の作業フォルダに置いて `?folder=<DriveのフォルダID>` で開く
-- **evidence-pack を写したプロジェクト**: 写したスキルは前の `?base=` を案内しているので、写しを消し、下の「使い始める」でプラグインを入れて `/test-run`(受入確認のまとめは `test-run` が振り分ける)を使う
-- **スキルはプラグインで配るようになった**(前は `scripts/link-global` で `~/.claude` にリンクしていた)。各PCで、前に作ったリンク(`~/.claude/skills/` の `design`・`issue-handler`・`review`・`test-cases`・`test-run` と、`~/.claude/agents/test-cases`)を消し、`~/.claude/settings.json` の `env.DEV_WORKBENCH_HOME` と、`additionalDirectories` のこのリポジトリの場所を消してから、下の「使い始める」で入れる。リンクを残すと、同じスキルが2つ見える
-- 一度ログインしたしるしは、新しい版でもそのまま使われる(前の版のしるしを移す)
-- 手元で `scripts/` を動かすには Node 22 以上が要る(`app/` の `.js` を ES モジュールとして調べるため)
-
 ## 他のプロジェクトから使う
 
 開発をしているプロジェクトの Claude Code から、イシュー対応・設計・テストケース作成・テストの実施・レビューをスキルとして使える。
@@ -173,4 +161,4 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 - データは持たない。読む先はURLのパラメータで受け取る
 - 共通の部品は [`app/_lib/`](./app/_lib/) にある。見た目(`style.css`)、要素の組み立て(`dom.js`)、Googleでのログインと Drive・URLからの読み込み(`drive.js`)、読む先の決め方とログインの案内(`page.js`)、Markdown の描画(`md.js`)。ログインの戻り先は `auth/` の1か所なので、道具を足してもGoogle Cloudの登録は変えなくてよい
 - 読み込んだ文字は `textContent` で出す(`innerHTML` に入れない)
-- コミットの前に `node scripts/check.mjs` を通す。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
+- コミットの前に `node scripts/check.mjs` を通す(Node 22 以上。`app/` の `.js` を ES モジュールとして調べるため)。画面は `node scripts/serve.mjs`(`.claude/launch.json` の `site`)で `http://localhost:8126/` に配って、見本で確かめる。開発の進め方(このリポジトリでもスキルを使う)は [CLAUDE.md](./CLAUDE.md)
