@@ -47,7 +47,7 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
 | 環境変数 | 中身 |
 |---|---|
 | `DEV_WORKBENCH_DOCS` | 手元の作業の置き場。スキルはここに書く。同期を使う PC は Google ドライブ パソコン版の同期フォルダの中、使わない PC は手元の好きなフォルダ |
-| `DEV_WORKBENCH_DRIVE_FOLDER` | (任意)Drive の基準フォルダの ID。**あれば、Claude in Chrome で Drive に上げる。無ければ、同期に任せる**(下の「Driveへの置き方」) |
+| `DEV_WORKBENCH_DRIVE_FOLDER` | (任意)Drive の基準フォルダの ID。**あれば、Claude in Chrome で Drive に上げる。無ければ、同期に任せる**(下の「Driveへの置き方」)。同期フォルダの中を `DEV_WORKBENCH_DOCS` にした PC では書かない(二重に上がる) |
 
 - ユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](../README.md) の「使い始める」
 - 使う前に `echo "$DEV_WORKBENCH_DOCS" "$DEV_WORKBENCH_DRIVE_FOLDER"` で確かめる。**`DEV_WORKBENCH_DOCS` が空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
@@ -89,15 +89,19 @@ DEV_WORKBENCH_DRIVE_FOLDER = 12iXVido-...              (Chrome で上げる時�
 - **上げるもの**: その区切りで書いた・変えたファイルを含むフォルダの中身(例: テストの1回分なら `evidence/<YYYY-MM-DD>-<内容>/` のファイルすべて)
 - **Claude in Chrome が使えない時は止めて、ユーザーに聞く。** コネクタやほかの方法で代わりに上げない
 
-手順:
+手順(使う道具は Claude in Chrome の `navigate`・`computer`・`find`・`javascript_tool`・`file_upload`):
 
-1. 新しいタブで `https://drive.google.com/drive/folders/$DEV_WORKBENCH_DRIVE_FOLDER` を開く。ログインの画面になったら、ユーザーにログインを頼んで待つ
+1. 新しいタブで `https://drive.google.com/drive/folders/<ID>` を開く(`<ID>` は、上の `echo` で得た `DEV_WORKBENCH_DRIVE_FOLDER` の値。URL の欄では環境変数は展開されない)。ログインの画面になったら、ユーザーにログインを頼んで待つ
 2. `<リポジトリ名>` → `<イシュー番号>` → その下のフォルダの順に、ダブルクリックで開いていく。無いフォルダは「新規」→「新しいフォルダ」で、手元と同じ名前で作ってから開く
-3. 上げる先のフォルダを開いたら、ページに一時的なファイルの入力(`<input type="file" multiple>`)を足し、Claude in Chrome のファイルのアップロードで手元のファイルを渡す。その files を `DataTransfer` に入れ、フォルダの一覧の場所に `dragenter`・`dragover`・`drop` を送る(Drive の「ファイルのアップロード」は OS のファイル選択の画面を開くので使わない)。足した入力は消す
+3. 上げる先のフォルダを開いたら、ファイルを渡す(Drive の「ファイルのアップロード」は OS のファイル選択の画面を開き、操作できないので使わない)
+   - `javascript_tool` で、ページに一時的な入力を足す: `<input type="file" multiple id="cw-up">`
+   - `find` でその入力(`file-input`)の ref を取り、`file_upload` に ref と手元のファイルの絶対パスを渡す(1回に 10MB 未満。超える時は何回かに分ける)
+   - `javascript_tool` で、入力の files を `DataTransfer` に入れ、フォルダの一覧の場所(フォルダが空なら「Drop files here」の領域、ファイルがあれば一覧の行のある所。`document.elementFromPoint` で画面の中ほどの要素を取ってよい)に `dragenter`・`dragover`・`drop` を送る。送ったら、足した入力を消す
 4. 同じ名前のファイルがあると聞かれたら、**置き換える**(「既存のファイルを置き換える」)を選ぶ。前の中身は Drive の版の履歴に残る。別のファイルとして残すと、ビューアが古い方を読むことがある
-5. 「アップロード完了」の件数と、一覧のファイル名が手元と揃っていることを確かめる
-6. フォルダの ID は、開いているフォルダの URL(`…/folders/<ID>`)から取る
-7. 開いたタブを閉じる
+5. 「アップロード完了」の件数と、一覧のファイル名が手元と揃っていることを確かめる。揃わない・失敗と出た時は、同じ操作を繰り返さず、止めてユーザーに聞く
+6. 上げるフォルダがいくつもある時(設計の直下の文書と `spec/`・`images/` など)は、フォルダごとに 2〜5 を繰り返す
+7. フォルダの ID は、開いているフォルダの URL(`…/folders/<ID>`)から取る
+8. 開いたタブを閉じる
 
 ## ビューアで開く
 
