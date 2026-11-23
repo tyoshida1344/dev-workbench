@@ -1,13 +1,13 @@
 # 作業フォルダ(設計・テストケース・エビデンスの置き場)
 
 設計・テストケース・エビデンスは、**開発しているリポジトリにも、このリポジトリにも置かない。**
-Googleドライブに置き、ビューアでURLを指して読む。
+手元に書いて Googleドライブに置き、ビューアでURLを指して読む。
 
 **スキルが作業フォルダとビューアのURLを決める時は、この文書だけに従う。** 各スキルには、ここに書いたことを書き直さない。
 
 ## 置き場
 
-1つのイシュー(または1つのテーマ)につき、Driveに1つのフォルダを作る。これを**作業フォルダ**と呼ぶ。
+1つのイシュー(または1つのテーマ)につき、手元に1つのフォルダを作り、Driveにも同じ形で置く(下の「Driveへの置き方」)。これを**作業フォルダ**と呼ぶ。
 
 ```
 $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」)
@@ -46,10 +46,18 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
 
 | 環境変数 | 中身 |
 |---|---|
-| `DEV_WORKBENCH_DOCS` | 作業の置き場。Google ドライブ パソコン版の同期フォルダの中 |
+| `DEV_WORKBENCH_DOCS` | 手元の作業の置き場。スキルはここに書く。同期を使う PC は Google ドライブ パソコン版の同期フォルダの中、使わない PC は手元の好きなフォルダ |
+| `DEV_WORKBENCH_DRIVE_FOLDER` | (任意)Drive の基準フォルダの ID。**あれば、Claude in Chrome で Drive に上げる。無ければ、同期に任せる**(下の「Driveへの置き方」) |
 
 - ユーザーの設定(`~/.claude/settings.json` の `env`)に置く。手順は [README.md](../README.md) の「使い始める」
-- 使う前に `echo "$DEV_WORKBENCH_DOCS"` で確かめる。**空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
+- 使う前に `echo "$DEV_WORKBENCH_DOCS" "$DEV_WORKBENCH_DRIVE_FOLDER"` で確かめる。**`DEV_WORKBENCH_DOCS` が空なら止めて、ユーザーに場所を聞く。** 推し量って作らない。リポジトリの中や、ほかの場所に代わりに作らない
+
+```
+DEV_WORKBENCH_DOCS = G:\マイドライブ\dev-docs         (Windows で同期を使う例)
+DEV_WORKBENCH_DOCS = ~/Google Drive/My Drive/dev-docs  (macOS で同期を使う例)
+DEV_WORKBENCH_DOCS = C:\Users\<名前>\dev-docs          (同期を使わず、Chrome で上げる例)
+DEV_WORKBENCH_DRIVE_FOLDER = 12iXVido-...              (Chrome で上げる時の基準フォルダの ID)
+```
 
 ## dev-workbench の場所
 
@@ -60,18 +68,36 @@ $DEV_WORKBENCH_DOCS/                 作業の置き場(下の「環境変数」
 - サブエージェントには、絶対パスにして渡す
 - プラグインとして入れた時は、スキルとサブエージェントの名前の前に `dev-workbench:` が付く。手順の中で `review`・`test-run`・`test-cases-unit` などと書いた名前は、`dev-workbench:review` のように付けて呼ぶ(このリポジトリの中で、プロジェクトのスキルとして読まれた時のスキルは付けない)
 
-```
-DEV_WORKBENCH_DOCS = G:\マイドライブ\dev-docs         (Windows の例)
-DEV_WORKBENCH_DOCS = ~/Google Drive/My Drive/dev-docs  (macOS の例)
-```
-
 ## Driveへの置き方
 
-[Google ドライブ パソコン版](https://www.google.com/drive/download/) の同期フォルダの中に書けば、同期がDriveへ上げる。
+スキルは、いつも手元の作業フォルダ(`$DEV_WORKBENCH_DOCS/<リポジトリ名>/<イシュー番号>/`)にファイルとして書く。Drive へは、次のどちらかで置く。
 
-- スキルは手元のファイルとして書く。DriveのAPIやコネクタでファイルの中身を送らない(大きなファイルで多くのトークンを使う)
-- 見せる相手は、`$DEV_WORKBENCH_DOCS` かリポジトリのフォルダの共有設定で決める。作業フォルダごとに「リンクを知っている全員」の共有を足さない
-- URLを渡す前に、同期が終わったこと(Driveのフォルダにファイルが揃ったこと)を確かめる
+| PC | 置き方 |
+|---|---|
+| `DEV_WORKBENCH_DRIVE_FOLDER` が無い | 同期に任せる。`DEV_WORKBENCH_DOCS` が同期フォルダの中なので、書けば同期が Drive へ上げる |
+| `DEV_WORKBENCH_DRIVE_FOLDER` がある | Claude in Chrome で上げる(下の「Chrome で上げる」) |
+
+- Drive の側も手元と同じ形にする: `<基準フォルダ>/<リポジトリ名>/<イシュー番号>/…`(`evidence/<YYYY-MM-DD>-<内容>/`・`search/` などの下のフォルダも同じ名前)。同期の時は、`DEV_WORKBENCH_DOCS` が基準フォルダにあたる
+- DriveのAPIやコネクタでファイルの中身を送らない(大きなファイルで多くのトークンを使う)
+- Drive から手元へは読み戻さない。1つのイシューは1台の PC で進める
+- 見せる相手は、基準フォルダかリポジトリのフォルダの共有設定で決める。作業フォルダごとに「リンクを知っている全員」の共有を足さない
+- **ビューアのURLを渡す前に、Drive のフォルダにファイルが揃ったことを確かめる**(同期なら同期が終わったこと、Chrome ならその区切りの分を上げ終えたこと)
+
+### Chrome で上げる
+
+- **上げる時機**: 区切りごと。ビューアのURLを渡す前と、その作業(設計のフェーズ・テストケース作り・テストの実施)を終える前。書くたびには上げない
+- **上げるもの**: その区切りで書いた・変えたファイルを含むフォルダの中身(例: テストの1回分なら `evidence/<YYYY-MM-DD>-<内容>/` のファイルすべて)
+- **Claude in Chrome が使えない時は止めて、ユーザーに聞く。** コネクタやほかの方法で代わりに上げない
+
+手順:
+
+1. 新しいタブで `https://drive.google.com/drive/folders/$DEV_WORKBENCH_DRIVE_FOLDER` を開く。ログインの画面になったら、ユーザーにログインを頼んで待つ
+2. `<リポジトリ名>` → `<イシュー番号>` → その下のフォルダの順に、ダブルクリックで開いていく。無いフォルダは「新規」→「新しいフォルダ」で、手元と同じ名前で作ってから開く
+3. 上げる先のフォルダを開いたら、ページに一時的なファイルの入力(`<input type="file" multiple>`)を足し、Claude in Chrome のファイルのアップロードで手元のファイルを渡す。その files を `DataTransfer` に入れ、フォルダの一覧の場所に `dragenter`・`dragover`・`drop` を送る(Drive の「ファイルのアップロード」は OS のファイル選択の画面を開くので使わない)。足した入力は消す
+4. 同じ名前のファイルがあると聞かれたら、**置き換える**(「既存のファイルを置き換える」)を選ぶ。前の中身は Drive の版の履歴に残る。別のファイルとして残すと、ビューアが古い方を読むことがある
+5. 「アップロード完了」の件数と、一覧のファイル名が手元と揃っていることを確かめる
+6. フォルダの ID は、開いているフォルダの URL(`…/folders/<ID>`)から取る
+7. 開いたタブを閉じる
 
 ## ビューアで開く
 
@@ -80,6 +106,7 @@ DEV_WORKBENCH_DOCS = ~/Google Drive/My Drive/dev-docs  (macOS の例)
 | 設計 | `<site>design/?folder=<作業フォルダのID>` |
 | テストケース・エビデンス | `<site>evidence/?folder=<evidence の下の1回分のフォルダのID>` |
 
+- URL を作る前に、上の「Driveへの置き方」で Drive に揃える
 - `<site>` は `<dev-workbench>/.claude/skills/config.json` の `site`(末尾は `/`)。読めなければユーザーに聞く。人に向けた説明では [README.md](../README.md) の先頭の1行が公開先
-- `<ID>` は、DriveのフォルダのURL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。Drive のコネクタがあれば、フォルダの名前で探し、親フォルダ(`<リポジトリ名>` など)も合っていることを確かめて取る。無ければユーザーにフォルダのURLを聞く
+- `<ID>` は、DriveのフォルダのURL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。Chrome で上げた時は、そのフォルダの URL から取る。同期の時は、Drive のコネクタがあればフォルダの名前で探し、親フォルダ(`<リポジトリ名>` など)も合っていることを確かめて取る。無ければユーザーにフォルダのURLを聞く
 - 設計のビューアは、作業フォルダの `evidence/` の下にあるフォルダを一覧に出し、そこからエビデンスビューアへ移れる

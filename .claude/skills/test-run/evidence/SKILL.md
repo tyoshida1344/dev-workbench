@@ -78,7 +78,7 @@
 
 ## 5. 渡す
 
-1. 同期で Drive に上がったことを確かめ、フォルダの ID からビューアのURL(`<site>evidence/?folder=<ID>`)を作る(作り方は [docs/workspace.md](../../../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」)
+1. [docs/workspace.md](../../../../docs/workspace.md) の「Driveへの置き方」で Drive に揃え(同期か、Claude in Chrome で上げる)、フォルダの ID からビューアのURL(`<site>evidence/?folder=<ID>`)を作る(作り方は [docs/workspace.md](../../../../docs/workspace.md) の「Driveへの置き方」「ビューアで開く」)
 2. そのURLで開き、一覧・印・動画と画像の切り替わりが崩れていないかを見る
 3. 報告に、URLと1行の要約(件数)を書く。`partial` / `ng` があれば、番号とわけを1行ずつ添える
 

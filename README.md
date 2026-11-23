@@ -118,13 +118,16 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 スキルとサブエージェントは、このリポジトリを Claude Code のプラグイン(マーケットプレイスもプラグインも `dev-workbench`)として入れて使う。
 入れたプラグインのスキルは `/dev-workbench:issue-handler` のように、名前の前に `dev-workbench:` が付く(サブエージェントも `dev-workbench:test-cases-unit` のように付く)。
 
-1. [Google ドライブ パソコン版](https://www.google.com/drive/download/) を入れ、同期フォルダの中に作業の置き場を作る
+1. 作業の置き場を決める。設計・テストケース・エビデンスは手元に書いて、Drive に同じ形で置く([docs/workspace.md](./docs/workspace.md) の「Driveへの置き方」)
+   - [Google ドライブ パソコン版](https://www.google.com/drive/download/) を使う PC: 同期フォルダの中に作業の置き場を作る。同期が Drive へ上げる
+   - 使わない PC: 手元の好きなフォルダを作業の置き場にし、Drive に基準フォルダを作る。スキルが区切りごとに Claude in Chrome で上げる
 2. `~/.claude/settings.json`(ユーザーの設定)に、次を足す。`<owner>/<name>` は GitHub のこのリポジトリ
 
 ```json
 {
   "env": {
-    "DEV_WORKBENCH_DOCS": "<作業の置き場>"
+    "DEV_WORKBENCH_DOCS": "<作業の置き場>",
+    "DEV_WORKBENCH_DRIVE_FOLDER": "<Drive の基準フォルダの ID(パソコン版を使わない PC だけ)>"
   },
   "permissions": {
     "additionalDirectories": ["<作業の置き場>", "<ホーム>/.claude/plugins/cache/dev-workbench"]
@@ -139,6 +142,7 @@ Driveを読むために、GoogleのOAuthクライアントIDが要る。
 ```
 
 - `additionalDirectories` の2つめは、入れたプラグインの写しの置き場。スキルが中の手順を読む時に、そのたびに許可を聞かれないようにする
+- `DEV_WORKBENCH_DRIVE_FOLDER` は、Drive の基準フォルダの URL `https://drive.google.com/drive/folders/<ID>` の `<ID>`。パソコン版を使う PC では書かない
 - `autoUpdate` で、Claude Code を起動した時に `main` の新しい版が入る
 
 3. Claude Code で、プラグインを入れる
