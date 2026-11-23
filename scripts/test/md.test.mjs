@@ -115,3 +115,8 @@ test('| で始まる、表でない行で固まらない', async () => {
     assert.match(out, /注意|だけ|続き|\|/, text)
   }
 })
+
+test('表のセルの中の \\| は、区切りにせず | として出す', () => {
+  const out = render('| 操作 | 結果 |\n|---|---|\n| `a \\| b` を入れる | 出る |')
+  assert.match(out, /<td><code>a \| b<\/code> を入れる<\/td><td>出る<\/td>/)
+})

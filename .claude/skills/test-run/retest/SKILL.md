@@ -40,7 +40,7 @@ git diff <前の正本の source.commit>..HEAD
    - 期待する結果・前提・手順を直した項目(直した中身で行い直さないと判定できない)
    - 前の結果が `ng` / `partial` で、直したことで結果が変わりうる項目
    - 迷うものは、**ユーザーに聞く**(外すと見落とし、付けすぎると実施する人の負担になる)
-3. ケースの中身を直す指摘なら、作業フォルダの下書き(`cases/<kind>.json`)の該当の項目を、**同じ id のまま**直す(`test-cases/reference/writing.md` に従う)。足す項目は節の末尾に足し、`order.json` に入れる。直したら `check-cases.mjs <作業フォルダ>` で確かめる
+3. ケースの中身を直す指摘なら、作業フォルダの下書き(`cases/<kind>.json`)の該当の項目を、**同じ id のまま**直す(`test-cases/reference/writing.md` に従う)。受け入れの項目が設計の `acceptance.md` から作られている時(id が `AC01` など)は、`acceptance.md` の行を同じ ID のまま直す(設計の文書を直すので、`design/reference/11-feedback-from-impl.md` に沿う)。足す項目は節の末尾に足し、`order.json` に入れる。直したら `check-cases.mjs <作業フォルダ>` で確かめる
 
 4. `cases/plan.json` の `source.commit` を、これから確かめるコミットにする
 5. 新しいフォルダを作る。前のフォルダの結果を、やり直さない項目にだけ写す(この手順に固有の引数は `--results-from` と `--redo`)

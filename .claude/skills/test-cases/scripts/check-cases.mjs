@@ -46,6 +46,9 @@ catch (error) {
 const { plan, files, order } = data
 
 const onlyName = value('--file') ? basename(value('--file')) : null
+// --file は自分のファイルだけを見る(並行して書いている間に、設計の表の誤りに巻き込まれないため)
+if (!onlyName) for (const message of data.acceptanceErrors) fail('設計', message)
+for (const warning of data.warnings) console.log(`注意  ${warning}`)
 if (onlyName && !files.some(file => file.name === onlyName)) {
   fail(onlyName, `cases/ にありません(書けるのは ${KINDS.map(kind => `${kind}.json`).join(' / ')})`)
 }
@@ -53,13 +56,15 @@ if (onlyName && !files.some(file => file.name === onlyName)) {
 // 文字列か、空でない文字列の配列か
 const isText = value => (typeof value === 'string' && value.trim() !== '') || (Array.isArray(value) && value.length > 0 && value.every(entry => typeof entry === 'string' && entry.trim() !== ''))
 // 見る人が読む欄の書き方。`コマンド` と「画面の文言」は引用なので外して見る
-function checkWording(where, fields) {
+function checkWording(where, fields, fromDesign = false) {
   for (const [key, value] of fields) {
     if (value === undefined) continue
     const text = list(value).join('\n')
     const plain = text.replace(/`[^`\n]+`/g, '').replace(/「[^」\n]*」/g, '')
     const code = plain.match(CODE_WORDS)
-    if (code) fail(where, `${key} にコードの言葉「${code[0]}」があります。画面・業務の言葉に直し、コードの根拠は basis に書きます`)
+    if (code) fail(where, fromDesign
+      ? `${key} にコードの言葉「${code[0]}」があります。acceptance.md の表を、画面・業務の言葉に直します`
+      : `${key} にコードの言葉「${code[0]}」があります。画面・業務の言葉に直し、コードの根拠は basis に書きます`)
     const html = plain.match(HTML_TAG)
     if (html) fail(where, `${key} に HTML「${html[0]}」があります。HTML は書けないので、文に直します`)
   }
@@ -82,7 +87,7 @@ for (const file of files) {
     fail(file.name, 'sections の配列にします({ "sections": [...] })')
     continue
   }
-  for (const section of file.data.sections) sections.push({ ...section, file: file.name, declaredKind: section.kind, kind: file.kind })
+  for (const section of file.data.sections) sections.push({ ...section, file: file.name, declaredKind: section.kind, kind: file.kind, fromDesign: file.fromDesign === true })
 }
 const own = onlyName ? sections.filter(section => section.file === onlyName) : sections
 if (onlyName && files.some(file => file.name === onlyName) && !own.length) fail(onlyName, '節がありません')
@@ -102,7 +107,7 @@ for (const section of own) {
   const test = TEST_KINDS.includes(section.kind)
   for (const item of section.items) {
     const where = `${section.file} ${item.id ?? '(id なし)'}`
-    if (typeof item.id !== 'string' || !item.id.startsWith(`${section.id}-`)) fail(where, `id は節の id で始めます(${section.id}-01 など)`)
+    if (!section.fromDesign && (typeof item.id !== 'string' || !item.id.startsWith(`${section.id}-`))) fail(where, `id は節の id で始めます(${section.id}-01 など)`)
     if (!item.title) fail(where, 'title がありません(何が正しいと言えれば合格かを1文で)')
     if (!isText(item.steps)) fail(where, 'steps がありません(文字列か文字列の配列)')
     for (const key of ['result', 'checks', 'video', 'image']) {
@@ -113,21 +118,26 @@ for (const section of own) {
     }
     if (item.duplicateOf) continue
 
-    checkWording(where, [['title', item.title], ['given', item.given], ['steps', item.steps], ['expect', item.expect]])
+    checkWording(where, [['title', item.title], ['given', item.given], ['steps', item.steps], ['expect', item.expect]], section.fromDesign)
     if (JSON.stringify(item).includes(UNKNOWN)) fail(where, `${UNKNOWN} が残っています。ユーザーに聞いて埋めます(推測で埋めない)`)
     if (item.given !== undefined && typeof item.given !== 'string') fail(where, 'given は文字列にします(2行まで)')
     if (item.expect !== undefined && !isText(item.expect)) fail(where, 'expect は文字列か文字列の配列にします')
     if (item.priority !== undefined && !PRIORITIES.includes(item.priority)) fail(where, `priority は ${PRIORITIES.join(' / ')} のどれかにします`)
-    if (test) {
+    // 設計の受け入れ基準から作った項目は、期待する結果を title に持つ(acceptance.md の形は readAcceptance が見る)
+    if (test && !section.fromDesign) {
       if (!item.expect) fail(where, 'expect がありません')
       if (!item.priority) fail(where, 'priority がありません')
     }
     if (section.kind === 'unit' && !item.basis) fail(where, '単体の項目に basis がありません(期待する結果の根拠: コードの path:line か、既存のテストの assert)')
-    if (item.basis && section.kind !== 'unit') fail(where, 'basis は単体の項目だけに付けます')
+    if (item.basis && section.kind !== 'unit' && !section.fromDesign) fail(where, 'basis は単体の項目だけに付けます')
     // 結合・回帰・受け入れは画面で確かめる。コマンドを使うなら、画面で確かめられない理由を noScreen に書く
     if (test && section.kind !== 'unit') {
       const command = list(item.steps).some(text => COMMAND_STEP.test(String(text).trim()))
-      if (command && !item.noScreen) fail(where, '手順にコマンドがあります。画面で確かめる形に直すか、画面で確かめられない理由を noScreen に書きます')
+      if (command && !item.noScreen) {
+        fail(where, section.fromDesign
+          ? '操作にコマンドがあります。acceptance.md の操作を、画面で確かめる形に直します(画面で確かめられないなら、test.md で手段を「自動(…)」にします)'
+          : '手順にコマンドがあります。画面で確かめる形に直すか、画面で確かめられない理由を noScreen に書きます')
+      }
     }
     if (item.noScreen && (!test || section.kind === 'unit')) fail(where, 'noScreen は結合・回帰・受け入れの項目だけに付けます')
 

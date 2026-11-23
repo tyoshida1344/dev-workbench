@@ -1,6 +1,6 @@
 # テストケースのレビュー
 
-読む時: `test-cases` の振り分けで、作ったテストケースをレビューする時(ケースを作る流れの中では、サブエージェント `test-cases-review` が読む)
+読む時: `test-cases` の振り分けで、作ったテストケースをレビューする時(ケースを作る流れの中では、サブエージェント `test-cases-review` が読む。ライト版の設計から作る時は、親がこの手順で見直す)
 
 作ったテストケース(作業フォルダの `cases/` の下書き、またはそれから作った `manifest.json`)を、項目の書き手とは別の目で、「差分・要件に対して、項目に漏れが無いか」を確かめる。**ファイルは書き換えない**(`git diff` / `git log` / `git show` / `grep` / `gh ... view` / `check-cases.mjs` など読み取りだけ。状態を変えるコマンド、項目の手順に書かれたコマンドは実行しない)。指摘を返すのが仕事で、直すのは `test-cases` の本体。
 共通の進め方(見る範囲・重要度・出力の形)は `review/SKILL.md`。
@@ -9,7 +9,7 @@
 
 - 作業フォルダの `cases/` のパス(`plan.json` と種別ごとの下書き。あれば `order.json`・`00-cases.md`)
 - 対象のリポジトリのパスと差分の範囲
-- イシューの要件(`plan.json` の `requirements` と、元のイシューの文)、作業フォルダの設計(spec.md・acceptance.md・test.md。あれば)
+- イシューの要件(`plan.json` の `requirements` か、設計の `acceptance.md` の AC と、元のイシューの文)、作業フォルダの設計(spec.md・acceptance.md・test.md。あれば)
 
 パスは絶対パスで読む(サブエージェントとして呼ばれた時は、親が渡したもの)。照らし合わせる決まりは、`test-cases/SKILL.md` の「ゴール」、`test-cases/reference/` の `format.md`(形)・`writing.md`(書き方)・`perspectives.md`(観点)。`check-cases.mjs` が見る機械的な整合(id の重なり・行き先の無い参照・要件と項目の対応の有無)は確かめ済みなので扱わない。**意味の漏れ**を見る。
 

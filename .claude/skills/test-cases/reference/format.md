@@ -10,13 +10,15 @@
 
 ```
 <作業フォルダ>/
+  acceptance.md                   設計の受け入れ基準(設計がある時)。受け入れの項目はここから作る(下の「設計の受け入れ基準から作る」)
+  test.md                         設計のテストの計画(設計がある時)。手段を「自動」とした AC は項目にしない
   cases/                          下書き(証跡)。種別ごとに並行して書くので、ファイルを分ける
     plan.json                     見出し・出どころ・要件・全体の注意・確かめないこと・添付(親が書く)
     setup.json                    準備(kind: setup)
     unit.json                     単体(kind: unit)
     integration.json              結合(kind: integration)
     regression.json               回帰(kind: regression)
-    acceptance.json               受け入れ(kind: acceptance)
+    acceptance.json               受け入れ(kind: acceptance)。設計の acceptance.md がある時は作らない
     cleanup.json                  後始末(kind: cleanup)
     order.json                    実施の順(手で書く。無ければ種別の順に並ぶ)
     00-cases.md                   どこから拾ったかと項目の対応表(plan.json の attachments で正本に添える)
@@ -37,9 +39,29 @@
 | `title` | ○ | ビューアの見出し。短い名詞句(例: `#123 一覧の並び替え`) |
 | `source` | | `repository` / `pullRequest` / `commit` / `url`(`docs/evidence-manifest.md` と同じ)。イシューだけの時は `url` にイシューのURLを書く |
 | `notes` | | 全体にかかる注意(配列)。変更の概要と確かめる条件を1〜2文、項目が無い種別の理由など。正本の `notes` の先頭に出る |
-| `requirements` | 受け入れがあれば○ | 要件(`{ "id": "R1", "text": "…" }` の配列)。イシューと設計(spec.md・acceptance.md)に書かれたものだけ |
+| `requirements` | 受け入れがあれば○ | 要件(`{ "id": "R1", "text": "…" }` の配列)。イシューに書かれたものだけ。設計の `acceptance.md` がある時は書かない(AC がそのまま要件になる) |
 | `excluded` | | 確かめないこと(`{ "title", "reason" }` の配列)。**差分に含まれていないものだけ**。正本の `notes` に「確かめないこと: …」として出る |
 | `attachments` | | 正本に添えるファイル(`{ "title", "file" }`)。`file` は `cases/` に置き、正本を作る時に evidence のフォルダへ写される |
+
+## 設計の受け入れ基準から作る
+
+作業フォルダに設計の `acceptance.md` があれば、`check-cases.mjs`・`build-manifest.mjs` が、その表から受け入れの項目と要件を作る。**写しは作らない**(`plan.json` の `requirements` と `cases/acceptance.json` に書き直さない。両方あると止まる)。`cases/` が無くても動く。
+
+| `acceptance.md` | 項目・要件 |
+|---|---|
+| `##` の見出し(要件 / 既存機能への影響 / 設計で追加した仕様) | 節。見出しは `受け入れ: <見出し>`、`kind` は `acceptance` |
+| ID(`AC01`) | 項目の `id` と `requirement`。要件の `id` |
+| 期待する結果 | 項目の `title`。要件の `text` |
+| 前提 | `given` |
+| 操作 | `steps`。「 → 」で区切ったものが、手順1・手順2… になる |
+| spec.md の節 | `basis`(`spec.md の <節>`) |
+| (いつも) | `priority` は `high` |
+
+- `test.md` の AC と手段の表(列「AC」「手段」)で、手段が「自動」で始まる AC は、項目にも要件にもしない。正本の `notes` に「自動のテストで確かめるので項目にしない受け入れ基準: …」と残る
+- `plan.json` が無い、または `title` が無い時は、`acceptance.md` の最初の `#` 見出し(`受け入れ基準:` の後ろ)を見出しにする
+- AC の表が1つも無い `acceptance.md`(表の形になる前の、チェックリストの書き方)は読まない。注意を出して、今までどおり `plan.json` の `requirements` と `cases/acceptance.json` で作る(作業途中のフォルダを止めないため)
+- 表の形の誤り(ID の形・空のセル・`acceptance.md` と `test.md` の AC の食い違い)は、`check-cases.mjs` がエラーにする(`--file` の時は出さない)。表の形は、設計のひな形(`design/templates/acceptance.md`・`test.md`)が正本
+- 順を決める時(`order.json`)は、`AC01` などの id で並べる。補う項目(単体・結合・回帰)は、今までどおり種別ごとの下書きに書く
 
 ## 00-cases.md(対応表)
 

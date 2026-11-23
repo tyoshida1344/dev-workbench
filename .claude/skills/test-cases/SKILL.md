@@ -15,6 +15,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 | 頼まれたこと | 読む手順 |
 |---|---|
 | テストケースを作る・作り直す・観点を洗い出す | このファイル |
+| ライト版の設計(作業フォルダの `index.md` に `進め方: ライト版`)から作る | このファイルの「ライト版の設計から作る」 |
 | 作ったテストケースをレビューする・漏れを見る | [review/SKILL.md](/.claude/skills/test-cases/review/SKILL.md)(テストケースのレビュー。ケースを作る流れの中では、サブエージェント `test-cases-review` がこの手順で行う) |
 | 作ったケースを行う・やり直す | `test-run` スキル |
 
@@ -48,7 +49,7 @@ dev-workbench の場所(以下 `<dev-workbench>`): `${CLAUDE_SKILL_DIR}/../../..
 
 | # | ゴール | 満たすための手立て |
 |---|---|---|
-| 1 | **イシューの要件を満たしていることを確かめられる** | 要件を `plan.json` の `requirements` に書き出し、1つの要件に1つ以上の受け入れの項目を置く(2節)。すべての要件を指す、行う受け入れの項目が残っているかは `check-cases.mjs` が見る |
+| 1 | **イシューの要件を満たしていることを確かめられる** | 設計の `acceptance.md` があれば、その AC が要件になる(`test-cases/reference/format.md`「設計の受け入れ基準から作る」)。無ければ、要件を `plan.json` の `requirements` に書き出し、1つの要件に1つ以上の受け入れの項目を置く(2節)。すべての要件を指す、行う受け入れの項目が残っているかは `check-cases.mjs` が見る |
 | 2 | **イシューに書かれていない仕様の動きを確かめられる** | 差分から見える分岐、共通の処理のほかの用途、実際のデータの形、副作用、変わらない側の今までどおりの動き、設計で決めたことを、単体・結合・回帰の観点として拾う(`test-cases/reference/perspectives.md`)。**受け入れの要件は、イシューと設計に書かれたものだけ**。要件に無い動きの期待する結果も、根拠(コード・既存の動き・仕様)を持つ |
 | 3 | **自動のテストで確かめられていない動きを確かめられる** | 自動のテストを grep して**実際に読み**、その項目を確かめるテストがあるかで優先度を決める(`test-cases/reference/writing.md`「優先度」)。**確かめられていない動き(画面の流れ、実際のデータ、外のサービスとのつながり、画面にだけ出る文言)には、必ず項目を置き、優先度を高にする**。確かめられている動きも外さず、優先度を下げる。単体の `basis` に既存のテストの有無を残す |
 | 4 | **実施する人が、操作や期待する結果の判定に迷わず進められる** | 画面の言葉だけで書く。手順は確かめる地点で区切り、期待する結果は具体的な値と画面に見えることにする。前提は状態で書く。`【要確認】` と「適切に」「正しく」のような判定できない言葉を残さない(`test-cases/reference/writing.md`) |
@@ -104,10 +105,11 @@ gh pr view <番号> --json title,body,baseRefName,headRefOid,url,closingIssuesRe
 gh issue view <イシュー番号> --comments
 ```
 
-- 作業フォルダに設計(`spec.md` 最終仕様・`acceptance.md` 受け入れ基準・`test.md` テストの方針)があれば読む。決まった仕様と受け入れ基準は要件の出どころに、テストの方針(範囲・環境・確かめないこと)は2節以降の前提にする
+- 作業フォルダに設計(`spec.md` 最終仕様・`acceptance.md` 受け入れ基準・`test.md` テストの方針)があれば読む。決まった仕様は観点の出どころに、テストの方針(範囲・環境・確かめないこと)は2節以降の前提にする
+- **設計の `acceptance.md` があれば、受け入れの項目は書かない。** スクリプトが表からそのまま作る(`test-cases/reference/format.md`「設計の受け入れ基準から作る」)。`plan.json` に `requirements` を書かず、`cases/acceptance.json` を作らず、受け入れのサブエージェントを呼ばない。`test.md` で手段を「自動」とした AC は項目にならない。単体・結合・回帰は、AC で確かめきれないもの(差分の分岐・境界、変えた共通の処理を使うほかの画面など)だけを書く
 - 作業フォルダを作り直す(`<イシュー番号>_2`)時は、作り直しの範囲をユーザーに確かめ、再テストなら、対象のコミットの範囲と、要件をその変更で動きが変わる点に絞ったものを `plan.json` に書く。結果を残したまま一部の項目だけやり直すなら、作り直さず [やり直し(`test-run/retest/`)](/.claude/skills/test-run/retest/SKILL.md) を使う
 
-[templates/cases/](/.claude/skills/test-cases/templates/cases/) を `<作業フォルダ>/cases/` に写す(すでにあれば上書きしない)。`plan.json` には `title`(イシュー番号と内容が分かる短い名前)と `source`(リポジトリ・PR・コミット・URL)を置き、`notes`(変更の概要と確かめる条件)・`requirements`・`excluded` は2節で埋める。`setup.json` / `cleanup.json` は親が書く。項目の無い種別のファイルは消す。**この時点では観点ごとの節(TC-01 など)はまだ作らない。**
+[templates/cases/](/.claude/skills/test-cases/templates/cases/) を `<作業フォルダ>/cases/` に写す(すでにあれば上書きしない)。`plan.json` には `title`(イシュー番号と内容が分かる短い名前)と `source`(リポジトリ・PR・コミット・URL)を置き、`notes`(変更の概要と確かめる条件)・`requirements`・`excluded` は2節で埋める。`setup.json` / `cleanup.json` は親が書く。項目の無い種別のファイルは消す。設計の `acceptance.md` がある時は、`acceptance.json` を消し、`plan.json` の `requirements` も消す(1節の「設計の `acceptance.md` があれば」)。**この時点では観点ごとの節(TC-01 など)はまだ作らない。**
 
 ## 2. テストの観点を洗い出す
 
@@ -122,7 +124,7 @@ gh issue view <イシュー番号> --comments
 
 - 同じ画面を見ていても、導き方が違えば別の観点。結合は「流れが正しいか」、受け入れは「頼まれたことが実現されたか」。1つの観点を種別をまたいで混ぜない
 - 4つの種別とも考える。観点が1つも出ない種別はファイルを作らず、`plan.json` の `notes` に「単体: 該当なし(理由)」と1文残す。**確かめないこと(`excluded`)にはしない**
-- 要件は `plan.json` の `requirements` に1件ずつ書き出す(`{ "id": "R1", "text": "…" }`)。確かめないことは `excluded` に理由つきで書く(差分に含まれていないものだけ)
+- 要件は、設計の `acceptance.md` が無い時だけ、`plan.json` の `requirements` に1件ずつ書き出す(`{ "id": "R1", "text": "…" }`)。確かめないことは `excluded` に理由つきで書く(差分に含まれていないものだけ)
 
 ## 3. 観点ごとに節を作る
 
@@ -153,14 +155,14 @@ gh issue view <イシュー番号> --comments
 1. **準備・後始末を書く**(`setup.json` / `cleanup.json`。書き方は `test-cases/reference/writing.md`「準備・後始末」)。項目の `id`・`title`・用意する状態(どの利用者がどんなデータか)を**決めてから**項目の担当を起動する。項目の前提は「準備の〜を済ませている」の形で書かせる
 2. **事実のシートを作る**(ファイルにしなくてよい。プロンプトに貼れる形で)。項目に書く**具体的な値**を、根拠つきでまとめる: 実際のデータ(コードと対応する名前、外のサービスの実測の値)/ 画面の言葉(メニュー名・タブ名・ボタン名・メッセージ)と出どころ(画面のコードの path:line)/ 使うアカウントと権限 / 準備が用意する利用者・データの ID と状態。**確かめていない値は、推測のまま渡さない。**「未確認」と書くか、先にユーザーに聞く(実例: 実測と違う名前を4つのファイルに書かせ、あとで一括で置き換えた)
 
-単体・結合・回帰・受け入れの項目は互いに関わらないので、**1つのメッセージで4つの Agent の呼び出しを同時に出して、並行に書かせる**。書き込む先を種別ごとに分けてあるので、ぶつからない。**親が3節までと4-0を終えてから起動する**(番号が種別をまたぐので、書き始めてから節を増やしたり減らしたりするとぶつかる)。
+単体・結合・回帰・受け入れの項目は互いに関わらないので、**1つのメッセージで種別ごとの Agent の呼び出しを同時に出して、並行に書かせる**(設計の `acceptance.md` がある時は、受け入れを除いた3つ)。書き込む先を種別ごとに分けてあるので、ぶつからない。**親が3節までと4-0を終えてから起動する**(番号が種別をまたぐので、書き始めてから節を増やしたり減らしたりするとぶつかる)。
 
 | 種別 | サブエージェント | 書き込む先 |
 |---|---|---|
 | 単体 | `test-cases-unit` | `<作業フォルダ>/cases/unit.json` |
 | 結合 | `test-cases-integration` | `<作業フォルダ>/cases/integration.json` |
 | 回帰 | `test-cases-regression` | `<作業フォルダ>/cases/regression.json` |
-| 受け入れ | `test-cases-acceptance` | `<作業フォルダ>/cases/acceptance.json` |
+| 受け入れ | `test-cases-acceptance`(設計の `acceptance.md` が無い時だけ) | `<作業フォルダ>/cases/acceptance.json` |
 
 プラグインとして入れた時の名前(`dev-workbench:test-cases-unit` など)は `docs/workspace.md` の「dev-workbench の場所」。
 
@@ -252,3 +254,15 @@ gh issue view <イシュー番号> --comments
 
 正本のフォルダ(`evidence/<YYYY-MM-DD>-<内容>/`)のビューアのURLを作る。作り方(Drive への置き方・フォルダ ID の取り方・`<site>evidence/?folder=<ID>`)は [docs/workspace.md](/docs/workspace.md) の「Driveへの置き方」「ビューアで開く」。
 ユーザーに、そのURLと件数(グループ・行う項目・種別ごとの全件/行わない)を渡す。証跡を見たい人には、`cases/` のフォルダ ID で同じ形のURLを作る。
+
+## ライト版の設計から作る
+
+ライト版の設計(作業フォルダの `index.md` に `進め方: ライト版`)では、上の1〜8の流れを通さず、`acceptance.md` から正本を作る。サブエージェントは呼ばない。「一番大事な決まり」と「ゴール」はそのまま守る。
+
+1. 差分・イシュー・設計を読む(1節のコマンド)
+2. `cases/plan.json` を、ひな形の `plan.json` から `title`・`source`・`notes` だけで書く(`requirements` と `attachments` は書かない。`00-cases.md` と `order.json` は作らない)
+3. 補う項目: `acceptance.md` の AC で確かめきれないもの(差分の分岐で画面から見えるもの・境界の値、変えた共通の処理を使うほかの画面)があれば、親が1人で、種別ごとの下書き(`unit.json`・`integration.json`・`regression.json`)に書く。書き方は `test-cases/reference/format.md`・`writing.md`、観点は `perspectives.md`。準備が要れば `setup.json`・`cleanup.json` を書く
+4. `check-cases.mjs <作業フォルダ>` を通す
+5. レビュー: 親が、テストケースのレビュー([review/SKILL.md](/.claude/skills/test-cases/review/SKILL.md))の観点とゴールの見直し(5つ)で見直し、直す
+6. `build-manifest.mjs <作業フォルダ> --out <作業フォルダ>/evidence/<YYYY-MM-DD>-<内容>` で正本を作り、`check-manifest.mjs` を通す(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)。節は、準備 → 単体 → 結合 → 回帰 → 受け入れ → 後始末 の順に並ぶ
+7. 8節のとおりに渡す。件数と、項目にしなかった自動の AC を報告する

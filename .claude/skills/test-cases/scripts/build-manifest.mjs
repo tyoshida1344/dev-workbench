@@ -32,16 +32,144 @@ export function readJson(path) {
   }
 }
 
-/** 作業フォルダの cases/ から、plan.json・種別ごとの下書き・order.json を読む */
+// 表の区切りの行。設計ビューア(app/_lib/md.js の TABLE_RULE)と同じ形で見分ける
+const TABLE_RULE = /^\s*\|[\s:|-]+\|\s*$/
+
+/** Markdown の表を、直前の `##` の見出しと一緒に取り出す。コードブロックの中は見ない */
+export function parseTables(text) {
+  // \| はセルの中の | として扱う(区切りにしない。md.js と同じ)
+  const cells = line => line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '').split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'))
+  const tables = []
+  let heading = ''
+  let fence = null // 開いたコードブロックの記号(``` か ~~~ と、その数)
+  const lines = text.split(/\r?\n/)
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const mark = line.match(/^\s*(`{3,}|~{3,})/)?.[1]
+    if (mark && !fence) {
+      fence = mark
+      continue
+    }
+    if (fence) {
+      if (mark && mark[0] === fence[0] && mark.length >= fence.length && line.trim() === mark) fence = null
+      continue
+    }
+    const title = line.match(/^##\s+(.+?)\s*#*\s*$/)
+    if (title) heading = title[1]
+    if (!line.trim().startsWith('|') || !TABLE_RULE.test(lines[i + 1] ?? '')) continue
+    const table = { heading, header: cells(line), rows: [] }
+    i += 2
+    while (i < lines.length && lines[i].trim().startsWith('|')) table.rows.push(cells(lines[i++]))
+    i--
+    tables.push(table)
+  }
+  return tables
+}
+
+/**
+ * 設計の受け入れ基準(作業フォルダの acceptance.md)を、受け入れの項目と要件にする。写しは作らない。
+ * test.md の対応表で手段を「自動」とした AC は項目にせず、notes に残す。形は ../reference/format.md「設計の受け入れ基準から作る」
+ */
+export function readAcceptance(workDir) {
+  const path = join(workDir, 'acceptance.md')
+  if (!existsSync(path)) return null
+  const errors = []
+  const text = readFileSync(path, 'utf8')
+  const title = text.match(/^#\s+(?:受け入れ基準[::]\s*)?(.+?)\s*$/m)?.[1]
+
+  // test.md の AC と手段の表
+  const means = new Map()
+  const testPath = join(workDir, 'test.md')
+  const testTables = existsSync(testPath)
+    ? parseTables(readFileSync(testPath, 'utf8')).filter(table => table.header.includes('AC') && table.header.includes('手段'))
+    : []
+  for (const table of testTables) {
+    const [ac, how] = ['AC', '手段'].map(name => table.header.indexOf(name))
+    for (const row of table.rows) if (row[ac]) means.set(row[ac], row[how] ?? '')
+  }
+
+  const sections = []
+  const requirements = []
+  const automated = []
+  const seen = new Set()
+  const tables = parseTables(text).filter(table => table.header.includes('ID'))
+  // AC の表(ID の列のある表)が1つも無く、test.md にも AC の表が無いのは、表の形になる前の書き方(チェックリスト)。
+  // 作業途中のフォルダを止めないよう、読まずに前の流れ(plan.json の要件と cases/acceptance.json)に任せる
+  if (!tables.length && !testTables.length) return { warning: 'acceptance.md に AC の表(ID・前提・操作・期待する結果)が無いので、受け入れの項目は acceptance.md から作りません(前の書き方の時は、今までどおり plan.json の要件と cases/acceptance.json で作ります。新しく書く時は、ひな形 design/templates/acceptance.md の表で書きます)' }
+  if (!tables.length) errors.push('acceptance.md に AC の表がありません(test.md には AC の表があります)。ひな形 design/templates/acceptance.md の表(ID・前提・操作・期待する結果・spec.md の節)で書きます')
+  for (const table of tables) {
+    const column = name => table.header.findIndex(cell => cell === name)
+    const [id, given, steps, expect] = ['ID', '前提', '操作', '期待する結果'].map(column)
+    const spec = table.header.findIndex(cell => cell.includes('spec.md'))
+    const missing = ['前提', '操作', '期待する結果'].filter(name => column(name) < 0)
+    if (missing.length) {
+      errors.push(`acceptance.md の「${table.heading || '見出しの無い'}」の表に、${missing.join('・')} の列がありません(列の名前はひな形 design/templates/acceptance.md のとおりにします)`)
+      // 読めない表の AC も、あるものとして数える(test.md との食い違いのエラーを重ねて出さない)
+      for (const row of table.rows) if (row[id]) seen.add(row[id])
+      continue
+    }
+    const items = []
+    for (const row of table.rows) {
+      const ac = row[id] ?? ''
+      const where = `acceptance.md ${ac || `「${table.heading}」の行`}`
+      if (!/^AC\d+$/.test(ac)) {
+        errors.push(`${where}: ID は AC01 の形にします`)
+        continue
+      }
+      if (seen.has(ac)) errors.push(`${where}: ID が重なっています`)
+      seen.add(ac)
+      if (![given, steps, expect].every(index => row[index])) {
+        errors.push(`${where}: 前提・操作・期待する結果のどれかが空です`)
+        continue
+      }
+      if (testTables.length && !means.has(ac)) errors.push(`test.md: ${ac} が AC と手段の表にありません(すべての AC を載せます)`)
+      if (/^自動/.test(means.get(ac) ?? '')) {
+        automated.push(`${ac}(${means.get(ac)})`)
+        continue
+      }
+      requirements.push({ id: ac, text: row[expect] })
+      const item = {
+        id: ac,
+        title: row[expect],
+        requirement: ac,
+        priority: 'high',
+        given: row[given],
+        steps: row[steps].split(/\s*→\s*/).filter(Boolean),
+      }
+      if (spec >= 0 && row[spec]) item.basis = `spec.md の ${row[spec]}`
+      items.push(item)
+    }
+    if (items.length) sections.push({ id: `ac${sections.length + 1}`, title: `受け入れ: ${table.heading || '受け入れ基準'}`, kind: 'acceptance', fromDesign: true, items })
+  }
+  // AC の表が無い時は、その1件のエラーだけを出す(test.md の AC ごとに重ねて出さない)
+  if (tables.length) for (const ac of means.keys()) if (!seen.has(ac)) errors.push(`test.md: ${ac} が acceptance.md にありません`)
+  const notes = automated.length ? [`自動のテストで確かめるので項目にしない受け入れ基準: ${automated.join('、')}(test.md)`] : []
+  return { title, sections, requirements, notes, errors }
+}
+
+/** 作業フォルダの cases/ から、plan.json・種別ごとの下書き・order.json を読む。acceptance.md があれば、受け入れの項目はそこから作る */
 export function loadCases(workDir) {
   const dir = join(workDir, 'cases')
-  if (!existsSync(dir)) throw new Error(`${dir} がありません`)
+  const found = readAcceptance(workDir)
+  const acceptance = found?.sections ? found : null
+  const warnings = found?.warning ? [found.warning] : []
+  if (!existsSync(dir) && !acceptance) throw new Error(found?.warning ? `${dir} がありません。${found.warning}` : `${dir} がありません`)
   const read = name => existsSync(join(dir, name)) ? readJson(join(dir, name)) : null
   const files = KINDS.flatMap(kind => {
     const data = read(`${kind}.json`)
+    if (kind === 'acceptance' && acceptance) {
+      if (data) throw new Error('受け入れの項目が2か所にあります(acceptance.md の AC の表と cases/acceptance.json)。設計の受け入れ基準がある時は、項目を acceptance.md から作るので、cases/acceptance.json を消します')
+      return [{ kind, name: 'acceptance.md', fromDesign: true, data: { sections: acceptance.sections } }]
+    }
     return data ? [{ kind, name: `${kind}.json`, data }] : []
   })
-  return { dir, plan: read('plan.json') ?? {}, files, order: read('order.json') }
+  const plan = read('plan.json') ?? {}
+  if (acceptance) {
+    plan.title ??= acceptance.title
+    plan.requirements = [...list(plan.requirements), ...acceptance.requirements]
+    plan.notes = [...list(plan.notes), ...acceptance.notes]
+  }
+  return { dir, plan, files, order: read('order.json'), acceptanceErrors: acceptance?.errors ?? [], warnings }
 }
 
 /** 統合した項目の id。order.json で決めていなければ、元の id を + でつなぐ */
@@ -255,8 +383,11 @@ function main(argv) {
   const value = flag => argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : null
   if (!workDir || workDir.startsWith('--') || (!argv.includes('--trail') && !value('--out'))) throw new Error(usage)
   const data = loadCases(resolve(workDir))
+  for (const warning of data.warnings) console.log(`注意  ${warning}`)
+  if (data.acceptanceErrors.length) throw new Error(`acceptance.md・test.md を直します(check-cases.mjs で一覧が出ます): ${data.acceptanceErrors.join(' / ')}`)
 
   if (argv.includes('--trail')) {
+    mkdirSync(data.dir, { recursive: true })
     const path = join(data.dir, 'manifest.json')
     writeJson(path, buildManifest(data, { trail: true }))
     console.log(`${path} を書きました(証跡)`)
