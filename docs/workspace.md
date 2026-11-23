@@ -96,8 +96,8 @@ DEV_WORKBENCH_DRIVE_FOLDER = 12iXVido-...              (Chrome で上げる時�
 3. 上げる先のフォルダを開いたら、ファイルを渡す(Drive の「ファイルのアップロード」は OS のファイル選択の画面を開き、操作できないので使わない)
    - `javascript_tool` で、ページに一時的な入力を足す: `<input type="file" multiple id="cw-up">`
    - `find` でその入力(`file-input`)の ref を取り、`file_upload` に ref と手元のファイルの絶対パスを渡す(1回に 10MB 未満。超える時は何回かに分ける)
-   - `javascript_tool` で、入力の files を `DataTransfer` に入れ、フォルダの一覧の場所(フォルダが空なら「Drop files here」の領域、ファイルがあれば一覧の行のある所。`document.elementFromPoint` で画面の中ほどの要素を取ってよい)に `dragenter`・`dragover`・`drop` を送る。送ったら、足した入力を消す
-4. 同じ名前のファイルがあると聞かれたら、**置き換える**(「既存のファイルを置き換える」)を選ぶ。前の中身は Drive の版の履歴に残る。別のファイルとして残すと、ビューアが古い方を読むことがある
+   - `javascript_tool` で、入力の files を `DataTransfer` に入れ、フォルダの一覧の場所(フォルダが空なら「Drop files here」の領域、ファイルがあれば一覧の行のある所。`document.elementFromPoint` で画面の中ほどの要素を取ってよい)に `dragenter`・`dragover`・`drop` を送る。送ったら、足した入力を消し、`document` に `dragleave` を送る(送らないと「ここにドロップ」の表示が残る)
+4. 同じ名前のファイルがあると「アップロード オプション」(Upload options)が出る。**置き換える**(「既存のアイテムを置き換える」/ Replace existing items。初めから選ばれている)のまま「アップロード」を押す。前の中身は Drive の版の履歴に残る。別のファイルとして残すと、ビューアが古い方を読むことがある
 5. 「アップロード完了」の件数と、一覧のファイル名が手元と揃っていることを確かめる。揃わない・失敗と出た時は、同じ操作を繰り返さず、止めてユーザーに聞く
 6. 上げるフォルダがいくつもある時(設計の直下の文書と `spec/`・`images/` など)は、フォルダごとに 2〜5 を繰り返す
 7. フォルダの ID は、開いているフォルダの URL(`…/folders/<ID>`)から取る
