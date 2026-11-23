@@ -160,6 +160,16 @@ test('列の名前が違う表は、項目を黙って落とさず、足りな�
     assert.equal(checked.status, 1, checked.out)
     assert.match(checked.out, /「要件」の表に、期待する結果 の列がありません/)
     assert.doesNotMatch(checked.out, /test\.md: AC\d+ が acceptance\.md にありません/)
+    // AC の表が1つも無い時も、test.md の AC ごとのエラーを重ねない
+    const none = workspace({ 'acceptance.md': '# 受け入れ基準\n\n## 要件\n\n- [ ] 消せる\n', 'test.md': TEST })
+    try {
+      const out = run('check-cases.mjs', [none]).out
+      assert.match(out, /acceptance\.md に AC の表がありません\(test\.md には AC の表があります\)/)
+      assert.doesNotMatch(out, /test\.md: AC\d+ が acceptance\.md にありません/)
+    }
+    finally {
+      rmSync(none, { recursive: true, force: true })
+    }
   }
   finally {
     rmSync(dir, { recursive: true, force: true })

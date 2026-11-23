@@ -141,7 +141,8 @@ export function readAcceptance(workDir) {
     }
     if (items.length) sections.push({ id: `ac${sections.length + 1}`, title: `受け入れ: ${table.heading || '受け入れ基準'}`, kind: 'acceptance', fromDesign: true, items })
   }
-  for (const ac of means.keys()) if (!seen.has(ac)) errors.push(`test.md: ${ac} が acceptance.md にありません`)
+  // AC の表が無い時は、その1件のエラーだけを出す(test.md の AC ごとに重ねて出さない)
+  if (tables.length) for (const ac of means.keys()) if (!seen.has(ac)) errors.push(`test.md: ${ac} が acceptance.md にありません`)
   const notes = automated.length ? [`自動のテストで確かめるので項目にしない受け入れ基準: ${automated.join('、')}(test.md)`] : []
   return { title, sections, requirements, notes, errors }
 }
