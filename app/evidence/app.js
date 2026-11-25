@@ -29,6 +29,10 @@ const SECTION_KIND = {
   cleanup: '後始末',
 }
 const PRIORITY = { high: '優先度 高', mid: '優先度 中', low: '優先度 低' }
+/** 正常系・異常系・境界(項目の scenario)。色は style.css で、結果の色と同じ系統にする */
+const SCENARIO = { normal: '正常系', error: '異常系', boundary: '境界' }
+/** 見てほしい項目(review: true)の印の読み上げ */
+const REVIEW = '見てほしい'
 // 出せる動画と画像。docs/evidence-manifest.md の決まりどおり。
 // 設計ビューアの画像(gif・svg も出す)より少ないのはわざと。エビデンスは画面を撮ったものなので、撮った形式だけにしている。
 const VIDEO = /\.(webm|mp4|mov)$/i
@@ -42,7 +46,7 @@ const NARROW = matchMedia('(max-width: 760px)')
 
 const state = {
   source: null,
-  /** 一覧に並ぶ順の、開けるもの(項目のすべてと、添付のすべて)。{ kind, file, item, section, row, stop } */
+  /** 一覧に並ぶ順の、開けるもの(項目のすべてと、添付のすべて)。{ kind, file, item, section, flowStep, row, stop }。flowStep は流れの節の項目だけ { at, of } */
   playlist: [],
   current: -1,
   /** 今開いている行(一覧のボタン) */
@@ -83,6 +87,18 @@ function kindBadge(kind) {
     el('span', { text: KIND_MARK[kind], attrs: { 'aria-hidden': 'true' } }),
     KIND_LABEL[kind],
   ])
+}
+
+/** 正常系・異常系・境界の札。決まった値でなければ出さない(読めない値で画面を止めない) */
+function scenarioBadge(scenario) {
+  const label = lookup(SCENARIO, scenario)
+  return label ? el('span', { text: label, className: `tag scenario ${scenario}` }) : null
+}
+
+/** 見てほしい項目の ★。色だけに頼らず、読み上げには言葉を渡す。横に言葉を添える時は、読み上げない(decorative) */
+function star({ decorative = false } = {}) {
+  const attrs = decorative ? { 'aria-hidden': 'true' } : { 'role': 'img', 'aria-label': REVIEW, 'title': REVIEW }
+  return el('span', { text: '★', className: 'star', attrs })
 }
 
 /** 動画も画像も無い項目の札。出すものが無いのではなく、まだ行っていないことを示す */
@@ -140,12 +156,15 @@ function render(manifest) {
   sections.replaceChildren()
   for (const section of objects(manifest.sections)) {
     const kind = lookup(SECTION_KIND, section.kind)
+    // 流れ(flow: true)の節は、見出しを「流れ: 」で始め、項目を字下げして括る。何番目かは、行わない項目も数える
+    const flow = section.flow === true
+    const sectionItems = objects(section.items)
     sections.append(el('h2', { className: 'section-title' }, [
-      str(section.title),
+      flow ? `流れ: ${str(section.title)}` : str(section.title),
       ...(kind ? [el('span', { text: kind, className: 'tag section-kind' })] : []),
     ]))
-    const list = el('ul', { className: 'items' })
-    for (const item of objects(section.items)) {
+    const list = el('ul', { className: flow ? 'items flow' : 'items' })
+    for (const [position, item] of sectionItems.entries()) {
       const status = statusOf(item)
       counts[status] += 1
       // 1つの項目が持つのは動画か画像のどちらか(両方あれば動画を見せる)。どちらも無い項目は、前提・手順などだけを出す。
@@ -157,14 +176,23 @@ function render(manifest) {
       // 状態を言葉で出す行は、同じことを二度言わないよう印を出さない(列は空けたままにして、文の頭をほかの行とそろえる)
       const statusAsTag = !file && (status === 'pending' || status === 'skip')
       const badge = file ? kindBadge(entryKind) : statusAsTag ? statusBadge(status) : null
+      // 見てほしい項目は、文の頭に ★ を付けて太字にする(行わない項目には付けない)
+      const review = item.review === true && status !== 'skip'
+      const flowStep = flow ? { at: position + 1, of: sectionItems.length } : null
+      const side = [
+        ...(flowStep ? [el('span', { text: `${flowStep.at}/${flowStep.of}`, className: 'flow-step' })] : []),
+        scenarioBadge(item.scenario),
+        badge,
+      ].filter(Boolean)
       const node = row(index, `item ${status}`, title, [
         el('span', { text: str(item.id), className: 'item-id' }),
         statusAsTag ? el('span', { className: 'mark' }) : mark(status),
-        el('span', { className: 'item-title' }, inline(str(item.title))),
-        ...(badge ? [badge] : []),
+        el('span', { className: review ? 'item-title review' : 'item-title' }, [...(review ? [star()] : []), ...inline(str(item.title))]),
+        // 右端に出すものが無い行は、文の列を今までどおりの幅にする(空の入れ物で余白を取らない)
+        ...(side.length ? [el('span', { className: 'item-side' }, side)] : []),
       ])
       list.append(node)
-      state.playlist.push({ kind: entryKind, file, item, section, row: node.firstChild, stop: status !== 'skip' })
+      state.playlist.push({ kind: entryKind, file, item, section, flowStep, row: node.firstChild, stop: status !== 'skip' })
     }
     sections.append(list)
   }
@@ -280,8 +308,14 @@ async function select(index) {
   $('item-title').classList.toggle('with-mark', Boolean(status))
   announce(`${heading.replaceAll('`', '')} を開きました`)
 
-  const tags = [lookup(PRIORITY, item.priority), ...asList(item.requirement).map(id => `要件 ${str(id)}`)].filter(Boolean)
-  $('item-tags').replaceChildren(...tags.map(tag => el('span', { text: tag, className: 'tag' })))
+  const tag = text => el('span', { text, className: 'tag' })
+  const tags = [
+    ...(item.review === true && status !== 'skip' ? [el('span', { className: 'tag' }, [star({ decorative: true }), REVIEW])] : []),
+    ...[lookup(PRIORITY, item.priority), ...asList(item.requirement).map(id => `要件 ${str(id)}`)].filter(Boolean).map(tag),
+    scenarioBadge(item.scenario),
+    ...(entry.flowStep ? [tag(`流れ ${str(entry.section.title)} ${entry.flowStep.at}/${entry.flowStep.of}`)] : []),
+  ].filter(Boolean)
+  $('item-tags').replaceChildren(...tags)
   $('item-tags').hidden = !tags.length
   $('case-fields').replaceChildren(...caseFields(item))
   const checks = asList(item.checks)

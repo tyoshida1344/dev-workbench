@@ -55,6 +55,7 @@ node "<dev-workbench>/.claude/skills/test-cases/scripts/build-manifest.mjs" <作
    - `--redo` の項目は未実施になる。それ以外で前に結果のあった項目は、`result`・`checks`・`note`・`video` / `image` と、そのファイルが写る
    - 項目ごとの添付(`title` が項目の id で始まるもの)は、やり直す項目のものを写さない。それ以外の添付は写る
    - **中身が前と変わった項目を `--redo` に入れ忘れると、止まる**(直した項目の前の結果を、そのまま引き継がないため)。出た id を `--redo` に足す
+   - 見せ方だけの違い(★ `review`・正常系と異常系 `scenario`・流れ `flow`)は、中身が変わったことに数えない。前の結果をそのまま引き継ぐ
    - 新しい正本の `notes` に、どのフォルダから何件引き継ぎ、どれをやり直すかが1行で入る。引き継いだ項目を確かめたコミット・環境は、前のフォルダの `notes` にある
    - `<内容>` は前と同じものに `-retest` などを付ける(例: `2026-11-25-pr45-retest`)。同じ日に2回作るなら `-retest2`
 6. 新しいフォルダを `check-manifest.mjs` と `check-cases.mjs … --manifest` で確かめる(コマンドは `test-cases/reference/format.md`「正本と証跡を作る」)

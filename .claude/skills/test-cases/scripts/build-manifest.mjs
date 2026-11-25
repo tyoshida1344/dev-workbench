@@ -16,8 +16,14 @@ export const SCHEMA = 'dev-workbench/evidence@1'
 // 下書きのファイル名(<kind>.json)と、証跡・正本に並べる順
 export const KINDS = ['setup', 'unit', 'integration', 'regression', 'acceptance', 'cleanup']
 export const TEST_KINDS = ['unit', 'integration', 'regression', 'acceptance']
+// 項目の正常系・異常系・境界(scenario)の値。check-cases.mjs と check-manifest.mjs が同じものを使う
+export const SCENARIOS = ['normal', 'error', 'boundary']
+export const SCENARIO_MESSAGE = `scenario は ${SCENARIOS.join(' / ')} のどれかにします`
 // テストケースの中身。結果(result など)とは分けて比べる
-export const CASE_FIELDS = ['title', 'priority', 'requirement', 'given', 'steps', 'expect', 'basis']
+export const CASE_FIELDS = ['title', 'priority', 'scenario', 'requirement', 'given', 'steps', 'expect', 'basis']
+// 見せ方だけの欄。確かめる中身ではないので、再テストで前の結果を引き継ぐ時の比べには入れない(test-run/retest/SKILL.md の5.)。
+// review(★)は CASE_FIELDS に無いので、もともと比べない
+const PRESENTATION_FIELDS = ['scenario']
 const RESULT_FIELDS = ['result', 'checks', 'note', 'video', 'image']
 const PRIORITY_RANK = { low: 0, mid: 1, high: 2 }
 
@@ -175,9 +181,15 @@ export function loadCases(workDir) {
 /** 統合した項目の id。order.json で決めていなければ、元の id を + でつなぐ */
 export const mergedId = entry => entry.id ?? list(entry.merge).join('+')
 
-/** 中身だけを取り出した文字列。前に作ったものと比べるのに使う(結果と note は比べない) */
-export const caseView = item =>
-  JSON.stringify([...CASE_FIELDS, 'duplicateOf'].filter(key => item[key] !== undefined).map(key => [key, item[key]]))
+/**
+ * 中身だけを取り出した文字列。前に作ったものと比べるのに使う(結果と note は比べない)。
+ * 正本が下書きから作り直されているかの照合では、見せ方の欄(scenario)も比べる。
+ * 再テストで前の結果を引き継ぐ時は content: true にし、見せ方の欄の違いをやり直しに数えない
+ */
+export const caseView = (item, { content = false } = {}) =>
+  JSON.stringify([...CASE_FIELDS, 'duplicateOf']
+    .filter(key => item[key] !== undefined && !(content && PRESENTATION_FIELDS.includes(key)))
+    .map(key => [key, item[key]]))
 
 export const hasResults = manifest =>
   (manifest.sections ?? []).some(section => (section.items ?? []).some(item => item.result !== undefined || item.video || item.image))
@@ -246,14 +258,16 @@ export function buildManifest({ plan, files, order }, { trail = false } = {}) {
   }
   const rewrite = (value, at) => Array.isArray(value) ? value.map(entry => rewriteText(String(entry), at)) : rewriteText(String(value), at)
 
-  const toItem = source => {
+  const toItem = (source, kind) => {
     const item = { id: source.id }
     for (const key of CASE_FIELDS) {
       if (source[key] === undefined || source[key] === null || source[key] === '') continue
-      item[key] = ['priority', 'requirement', 'basis'].includes(key) ? source[key] : rewrite(source[key])
+      item[key] = ['priority', 'scenario', 'requirement', 'basis'].includes(key) ? source[key] : rewrite(source[key])
     }
     if (trail && source.duplicateOf) item.duplicateOf = source.duplicateOf
     if (source.noScreen) item.note = `画面で確かめられない理由: ${source.noScreen}`
+    // 受け入れの行う項目に、見てほしい(★)を付ける。行わない項目には付けない
+    if (kind === 'acceptance' && !source.duplicateOf) item.review = true
     return item
   }
 
@@ -275,7 +289,9 @@ export function buildManifest({ plan, files, order }, { trail = false } = {}) {
     for (const key of ['given', 'steps', 'expect']) if (entry[key] !== undefined) item[key] = rewrite(entry[key], at)
     const bases = origins.filter(found => found.item.basis).map(found => `${found.item.id}: ${list(found.item.basis).join(' / ')}`)
     if (bases.length) item.basis = bases.join('\n')
+    if (entry.scenario !== undefined) item.scenario = entry.scenario
     item.note = `まとめた項目: ${list(entry.merge).join(', ')}`
+    if (origins.some(found => found.kind === 'acceptance')) item.review = true
     return { item, kinds: origins.map(found => found.kind) }
   }
 
@@ -283,7 +299,7 @@ export function buildManifest({ plan, files, order }, { trail = false } = {}) {
   for (const excluded of list(plan.excluded)) notes.push(`確かめないこと: ${excluded.title}(${excluded.reason})`)
   const out = []
   const pushSection = section => {
-    const items = (section.items ?? []).filter(item => trail || !item.duplicateOf).map(toItem)
+    const items = (section.items ?? []).filter(item => trail || !item.duplicateOf).map(item => toItem(item, section.kind))
     if (!items.length) return
     out.push({ title: section.title, kind: section.kind, items })
     for (const note of list(section.notes)) notes.push(`${section.title}: ${note}`)
@@ -300,10 +316,11 @@ export function buildManifest({ plan, files, order }, { trail = false } = {}) {
       if (!found) throw new Error(`order.json の ${entry} が下書きにありません`)
       if (found.item.duplicateOf) throw new Error(`order.json に、行わない項目 ${entry} があります(duplicateOf: ${found.item.duplicateOf})`)
       kinds.add(found.kind)
-      return toItem(found.item)
+      return toItem(found.item, found.kind)
     })
     const section = { title: `${String(group.id).toUpperCase()} ${group.title}${group.who ? `(${group.who})` : ''}` }
     if (kinds.size === 1) section.kind = [...kinds][0]
+    if (group.flow === true) section.flow = true
     section.items = items
     out.push(section)
     if (group.note) notes.push(`${section.title}: ${group.note}`)
@@ -342,7 +359,7 @@ function carryOver(manifest, fromDir, outDir, redo) {
   for (const id of redo) if (!ids.has(id)) throw new Error(`--redo の ${id} が、新しいテストケースにありません`)
 
   const carried = items.filter(item => !redo.has(item.id) && oldItems.get(item.id)?.result !== undefined)
-  const changed = carried.filter(item => caseView(oldItems.get(item.id)) !== caseView(item)).map(item => item.id)
+  const changed = carried.filter(item => caseView(oldItems.get(item.id), { content: true }) !== caseView(item, { content: true })).map(item => item.id)
   if (changed.length) throw new Error(`中身が前回と変わった項目は、やり直しが要ります。--redo に足します: ${changed.join(', ')}`)
 
   const copy = file => {

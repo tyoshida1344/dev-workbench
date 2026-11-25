@@ -1,0 +1,15 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "テスト用 ★・正常系と異常系・流れの誤った値",
+  "sections": [
+    {
+      "title": "誤った値",
+      "flow": "yes",
+      "items": [
+        { "id": "1", "title": "★ に文字", "review": "yes" },
+        { "id": "2", "title": "★ に false", "review": false },
+        { "id": "3", "title": "決まっていない区分", "scenario": "abnormal" }
+      ]
+    }
+  ]
+}

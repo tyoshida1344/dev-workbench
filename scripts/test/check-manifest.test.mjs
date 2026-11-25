@@ -4,6 +4,8 @@
 //   null-manifest   manifest が null。エラー
 //   null-parts      節・項目・要件・添付に null。例外で落ちずにエラーとして数える
 //   bad-source-url  source.url が http / https でない。エラー
+//   new-fields      ★(review)・正常系と異常系(scenario)・流れ(flow)。通る。1件だけの流れと、行わない項目の ★ に注意
+//   bad-new-fields  その3つの値が決まりの外。エラー
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -89,4 +91,25 @@ test('config.json の site の末尾に / が無くても、ビューアの URL 
   finally {
     rmSync(work, { recursive: true, force: true })
   }
+})
+
+test('★・正常系と異常系・流れは通る。1件だけの流れと、行わない項目の ★ は注意だけ', () => {
+  const { status, out } = check(fixture('new-fields'))
+  assert.equal(status, 0, out)
+  assert.match(out, /注意 {2}sections\[1\]: 流れの項目が1件だけです: 1件だけの流れ/)
+  assert.match(out, /注意 {2}sections\[2\]\.items\[1\] \(#AC05\): 行わない項目に review があります\(★ は出ません\)/)
+  assert.doesNotMatch(out, /注意 {2}sections\[0\]/)
+  assert.match(out, /エラーはありません。/)
+  noCrash(out)
+})
+
+test('★・正常系と異常系・流れの値が決まりの外ならエラー', () => {
+  const { status, out } = check(fixture('bad-new-fields'))
+  assert.equal(status, 1, out)
+  assert.match(out, /エラー sections\[0\]: flow は true だけを書きます\(流れでない節には書きません\)/)
+  assert.match(out, /エラー sections\[0\]\.items\[0\] \(#1\): review は true だけを書きます\(付けない時は書きません\)/)
+  assert.match(out, /エラー sections\[0\]\.items\[1\] \(#2\): review は true だけを書きます/)
+  assert.match(out, /エラー sections\[0\]\.items\[2\] \(#3\): scenario は normal \/ error \/ boundary のどれかにします/)
+  assert.match(out, /エラー 4 件/)
+  noCrash(out)
 })
