@@ -12,6 +12,9 @@
   --ng: #b3261e;
   --partial-bg: #fbf1dc;
   --ng-bg: #fbe7e5;
+  /* 正常系の札の背景と、見てほしい項目の ★(黄) */
+  --ok-bg: #e8f3ec;
+  --star: #b07c00;
   /* 動画・画像の余白と、文書の画像の下地(透けた画像が読めるように、暗い表示でも白) */
   --media-bg: #000;
   --img-bg: #fff;
@@ -34,6 +37,8 @@
     --ng: #f08a80;
     --partial-bg: #33290f;
     --ng-bg: #3a1f1d;
+    --ok-bg: #1b3324;
+    --star: #f0c24a;
   }
 }
 
@@ -169,6 +174,23 @@ code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: u
 /* テストケース(未実施の項目)の札・前提・手順・期待する結果 */
 .tag { display: inline-block; margin-right: 4px; padding: 0 6px; border: 1px solid var(--rule); border-radius: 10px; color: var(--muted); font-size: var(--font-small); font-weight: 400; }
 .section-kind { margin-left: 6px; }
+/* 一覧の行の右端。流れの何番目か・正常系と異常系の札・何として開くかの札を並べ、入らなければ折り返す */
+.item-side { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px; margin-left: 8px; }
+.item-side .tag { margin: 0; }
+.flow-step { color: var(--muted); font-size: var(--font-small); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 正常系・異常系・境界。結果の色と同じ系統にし、枠つきの言葉で、文の前の結果の記号と見分ける */
+.scenario { white-space: nowrap; }
+.scenario.normal { color: var(--ok); border-color: var(--ok); background: var(--ok-bg); }
+.scenario.error { color: var(--ng); border-color: var(--ng); background: var(--ng-bg); }
+/* 境界の文字は黄の背景では薄くなるので、背景を敷かない(小さい文字でも読めるように) */
+.scenario.boundary { color: var(--partial); border-color: var(--partial); background: var(--panel); }
+/* 見てほしい項目。★ と太字で、境界の札(黄)と見分ける */
+.item-title.review { font-weight: 600; }
+.star { margin-right: 4px; color: var(--star); }
+/* 流れの節。項目を字下げし、左の縦の線で始まりと終わりを示す */
+.items.flow { margin-left: 12px; border-left: 3px solid var(--control); }
+/* 流れの中の今の行は、縦の線と二重にならないよう、左の線を出さずに背景だけで示す */
+.items.flow .item.current { border-left-color: transparent; }
 /* 何として開くかの札(一覧の行の右端)。見た目はほかの札と同じにする */
 .kind { display: inline-flex; align-items: center; gap: 3px; margin: 0 0 0 8px; white-space: nowrap; }
 /* 動画は見るのに時間がかかるので、少し強く出す */
@@ -214,4 +236,5 @@ code { padding: 0 4px; border-radius: 3px; background: var(--bg); font-family: u
   .overview > summary { display: list-item; }
   /* 指で押しやすい高さにする */
   .item { min-height: 44px; }
+  .items.flow { margin-left: 6px; }
 }

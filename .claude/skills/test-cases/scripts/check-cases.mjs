@@ -10,7 +10,7 @@
 
 import { existsSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
-import { KINDS, TEST_KINDS, buildManifest, caseView, list, loadCases, mergedId, readJson } from './build-manifest.mjs'
+import { KINDS, SCENARIOS, SCENARIO_MESSAGE, TEST_KINDS, buildManifest, caseView, list, loadCases, mergedId, readJson } from './build-manifest.mjs'
 
 const PRIORITIES = ['high', 'mid', 'low']
 // 上位のテストほど大きい。duplicateOf は同じか上の階層を指す
@@ -113,6 +113,8 @@ for (const section of own) {
     for (const key of ['result', 'checks', 'video', 'image']) {
       if (item[key] !== undefined) fail(where, `下書きに ${key} は書きません(結果は正本の manifest.json に書きます)`)
     }
+    if (item.review !== undefined) fail(where, 'review は下書きに書きません(受け入れの項目に、組み立てが付けます)')
+    if (item.scenario !== undefined && !SCENARIOS.includes(item.scenario)) fail(where, SCENARIO_MESSAGE)
     for (const key of ['url', 'text', 'purpose']) {
       if (item[key] !== undefined) fail(where, `${key} は使いません(${key === 'url' ? 'given か steps に書きます' : key === 'text' ? 'steps に書きます' : 'title に書きます'})`)
     }
@@ -199,6 +201,7 @@ if (order && !onlyName) {
     if (group.note !== undefined && typeof group.note !== 'string') bad(at, 'note は文字列にします')
     checkWording(at, [['title', group.title], ['note', group.note]])
     if (group.afterCleanup !== undefined && typeof group.afterCleanup !== 'boolean') bad(at, 'afterCleanup は true か false にします')
+    if (group.flow !== undefined && group.flow !== true) bad(at, 'flow は true だけを書きます(流れでない節には書きません)')
     if (group.afterCleanup === true) sawAfterCleanup = true
     else if (sawAfterCleanup) bad(at, '後始末のあとに行うグループ(afterCleanup)より後ろに、ふつうのグループがあります')
     if (groupIds.has(group.id.toLowerCase())) bad(at, `id ${group.id} が重なっています`)
@@ -215,7 +218,7 @@ if (order && !onlyName) {
         bad(where, '項目の id の文字列か、統合した項目のオブジェクトにします')
         continue
       }
-      const allowed = ['merge', 'id', 'key', 'title', 'given', 'steps', 'expect', 'priority']
+      const allowed = ['merge', 'id', 'key', 'title', 'given', 'steps', 'expect', 'priority', 'scenario']
       for (const key of Object.keys(entry)) if (!allowed.includes(key)) bad(where, `${key} は統合した項目には書けません(${allowed.join(' / ')})`)
       if (!Array.isArray(entry.merge) || !entry.merge.length || entry.merge.some(id => typeof id !== 'string' || !id)) {
         bad(where, 'merge は1つ以上の項目の id の配列にします')
@@ -235,6 +238,7 @@ if (order && !onlyName) {
       if (entry.given !== undefined && typeof entry.given !== 'string') bad(where, 'given は文字列にします')
       for (const key of ['steps', 'expect']) if (!isText(entry[key])) bad(where, `${key} が要ります(文字列か、空でない文字列の配列)`)
       if (entry.priority !== undefined && !PRIORITIES.includes(entry.priority)) bad(where, `priority は ${PRIORITIES.join(' / ')} のどれかにします`)
+      if (entry.scenario !== undefined && !SCENARIOS.includes(entry.scenario)) bad(where, SCENARIO_MESSAGE)
       checkWording(where, [['title', entry.title], ['given', entry.given], ['steps', entry.steps], ['expect', entry.expect]])
       if (JSON.stringify(entry).includes(UNKNOWN)) fail(where, `${UNKNOWN} が残っています。ユーザーに聞いて埋めます`)
       entries.push({ entry, position, where })
@@ -311,10 +315,10 @@ if (manifestDir && expected) {
       fail(path, error.message)
     }
     if (current) {
-      const shape = manifest => (manifest.sections ?? []).map(section => `${section.title}: ${(section.items ?? []).map(item => item.id).join(', ')}`)
+      const shape = manifest => (manifest.sections ?? []).map(section => `${section.flow === true ? '(流れ) ' : ''}${section.title}: ${(section.items ?? []).map(item => item.id).join(', ')}`)
       const want = shape(expected)
       const have = shape(current)
-      if (want.join('\n') !== have.join('\n')) fail(path, '節と項目の並びが、今の下書きと違います。結果が無ければ build-manifest.mjs で作り直し、結果があれば やり直し(`test-run/retest/`) の手順で新しいフォルダに作ります')
+      if (want.join('\n') !== have.join('\n')) fail(path, '節と項目の並び(流れかどうかも)が、今の下書きと違います。結果が無ければ build-manifest.mjs で作り直し、結果があれば やり直し(`test-run/retest/`) の手順で新しいフォルダに作ります')
       const currentItems = new Map((current.sections ?? []).flatMap(section => section.items ?? []).map(item => [item.id, item]))
       for (const item of expected.sections.flatMap(section => section.items)) {
         const found = currentItems.get(item.id)

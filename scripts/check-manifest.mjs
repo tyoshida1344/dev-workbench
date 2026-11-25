@@ -5,7 +5,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
-import { KINDS } from '../.claude/skills/test-cases/scripts/build-manifest.mjs'
+import { KINDS, SCENARIOS, SCENARIO_MESSAGE } from '../.claude/skills/test-cases/scripts/build-manifest.mjs'
 
 const SCHEMA = 'dev-workbench/evidence@1'
 const RESULTS = ['ok', 'partial', 'ng']
@@ -113,6 +113,8 @@ sections.forEach((section, s) => {
   const items = section.items ?? []
   if (!Array.isArray(items)) return fail(at, 'items は配列にします')
   if (!items.length) warn(at, `項目がありません: ${section.title ?? ''}`)
+  if (section.flow !== undefined && section.flow !== true) fail(at, 'flow は true だけを書きます(流れでない節には書きません)')
+  else if (section.flow === true && items.length === 1) warn(at, `流れの項目が1件だけです: ${section.title ?? ''}`)
   items.forEach((item, i) => {
     if (!isObject(item)) return fail(`${at}.items[${i}]`, '項目がオブジェクトではありません')
     const where = `${at}.items[${i}]${item.id ? ` (#${item.id})` : ''}`
@@ -129,6 +131,9 @@ sections.forEach((section, s) => {
       if (item[key] !== undefined && typeof item[key] !== 'string') fail(where, `${key} は文字列にします`)
     }
     if (item.priority !== undefined && !PRIORITIES.includes(item.priority)) fail(where, `priority は ${PRIORITIES.join(' / ')} のどれかにします`)
+    if (item.scenario !== undefined && !SCENARIOS.includes(item.scenario)) fail(where, SCENARIO_MESSAGE)
+    if (item.review !== undefined && item.review !== true) fail(where, 'review は true だけを書きます(付けない時は書きません)')
+    else if (item.review === true && item.duplicateOf) warn(where, '行わない項目に review があります(★ は出ません)')
     for (const id of [].concat(item.requirement ?? [])) {
       if (!requirementIds.has(String(id))) fail(where, `requirements に無い要件です: ${id}`)
     }

@@ -55,7 +55,7 @@
 | 前提 | `given` |
 | 操作 | `steps`。「 → 」で区切ったものが、手順1・手順2… になる |
 | spec.md の節 | `basis`(`spec.md の <節>`) |
-| (いつも) | `priority` は `high` |
+| (いつも) | `priority` は `high`、`review`(★ 見てほしい)は `true`。`scenario` と流れは付かない |
 
 - `test.md` の AC と手段の表(列「AC」「手段」)で、手段が「自動」で始まる AC は、項目にも要件にもしない。正本の `notes` に「自動のテストで確かめるので項目にしない受け入れ基準: …」と残る
 - `plan.json` が無い、または `title` が無い時は、`acceptance.md` の最初の `#` 見出し(`受け入れ基準:` の後ろ)を見出しにする
@@ -135,11 +135,13 @@
 | `expect` | 期待する結果(文字列の配列。確認することごとに分ける)。操作すれば必ずこうなる値。手順の後に見るものは頭に `手順N:` を付ける。準備・後始末では、できあがりの確認を1〜2行 |
 | `basis` | 期待する結果の根拠(単体は必須、単体だけに付ける)。コードの `path:line` か、既存のテストの assert。**コードの言葉はここにだけ書ける** |
 | `priority` | `high` / `mid` / `low`(テストの項目は必須) |
+| `scenario` | `normal` / `error` / `boundary`(任意)。分け方は [writing.md](/.claude/skills/test-cases/reference/writing.md)「正常系・異常系・境界と流れ」。正本にそのまま写る |
 | `requirement` | 満たす要件の `id`(`R1`、または `["R1", "R2"]`)。**受け入れは必須、ほかの種別には付けない** |
 | `noScreen` | 画面で確かめられない理由(結合・回帰・受け入れだけ)。手順にコマンドを置くなら必須([writing.md](/.claude/skills/test-cases/reference/writing.md)「画面ベースの原則」)。正本では `note` に「画面で確かめられない理由: …」として出る |
 | `duplicateOf` | ほかの項目で確かめられるので行わない時、その項目の `id`。証跡では打ち消し線で出て、正本には入らない。行う側は、**階層が同じか上で、自身が `duplicateOf` を持たない項目**(`test-cases/SKILL.md` 5節) |
 
 - 下書きには `result`・`checks`・`video`・`image` を書かない(結果は正本に書く)
+- `review`(★ 見てほしい)も書かない。組み立てが、受け入れの行う項目と、元に受け入れの項目を持つ統合した項目に付ける
 - HTML は書けない(ビューアは文字としてそのまま出す)。強調や改行が要るなら、文や配列の要素に分ける
 - 表を作りたくなったら、項目ごとに書くか、`notes` の1行ずつに分ける(参照用の表に準備の中身を散らさない)
 
@@ -184,6 +186,7 @@
 | `groups[].who` | | 使うアカウント・環境。見出しの後ろに `(…)` で出る |
 | `groups[].note` | | 連続して行う理由・実施前の注意。正本では全体の `notes` に「見出し: …」として出る |
 | `groups[].afterCleanup` | | `true` なら後始末のあとに並ぶ。`order.json` でも、ふつうのグループより後ろに置く |
+| `groups[].flow` | | `true` なら、正本でその節を流れとして出す(`sections[].flow`)。使う時は [writing.md](/.claude/skills/test-cases/reference/writing.md)「正常系・異常系・境界と流れ」。証跡(`--trail`)はグループを読まないので出ない |
 | `groups[].cases[]` | ○ | 項目の `id` の文字列か、統合した項目 |
 
 統合した項目(同じ人が同じ画面を続けて確かめられる項目を1つにまとめたもの):
@@ -193,6 +196,7 @@
 | `merge` | ○ | まとめる元の項目の `id`(1つ以上) |
 | `title`・`steps`・`expect` | ○ | 書き方は下書きと同じ。**元の項目の確かめ(`expect`)を1つも落とさない** |
 | `given`・`priority` | | `priority` を省くと、元の項目のうち一番高いもの |
+| `scenario` | | 統合した項目の正常系・異常系・境界。元の項目に書いてあっても写さないので、要ればここに書く |
 | `id` | | 正本での `id`。省くと元の `id` を `+` でつないだもの(`tc02-01+tc04-01`) |
 | `key` | | 英数字とハイフン。`order.json` の中で重ねない。後ろの統合した項目の本文から `@key` で指すと、その項目の `id` に置き換わる(「@save-name の続き」→「tc02-01+tc04-01 の続き」)。自分自身や後ろの項目は指せない |
 
@@ -214,9 +218,9 @@ node "<dev-workbench>/scripts/check-manifest.mjs" <エビデンスのフォル�
 
 | コマンド | 見るもの・作るもの |
 |---|---|
-| `check-cases.mjs <作業フォルダ>` | 下書きの全部と `order.json`。形(`sections`・`kind` とファイル名・id の頭)・必須の欄・`priority` の値・コードの言葉と HTML・`【要確認】`・単体の `basis`・画面ベースの原則(`noScreen`)・要件ごとに受け入れの項目があるか・id の重なり・`duplicateOf` の先があり、行う項目で、階層が同じか上か・`order.json` の漏れと重なり・統合した項目の書き方と `@key`・正本が組み立てられ、要件をすべて確かめているか |
+| `check-cases.mjs <作業フォルダ>` | 下書きの全部と `order.json`。形(`sections`・`kind` とファイル名・id の頭)・必須の欄・`priority` と `scenario` の値・下書きに `review` が無いこと・グループの `flow` の値・コードの言葉と HTML・`【要確認】`・単体の `basis`・画面ベースの原則(`noScreen`)・要件ごとに受け入れの項目があるか・id の重なり・`duplicateOf` の先があり、行う項目で、階層が同じか上か・`order.json` の漏れと重なり・統合した項目の書き方と `@key`・正本が組み立てられ、要件をすべて確かめているか |
 | `check-cases.mjs … --file <パス>` | その1ファイルだけ。種別ごとに並行して書いている間に使う。`--file` にはファイルの名前ではなく**パス**を渡す |
-| `check-cases.mjs … --manifest <正本のフォルダ>` | あわせて、正本が今の下書きと合っているか(結果を書いた時に、項目の中身を変えていないか) |
+| `check-cases.mjs … --manifest <正本のフォルダ>` | あわせて、正本が今の下書きと合っているか(結果を書いた時に、項目の中身を変えていないか。`scenario` と、節が流れかどうかも比べる) |
 | `build-manifest.mjs … --out <フォルダ>` | 正本。下の「正本で変わること」 |
 | `build-manifest.mjs … --trail` | 証跡。下書きの全件を種別の順に並べ、`duplicateOf` の付いた項目も打ち消し線で残したもの。`cases/manifest.json` に書く。ビューアで `cases/` のフォルダを開くと見られる(重なりの判断をレビューする時に使う) |
 | `check-manifest.mjs <フォルダ>` | `manifest.json` の形そのもの。ファイル名の綴り・拡張子・`summary` の数・使っていないファイル |
@@ -232,4 +236,6 @@ node "<dev-workbench>/scripts/check-manifest.mjs" <エビデンスのフォル�
 - 本文の中の、行わない項目の id は `duplicateOf` の先の id に、統合した項目に入った id は統合した項目の id に、書き換わる。`@key` は、その `key` を持つ前の統合した項目の id に置き換わる
 - `plan.json` の `notes`・`excluded`、節の `notes`、グループの `note` は、正本の全体の `notes` にまとまる(`manifest.json` には節ごとの説明の欄が無いため)
 - `noScreen` は、項目の `note` に「画面で確かめられない理由: …」として出る
+- 受け入れの行う項目と、元に受け入れの項目を持つ統合した項目に `review: true`(★ 見てほしい)が付く。`scenario` はそのまま写る
+- `flow: true` のグループから作った節に `flow: true` が付く(証跡には付かない)
 - `plan.json` の `attachments`(`00-cases.md` など)は、正本のフォルダに写される

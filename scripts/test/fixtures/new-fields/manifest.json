@@ -1,0 +1,28 @@
+{
+  "schema": "dev-workbench/evidence@1",
+  "title": "テスト用 ★・正常系と異常系・流れ",
+  "sections": [
+    {
+      "title": "流れ: 保存する",
+      "flow": true,
+      "items": [
+        { "id": "AC01", "title": "名前を入れると保存できる", "review": true, "scenario": "normal" },
+        { "id": "AC02", "title": "保存すると一覧に出る", "review": true, "scenario": "normal" }
+      ]
+    },
+    {
+      "title": "1件だけの流れ",
+      "flow": true,
+      "items": [
+        { "id": "AC03", "title": "空だと保存できない", "scenario": "error" }
+      ]
+    },
+    {
+      "title": "行わない項目",
+      "items": [
+        { "id": "AC04", "title": "50文字なら保存できる", "scenario": "boundary" },
+        { "id": "AC05", "title": "50文字なら保存できる(重なり)", "review": true, "duplicateOf": "AC04" }
+      ]
+    }
+  ]
+}
